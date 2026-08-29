@@ -139,17 +139,17 @@ export function evaluateJourneyFeasibility(
   context?: JourneyFeasibilityContext,
 ): JourneyFeasibilityResult {
   const deadline = resolveDeadline(request, context);
+  const candidateFeasibilities = candidates.map((candidate) => evaluateCandidateFeasibility(candidate, request, context));
   if (context?.journeyDataAvailability === "UNAVAILABLE") {
-    return { status: "UNKNOWN", candidateFeasibilities: [], reasonCodes: ["REQUIRED_JOURNEY_DATA_UNAVAILABLE"] };
+    return { status: "UNKNOWN", candidateFeasibilities, reasonCodes: ["REQUIRED_JOURNEY_DATA_UNAVAILABLE"] };
   }
   if (deadline.unknownReason) {
-    return { status: "UNKNOWN", candidateFeasibilities: [], reasonCodes: [deadline.unknownReason] };
+    return { status: "UNKNOWN", candidateFeasibilities, reasonCodes: [deadline.unknownReason] };
   }
   if (candidates.length === 0) {
     return { status: "IMPOSSIBLE", candidateFeasibilities: [], reasonCodes: ["NO_EXECUTABLE_JOURNEY"] };
   }
 
-  const candidateFeasibilities = candidates.map((candidate) => evaluateCandidateFeasibility(candidate, request, context));
   const reasonCodes = uniqueReasonCodes(candidateFeasibilities);
   if (candidateFeasibilities.some((result) => result.status === "FEASIBLE")) {
     return { status: "FEASIBLE", candidateFeasibilities, reasonCodes };

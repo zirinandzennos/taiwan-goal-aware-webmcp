@@ -270,6 +270,33 @@ export interface JourneyFeasibilityResult {
   reasonCodes: JourneyFeasibilityReasonCode[];
 }
 
+/** The timetable origin is explicit so callers never mistake demo data for live travel data. */
+export type JourneyTimetableMode = "SYNTHETIC_FIXED_TIMETABLE" | "PROVIDER_NORMALIZED";
+
+export interface JourneyPlanningContext extends JourneyFeasibilityContext {
+  timetable: readonly ScheduledService[];
+  transferRules: readonly TransferRule[];
+  timetableMode: JourneyTimetableMode;
+}
+
+export interface JourneyOption {
+  candidate: CandidateJourney;
+  feasibility: CandidateFeasibility;
+  rank?: number;
+  score?: number;
+  scoreBreakdown?: JourneyScoreBreakdown;
+}
+
+export interface JourneyPlanResult {
+  status: FeasibilityStatus;
+  candidateCount: number;
+  fastest: JourneyOption | null;
+  cheapest: JourneyOption | null;
+  balanced: JourneyOption | null;
+  reasonCodes: JourneyFeasibilityReasonCode[];
+  timetableMode: JourneyTimetableMode;
+}
+
 export interface ClarificationRequest {
   field: string;
   question: string;
