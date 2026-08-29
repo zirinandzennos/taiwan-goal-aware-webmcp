@@ -32,10 +32,13 @@ describe("Journey Engine contracts", () => {
 
   it("represents a resolved journey request with large luggage and leisure preferences", () => {
     const request: JourneyRequest = {
+      originId: "fengshan-kaohsiung",
+      destinationId: "bade-taoyuan",
       origin: { text: "Fengshan, Kaohsiung" },
       destination: { text: "Bade, Taoyuan" },
       departAt: "2030-06-15T07:00:00+08:00",
       travelerState: { ...unknownTraveler, luggage: { value: "LARGE", source: "USER_STATED" }, purpose: { value: "LEISURE", source: "CURRENT_REQUEST" } },
+      preferences: { luggage: "BULKY" },
       policy: "CHEAPEST",
       constraints: { maxWalkingMinutes: 20, avoidTaxi: false },
       activities: [{ type: "MEAL", durationMinutes: 30, preferredLocation: "Taichung" }],
@@ -47,6 +50,8 @@ describe("Journey Engine contracts", () => {
   it("represents travel and activity legs in one candidate", () => {
     const candidate: JourneyCandidate = {
       id: "candidate-1",
+      originId: "kaohsiung",
+      destinationId: "taichung",
       legs: [
         { type: "TRAVEL", mode: "THSR", fromNodeId: "kaohsiung", toNodeId: "taichung", departAt: "2030-06-15T08:00:00+08:00", arriveAt: "2030-06-15T09:00:00+08:00", durationMinutes: 60, serviceId: "thsr-1", estimatedCost: 700 },
         { type: "ACTIVITY", activityType: "MEAL", locationNodeId: "taichung", startAt: "2030-06-15T09:00:00+08:00", endAt: "2030-06-15T09:30:00+08:00", durationMinutes: 30 },
@@ -54,6 +59,12 @@ describe("Journey Engine contracts", () => {
       departAt: "2030-06-15T08:00:00+08:00",
       arriveAt: "2030-06-15T09:30:00+08:00",
       totalDurationMinutes: 90,
+      totalWaitingMinutes: 0,
+      totalTransferMinutes: 0,
+      totalWalkingMinutes: 0,
+      minimumTransferSlackMinutes: null,
+      tightTransferCount: 0,
+      totalCost: 700,
       walkingMinutes: 5,
       transferCount: 0,
       estimatedCost: 700,
