@@ -68,17 +68,47 @@ describe("deterministic synthetic timetable", () => {
     expect(laterEligible).toContain("bus-xiaogang-0720");
   });
 
-  it("connects when the next service leaves after the required transfer buffer", () => {
-    expect(evaluateTransferFeasibility(service("mrt-xiaogang-1650"), service("thsr-zuoying-1742"), rule("zuoying-mrt", "zuoying-thsr"))).toMatchObject({ connectable: true, earliestReadyAt: "2030-06-15T09:35:00.000Z", transferMinutes: 10, reasonCode: "CONNECTION_OK" });
+  it("keeps short, medium, and long synthetic transfer preparation explicitly different", () => {
+    expect(rule("xiaogang-mrt", "xiaogang-mrt")).toMatchObject({ walkingMinutes: 3, minimumTransferMinutes: 3 });
+    expect(rule("zuoying-mrt", "zuoying-thsr")).toMatchObject({ walkingMinutes: 8, minimumTransferMinutes: 5 });
+    expect(rule("taoyuan-thsr", "taoyuan-bus")).toMatchObject({ walkingMinutes: 12, minimumTransferMinutes: 5 });
+  });
+
+  it("connects when the next service leaves after the transfer-specific walking and buffer", () => {
+    expect(evaluateTransferFeasibility(service("mrt-xiaogang-1650"), service("thsr-zuoying-1742"), rule("zuoying-mrt", "zuoying-thsr"))).toMatchObject({ connectable: true, earliestReadyAt: "2030-06-15T09:38:00.000Z", transferMinutes: 13, reasonCode: "CONNECTION_OK" });
   });
 
   it("rejects a departure that misses the ready time by one minute", () => {
-    expect(evaluateTransferFeasibility(service("mrt-xiaogang-1650"), service("thsr-zuoying-1734"), rule("zuoying-mrt", "zuoying-thsr"))).toMatchObject({ connectable: false, earliestReadyAt: "2030-06-15T09:35:00.000Z", reasonCode: "INSUFFICIENT_TRANSFER_TIME" });
+    expect(evaluateTransferFeasibility(service("mrt-xiaogang-1650"), service("thsr-zuoying-1734"), rule("zuoying-mrt", "zuoying-thsr"))).toMatchObject({ connectable: false, earliestReadyAt: "2030-06-15T09:38:00.000Z", reasonCode: "INSUFFICIENT_TRANSFER_TIME" });
   });
 
   it("accepts a departure exactly at the required ready time", () => {
-    const exactNext = { ...service("thsr-zuoying-1742"), departureAt: "2030-06-15T17:35:00+08:00" };
+    const exactNext = { ...service("thsr-zuoying-1742"), departureAt: "2030-06-15T17:38:00+08:00" };
     expect(evaluateTransferFeasibility(service("mrt-xiaogang-1650"), exactNext, rule("zuoying-mrt", "zuoying-thsr"))).toMatchObject({ connectable: true, reasonCode: "CONNECTION_OK" });
+  });
+
+  it("uses each rule's own ready-time boundary rather than a global transfer value", () => {
+    const previous = { id: "previous", mode: "BUS" as const, fromNodeId: "origin", toNodeId: "arrival", departureAt: "2030-06-15T17:00:00+08:00", arrivalAt: "2030-06-15T17:25:00+08:00", cost: 1 };
+    const scenario = (walkingMinutes: number, minimumTransferMinutes: number, departureAt: string) =>
+      evaluateTransferFeasibility(
+        previous,
+        { id: "next", mode: "BUS", fromNodeId: "boarding", toNodeId: "destination", departureAt, arrivalAt: "2030-06-15T18:00:00+08:00", cost: 1 },
+        { fromNodeId: "arrival", toNodeId: "boarding", walkingMinutes, minimumTransferMinutes },
+      );
+
+    expect(scenario(3, 3, "2030-06-15T17:30:00+08:00")).toMatchObject({ connectable: false, transferMinutes: 6 });
+    expect(scenario(3, 3, "2030-06-15T17:31:00+08:00")).toMatchObject({ connectable: true, transferMinutes: 6 });
+    expect(scenario(8, 5, "2030-06-15T17:37:00+08:00")).toMatchObject({ connectable: false, transferMinutes: 13 });
+    expect(scenario(8, 5, "2030-06-15T17:38:00+08:00")).toMatchObject({ connectable: true, transferMinutes: 13 });
+    expect(scenario(12, 5, "2030-06-15T17:41:00+08:00")).toMatchObject({ connectable: false, transferMinutes: 17 });
+    expect(scenario(12, 5, "2030-06-15T17:42:00+08:00")).toMatchObject({ connectable: true, transferMinutes: 17 });
+  });
+
+  it("can accept a short transfer while rejecting a longer one at the same departure", () => {
+    const previous = { id: "previous", mode: "BUS" as const, fromNodeId: "origin", toNodeId: "arrival", departureAt: "2030-06-15T17:00:00+08:00", arrivalAt: "2030-06-15T17:25:00+08:00", cost: 1 };
+    const next = { id: "next", mode: "BUS" as const, fromNodeId: "boarding", toNodeId: "destination", departureAt: "2030-06-15T17:32:00+08:00", arrivalAt: "2030-06-15T18:00:00+08:00", cost: 1 };
+    expect(evaluateTransferFeasibility(previous, next, { fromNodeId: "arrival", toNodeId: "boarding", walkingMinutes: 3, minimumTransferMinutes: 3 }).connectable).toBe(true);
+    expect(evaluateTransferFeasibility(previous, next, { fromNodeId: "arrival", toNodeId: "boarding", walkingMinutes: 10, minimumTransferMinutes: 5 }).connectable).toBe(false);
   });
 
   it("rejects a transfer when the provided rule does not match the service nodes", () => {

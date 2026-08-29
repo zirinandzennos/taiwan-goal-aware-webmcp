@@ -141,7 +141,9 @@ export type TransitService = ScheduledService;
 export interface TransferRule {
   fromNodeId: string;
   toNodeId: string;
+  /** Deterministic walking time from arrival point to the next boarding point. */
   walkingMinutes: number;
+  /** Mandatory operational buffer applied after walking; never walking time. */
   minimumTransferMinutes: number;
 }
 

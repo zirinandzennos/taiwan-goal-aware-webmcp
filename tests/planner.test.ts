@@ -115,6 +115,25 @@ describe("planJourney orchestration", () => {
     expect(result).toMatchObject({ status: "RISKY", fastest: { feasibility: { status: "RISKY", reasonCodes: ["TIGHT_TRANSFER"] } } });
   });
 
+  it("changes the final candidate set when a transfer-specific rule becomes longer", () => {
+    const timetable: ScheduledService[] = [
+      { id: "first", mode: "BUS", fromNodeId: "origin", toNodeId: "transfer", departureAt: "2030-06-15T07:00:00+08:00", arrivalAt: "2030-06-15T08:00:00+08:00", cost: 10 },
+      { id: "early", mode: "BUS", fromNodeId: "transfer", toNodeId: "destination", departureAt: "2030-06-15T08:06:00+08:00", arrivalAt: "2030-06-15T09:00:00+08:00", cost: 10 },
+      { id: "later", mode: "BUS", fromNodeId: "transfer", toNodeId: "destination", departureAt: "2030-06-15T08:15:00+08:00", arrivalAt: "2030-06-15T09:15:00+08:00", cost: 10 },
+    ];
+    const request = directRequest();
+    const shortRule: TransferRule[] = [{ fromNodeId: "transfer", toNodeId: "transfer", walkingMinutes: 3, minimumTransferMinutes: 3 }];
+    const longRule: TransferRule[] = [{ fromNodeId: "transfer", toNodeId: "transfer", walkingMinutes: 10, minimumTransferMinutes: 5 }];
+    const shortPlan = planJourney(request, { timetable, transferRules: shortRule, timetableMode: "SYNTHETIC_FIXED_TIMETABLE" });
+    const longPlan = planJourney(request, { timetable, transferRules: longRule, timetableMode: "SYNTHETIC_FIXED_TIMETABLE" });
+
+    expect(shortPlan.candidateCount).toBe(2);
+    expect(longPlan.candidateCount).toBe(1);
+    expect(optionServiceIds(shortPlan.fastest)).toContain("early");
+    expect(optionServiceIds(longPlan.fastest)).not.toContain("early");
+    expect(optionServiceIds(longPlan.fastest)).toContain("later");
+  });
+
   it("keeps useful ranked options when a required deadline is unavailable", () => {
     const result = planJourney(requestAt("2030-06-15T07:00:00+08:00"), { ...syntheticContext, deadlineRequired: true, deadlineAvailability: "UNAVAILABLE" });
     expect(result.status).toBe("UNKNOWN");

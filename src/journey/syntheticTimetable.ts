@@ -15,11 +15,14 @@ export const syntheticJourneyNodes: JourneyNode[] = [
 ];
 
 export const syntheticTransferRules: TransferRule[] = [
-  { fromNodeId: "xiaogang-mrt", toNodeId: "xiaogang-mrt", walkingMinutes: 2, minimumTransferMinutes: 3 },
-  { fromNodeId: "zuoying-mrt", toNodeId: "zuoying-thsr", walkingMinutes: 5, minimumTransferMinutes: 5 },
+  // SYNTHETIC CHALLENGE VALUES: short local transfer, 3 walking + 3 buffer.
+  { fromNodeId: "xiaogang-mrt", toNodeId: "xiaogang-mrt", walkingMinutes: 3, minimumTransferMinutes: 3 },
+  // SYNTHETIC CHALLENGE VALUES: medium interchange, 8 walking + 5 buffer.
+  { fromNodeId: "zuoying-mrt", toNodeId: "zuoying-thsr", walkingMinutes: 8, minimumTransferMinutes: 5 },
   { fromNodeId: "zuoying-thsr", toNodeId: "zuoying-thsr", walkingMinutes: 0, minimumTransferMinutes: 5 },
   { fromNodeId: "taoyuan-thsr", toNodeId: "taoyuan-thsr", walkingMinutes: 0, minimumTransferMinutes: 3 },
-  { fromNodeId: "taoyuan-thsr", toNodeId: "taoyuan-bus", walkingMinutes: 4, minimumTransferMinutes: 5 },
+  // SYNTHETIC CHALLENGE VALUES: long interchange, 12 walking + 5 buffer.
+  { fromNodeId: "taoyuan-thsr", toNodeId: "taoyuan-bus", walkingMinutes: 12, minimumTransferMinutes: 5 },
   { fromNodeId: "taoyuan-bus", toNodeId: "taoyuan-bus", walkingMinutes: 0, minimumTransferMinutes: 3 },
 ];
 
