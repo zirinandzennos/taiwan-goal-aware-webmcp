@@ -1,1 +1,42 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="A synthetic WebMCP goal-feasibility demo." /><title>Can I Still Make It? — Taiwan Goal-aware Journey</title></head><body><main class="page-shell"><section class="journey-card" aria-labelledby="page-title"><p class="eyebrow">TAIWAN GOAL-AWARE JOURNEY</p><h1 id="page-title">Can I Still Make It?</h1><p class="intro">Check whether the real-world goal selected on this page can still be completed.</p><div class="notice" role="note">SYNTHETIC DEMO DATA — NOT REAL TRAVEL INFORMATION</div><label for="goal-select">Selected goal</label><select id="goal-select" name="goal"></select><dl class="scenario-time"><div><dt>Simulated demo time</dt><dd id="scenario-now">—</dd></div></dl><button id="check-button" type="button">Check feasibility</button><p id="webmcp-status" class="webmcp-status" aria-live="polite"></p><section class="result" aria-labelledby="result-title" aria-live="polite"><h2 id="result-title">Feasibility result</h2><p id="empty-result">Choose a goal and check feasibility.</p><dl id="result-details" hidden><div><dt>Status</dt><dd id="result-status">—</dd></div><div><dt>Arrival</dt><dd id="result-arrival">—</dd></div><div><dt>Hard deadline</dt><dd id="result-deadline">—</dd></div><div><dt>Safety margin</dt><dd id="result-margin">—</dd></div><div><dt>Reason</dt><dd id="result-reason">—</dd></div><div id="fallback-row" hidden><dt>Fallback</dt><dd id="result-fallback">—</dd></div></dl></section></section></main><script type="module" src="/src/main.ts"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A deterministic synthetic Taiwan journey planning WebMCP demo." />
+    <title>Taiwan Goal-aware Journey</title>
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="journey-card" aria-labelledby="page-title">
+        <p class="eyebrow">TAIWAN GOAL-AWARE JOURNEY</p>
+        <h1 id="page-title">Taiwan Goal-aware Journey</h1>
+        <p class="intro">AI understands the traveler. We calculate how the journey can actually work.</p>
+        <div class="notice" role="note"><strong>SYNTHETIC FIXED TIMETABLE DEMO</strong><br />Not real-time or operational Taiwan transportation information.</div>
+        <p id="webmcp-status" class="webmcp-status" aria-live="polite"></p>
+        <section class="form-section" aria-labelledby="plan-title">
+          <div class="section-heading"><h2 id="plan-title">Plan journey</h2><button id="load-demo" class="secondary-button" type="button">Load demo journey</button></div>
+          <label for="origin-select">From</label><select id="origin-select" name="origin"></select>
+          <label for="destination-select">To</label><select id="destination-select" name="destination"></select>
+          <label for="depart-at">Depart at</label><input id="depart-at" type="datetime-local" />
+          <label for="arrive-by">Arrive by <span>(optional)</span></label><input id="arrive-by" type="datetime-local" />
+          <label class="check-label" for="avoid-taxi"><input id="avoid-taxi" type="checkbox" /> Avoid taxi</label>
+          <button id="plan-button" type="button">Plan journey</button>
+        </section>
+        <section class="form-section" aria-labelledby="current-title">
+          <h2 id="current-title">Current journey state</h2>
+          <label for="current-node">Current node</label><select id="current-node" name="current-node"></select>
+          <label for="current-at">Current journey time</label><input id="current-at" type="datetime-local" />
+          <button id="replan-button" type="button">Replan remaining trip</button>
+        </section>
+        <section class="result" aria-live="polite" aria-labelledby="result-heading">
+          <h2 id="result-heading">Result</h2>
+          <p id="result-status">Set the journey and choose Plan journey.</p>
+          <p id="result-message"></p>
+          <div id="option-cards" class="option-cards"></div>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

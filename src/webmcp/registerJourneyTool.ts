@@ -1,13 +1,9 @@
 import { planJourney } from "../journey/planner";
 import { replanJourney } from "../journey/replanner";
-import {
-  syntheticScheduledServices,
-  syntheticTransferRules,
-} from "../journey/syntheticTimetable";
+import { syntheticJourneyPlanningContext } from "../journey/syntheticTimetable";
 import type {
   JourneyOption,
   JourneyPlanResult,
-  JourneyPlanningContext,
   JourneyReplanResult,
 } from "../journey/types";
 import {
@@ -43,12 +39,6 @@ declare global {
     modelContext?: ModelContext;
   }
 }
-
-const SYNTHETIC_CONTEXT: JourneyPlanningContext = {
-  timetable: syntheticScheduledServices,
-  transferRules: syntheticTransferRules,
-  timetableMode: "SYNTHETIC_FIXED_TIMETABLE",
-};
 
 const EMPTY_INPUT_SCHEMA = {
   type: "object",
@@ -110,7 +100,7 @@ function serializePlan(plan: JourneyPlanResult): Record<string, unknown> {
 function serializeReplan(replan: JourneyReplanResult): Record<string, unknown> {
   return {
     status: replan.plan?.status ?? "UNKNOWN",
-    timetableMode: replan.plan?.timetableMode ?? SYNTHETIC_CONTEXT.timetableMode,
+    timetableMode: replan.plan?.timetableMode ?? syntheticJourneyPlanningContext.timetableMode,
     previousOriginId: replan.previousOriginId,
     currentNodeId: replan.currentNodeId,
     replannedAt: replan.replannedAt,
@@ -138,7 +128,7 @@ export function registerJourneyTool(): boolean {
         return incompleteStateResult("PAGE_JOURNEY_STATE_INCOMPLETE", request.missingFields);
       }
       abortIfNeeded(signal);
-      return textResult(serializePlan(planJourney(request, SYNTHETIC_CONTEXT)));
+      return textResult(serializePlan(planJourney(request, syntheticJourneyPlanningContext)));
     },
   });
 
@@ -160,7 +150,7 @@ export function registerJourneyTool(): boolean {
         return incompleteStateResult("CURRENT_JOURNEY_STATE_INCOMPLETE", replanRequest.missingFields);
       }
       abortIfNeeded(signal);
-      return textResult(serializeReplan(replanJourney(replanRequest, SYNTHETIC_CONTEXT)));
+      return textResult(serializeReplan(replanJourney(replanRequest, syntheticJourneyPlanningContext)));
     },
   });
 

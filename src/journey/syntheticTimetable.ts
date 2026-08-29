@@ -1,4 +1,9 @@
-import type { JourneyNode, ScheduledService, TransferRule } from "./types";
+import type {
+  JourneyNode,
+  JourneyPlanningContext,
+  ScheduledService,
+  TransferRule,
+} from "./types";
 
 /** SYNTHETIC CHALLENGE FIXTURE — NOT REAL OPERATIONAL TRANSPORT INFORMATION. */
 export const SYNTHETIC_CHALLENGE_FIXTURE_NOTICE =
@@ -46,3 +51,10 @@ export const syntheticScheduledServices: ScheduledService[] = [
   { id: "bus-taoyuan-1922", mode: "BUS", routeId: "S-BUS-2", fromNodeId: "taoyuan-bus", toNodeId: "taoyuan-bade", departureAt: "2030-06-15T19:22:00+08:00", arrivalAt: "2030-06-15T19:52:00+08:00", cost: 30 },
   { id: "bus-taoyuan-1935", mode: "BUS", routeId: "S-BUS-2", fromNodeId: "taoyuan-bus", toNodeId: "taoyuan-bade", departureAt: "2030-06-15T19:35:00+08:00", arrivalAt: "2030-06-15T20:05:00+08:00", cost: 30 },
 ];
+
+/** Shared fixed Challenge context for both the human UI and WebMCP adapter. */
+export const syntheticJourneyPlanningContext: JourneyPlanningContext = {
+  timetable: syntheticScheduledServices,
+  transferRules: syntheticTransferRules,
+  timetableMode: "SYNTHETIC_FIXED_TIMETABLE",
+};
