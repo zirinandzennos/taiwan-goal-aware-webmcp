@@ -1,70 +1,142 @@
-# Taiwan Goal-aware Journey — WebMCP Challenge
+# Taiwan Goal-aware Journey
 
-> Can I still accomplish my real-world goal?
+> AI understands the traveler. We calculate how the journey can actually work.
 
-Traditional route planners answer: “How do I get there?” This prototype asks: “Can I still accomplish the actual goal?”
+## The problem
 
-This is an offline WebMCP demonstration. A person selects a goal on the page; an AI agent can inspect that current selection through WebMCP without requiring the person to repeat it. A deterministic engine returns `FEASIBLE`, `RISKY`, `IMPOSSIBLE`, or `UNKNOWN`.
+Travelers often have to manually combine schedules, transfers, and constraints, then recalculate every downstream connection when timing changes. Traditional route planners primarily answer: "How do I get there?"
 
-Live demo: [https://taiwan-goal-aware-webmcp.netlify.app](https://taiwan-goal-aware-webmcp.netlify.app)
+This Challenge project explores a different question: **Can an AI directly use a Journey Engine that calculates how the trip can actually work?**
 
-## What it does
+## What the Challenge version does
 
-- Provides four frozen, self-authored synthetic goal fixtures.
-- Displays arrival, hard deadline, safety margin, reason code, and fallback where applicable.
-- Uses shared `selectedGoalId` state for the UI and WebMCP tool.
-- Has no backend, API keys, location collection, external requests, bookings, or side effects.
+```text
+Journey requirements
+        ↓
+Synthetic fixed timetable
+        ↓
+Executable service connections
+        ↓
+Candidate journeys
+        ↓
+Fastest / Cheapest / Balanced
+        ↓
+Feasibility verification
+        ↓
+WebMCP
+```
+
+The public web app holds the current journey state. It plans a synthetic Kaohsiung Xiaogang to Bade, Taoyuan journey, evaluates technically executable connections, and returns deterministic recommendations.
 
 ## Why WebMCP
 
-The one read-only tool is `check_goal_feasibility`. With no `goal_id`, it reads the currently selected live page goal. Changing the dropdown changes the state used on the next execution. The tool returns compact structured JSON and never purchases, books, reserves, or modifies accounts.
+The user configures the journey on the webpage. An agent does not need the user to repeat the origin, destination, departure time, constraints, preferences, or current journey state.
 
-If `document.modelContext` is unavailable, the site shows **“WebMCP unavailable in this browser”** while the human button still works.
+The webpage exposes two structured, read-only Journey capabilities:
 
-## Synthetic demo disclaimer
+- `plan_taiwan_journey`
+- `replan_taiwan_journey`
 
-All venues, times, arrivals, deadlines, buffers, and fallbacks are self-authored synthetic demo data. They are **not real travel information** and must not be used for operational decisions.
+Both tools read the current live page state. Human UI actions use that same state and the same Journey Engine entry points.
+
+## Journey Engine
+
+Fixed data does **not** mean fixed answers. For example, changing the departure time from 07:00 to 07:12 changes which synthetic services can be caught.
+
+Each transfer uses deterministic, location-specific preparation:
+
+```text
+previous arrival
++ transfer-specific walking time
++ mandatory transfer buffer
+= ready time
+```
+
+The next departure must be at or after ready time. Different transfer locations can therefore have different walking and buffer values.
+
+## Ranking
+
+- **Fastest**: earliest final arrival.
+- **Cheapest**: lowest total cost.
+- **Balanced**: a deterministic weighted trade-off across duration, cost, transfers, walking, and transfer risk.
+
+Balanced scoring uses candidate-set-relative min-max normalization and hand-authored Challenge policy weights. It is not AI or LLM scoring.
+
+## Feasibility
+
+The engine reports one of four deterministic states:
+
+- `FEASIBLE`
+- `RISKY`
+- `IMPOSSIBLE`
+- `UNKNOWN`
+
+`UNKNOWN` is used rather than guessing when required information is unavailable or invalid.
+
+## Replanning
+
+Replanning does not patch an old itinerary:
+
+```text
+Current node + current journey time
+        ↓
+new JourneyRequest
+        ↓
+same planJourney()
+        ↓
+new downstream journey
+```
+
+This ensures previously completed or missed services are not treated as still available.
+
+## WebMCP tools
+
+`plan_taiwan_journey` reads the live journey configuration and plans it. `replan_taiwan_journey` reads the original journey plus current node and time, then recalculates the remaining journey. Both tools are read-only and accept no user data beyond the webpage's current state.
+
+## Demo data
+
+> **SYNTHETIC FIXED TIMETABLE DEMO**
+> Not real-time or operational Taiwan transportation information.
+
+All timetable values, transfer rules, and services are fixed Challenge fixtures. This project does not connect to TDX, real Taiwan schedules, or operational transit systems.
+
+## Live demo
+
+https://taiwan-goal-aware-webmcp.netlify.app/
 
 ## Local development
 
 ```bash
-npm ci
+npm install
 npm run dev
 ```
 
-## Verify
+## Testing
 
 ```bash
 npm test
 npm run build
 ```
 
-## WebMCP testing
+Current Challenge status: 93 deterministic tests pass. The suite covers timetable eligibility, transfers, candidates, ranking, feasibility, replanning, shared page state, and human/WebMCP domain parity.
 
-Open the site in a WebMCP-enabled browser or ChatGPT Site Tools environment. Select a fixture, then ask whether the currently selected real-world goal can still be completed. The agent should select `check_goal_feasibility` without asking for the goal again. Change the dropdown and repeat to confirm the new page state is used.
+## Challenge scope
 
-## Verified WebMCP behavior
+Pre-existing work includes the Taiwan Goal-aware Journey concept and research, the goal-aware transportation vision, and long-term architecture ideas.
 
-- Demo Aquarium — Safe → `FEASIBLE`
-- Demo Aquarium — Risky → `RISKY`
-- Demo Aquarium — Missed → `IMPOSSIBLE`
-- Demo Venue — Deadline Unknown → `UNKNOWN`
+Challenge-period implementation includes the public web app, deterministic timetable engine, candidate generation, transfer feasibility, ranking, feasibility model, replanning, WebMCP integration, shared page state, UI, tests, and public deployment.
 
-When `goal_id` is omitted, changing the page selection changes the result that WebMCP returns.
+See [Challenge scope](docs/CHALLENGE_SCOPE.md) for the explicit boundary.
 
-Chrome WebMCP verification:
+## Future work
 
-1. Enable WebMCP for testing in Chrome.
-2. Open the production URL.
-3. Confirm that `check_goal_feasibility` is registered.
-4. Call `getTools()`.
-5. Call `executeTool()`.
+Post-Challenge directions only:
 
-ChatGPT Desktop can show and discover the Site Tool in the browser UI, but invocation was not completed in the current local session/environment. This repository does not claim ChatGPT Desktop invocation success.
-
-## Challenge work boundary
-
-The Taiwan Goal-aware Journey Engine concept, goal-feasibility research, Goal Deadline concept, and proposed future Remote MCP + WebMCP architecture pre-date the Challenge implementation. This Challenge-period work is the web application, WebMCP registration, page-state integration, deterministic synthetic demo engine, fixtures, tests, and documentation. See [docs/challenge-scope.md](docs/challenge-scope.md).
+- TDX and real transportation data
+- Real-time updates
+- Remote MCP
+- GPS-aware current state
+- Activities, dining, and accommodation
 
 ## License
 

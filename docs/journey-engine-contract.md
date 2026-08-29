@@ -42,7 +42,7 @@ When information is unavailable, use `UNKNOWN` with source `UNKNOWN`. The contra
 
 ## Constraints and preferences
 
-`JourneyConstraints` are hard limits: a candidate violating one must be removed before ranking. `PolicyWeights` are only ranking preferences. The initial weights in `src/journey/policies.ts` are hand-authored Challenge v0 values, not a trained model and not a scoring implementation. A future learned ranker may replace them without changing request or candidate contracts.
+`JourneyConstraints` are hard limits: a candidate violating one must be removed before ranking. `PolicyWeights` are ranking preferences. The current deterministic Balanced selector uses the measurable time, cost, transfer, walking, and connection-risk weights with candidate-set-relative min-max normalization. The weights are hand-authored Challenge values, not a trained model. A future learned ranker may replace them without changing request or candidate contracts.
 
 Future ranking modifiers are intentionally documented rather than implemented:
 
@@ -65,4 +65,4 @@ TDX / realtime providers
 Same Journey Engine
 ```
 
-The current Challenge feasibility demo remains separate and unchanged. This contract does not collect timetable data, route journeys, alter WebMCP behavior, or replace the existing deterministic validator.
+The current Challenge application uses this contract for fixed-timetable candidate generation, deterministic ranking, feasibility evaluation, planning, replanning, and WebMCP mapping. It does not collect live timetable data or call external transportation services.
