@@ -297,6 +297,32 @@ export interface JourneyPlanResult {
   timetableMode: JourneyTimetableMode;
 }
 
+export interface JourneyCurrentState {
+  nodeId: string;
+  at: string;
+}
+
+export interface JourneyReplanRequest {
+  originalRequest: JourneyRequest;
+  currentState: JourneyCurrentState;
+}
+
+export type JourneyReplanReasonCode =
+  | "CURRENT_NODE_NOT_IN_TIMETABLE"
+  | "INVALID_CURRENT_TIMESTAMP"
+  | "ALREADY_AT_DESTINATION";
+
+export interface JourneyReplanResult {
+  previousOriginId: string;
+  currentNodeId: string;
+  replannedAt: string;
+  request: JourneyRequest | null;
+  plan: JourneyPlanResult | null;
+  alreadyAtDestination: boolean;
+  reasonCodes: JourneyReplanReasonCode[];
+  clarification?: ClarificationRequest;
+}
+
 export interface ClarificationRequest {
   field: string;
   question: string;
