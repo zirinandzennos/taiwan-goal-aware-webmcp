@@ -3,6 +3,7 @@ import {
   evaluateTransferFeasibility,
   hasValidServiceTimes,
 } from "./timetable";
+import { TIGHT_TRANSFER_SLACK_MINUTES } from "./policies";
 import type {
   CandidateJourney,
   JourneyRequest,
@@ -118,7 +119,7 @@ export function generateCandidateJourneys(
         minimumTransferSlackMinutes: state.minimumTransferSlackMinutes === null
           ? additionalWaitingMinutes
           : Math.min(state.minimumTransferSlackMinutes, additionalWaitingMinutes),
-        tightTransferCount: state.tightTransferCount + (additionalWaitingMinutes < 5 ? 1 : 0),
+        tightTransferCount: state.tightTransferCount + (additionalWaitingMinutes < TIGHT_TRANSFER_SLACK_MINUTES ? 1 : 0),
         visitedNodeIds: new Set([...state.visitedNodeIds, nextService.toNodeId]),
         usedServiceIds: new Set([...state.usedServiceIds, nextService.id]),
       });

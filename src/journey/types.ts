@@ -230,6 +230,46 @@ export interface JourneyRecommendations {
 
 export type FeasibilityStatus = "FEASIBLE" | "RISKY" | "IMPOSSIBLE" | "UNKNOWN";
 
+export type JourneyFeasibilityReasonCode =
+  | "JOURNEY_MEETS_CONSTRAINTS"
+  | "MEETS_DEADLINE_WITH_BUFFER"
+  | "INSUFFICIENT_ARRIVAL_BUFFER"
+  | "TIGHT_TRANSFER"
+  | "ARRIVAL_AFTER_HARD_DEADLINE"
+  | "NO_EXECUTABLE_JOURNEY"
+  | "REQUIRED_DEADLINE_UNAVAILABLE"
+  | "REQUIRED_JOURNEY_DATA_UNAVAILABLE"
+  | "INVALID_REQUIRED_TIMESTAMP";
+
+export type JourneyDataAvailability = "AVAILABLE" | "UNAVAILABLE";
+
+/**
+ * Explicit data state supplied by a future adapter. Omitted fields mean that
+ * no deadline was requested and the fixed Challenge timetable is complete.
+ */
+export interface JourneyFeasibilityContext {
+  journeyDataAvailability?: JourneyDataAvailability;
+  deadlineRequired?: boolean;
+  deadlineAt?: string | null;
+  deadlineAvailability?: JourneyDataAvailability;
+}
+
+export interface CandidateFeasibility {
+  candidateId: string;
+  status: FeasibilityStatus;
+  arrivalAt: string;
+  deadlineAt: string | null;
+  deadlineMarginMinutes: number | null;
+  minimumTransferSlackMinutes: number | null;
+  reasonCodes: JourneyFeasibilityReasonCode[];
+}
+
+export interface JourneyFeasibilityResult {
+  status: FeasibilityStatus;
+  candidateFeasibilities: CandidateFeasibility[];
+  reasonCodes: JourneyFeasibilityReasonCode[];
+}
+
 export interface ClarificationRequest {
   field: string;
   question: string;

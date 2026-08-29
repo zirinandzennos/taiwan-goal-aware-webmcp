@@ -22,7 +22,7 @@ export interface TransferFeasibilityResult {
 
 const ISO_8601_WITH_OFFSET = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
 
-function parseExplicitIso(value: string): number | null {
+export function parseExplicitIsoTimestamp(value: string): number | null {
   if (!ISO_8601_WITH_OFFSET.test(value)) return null;
   const timestamp = Date.parse(value);
   return Number.isNaN(timestamp) ? null : timestamp;
@@ -30,8 +30,8 @@ function parseExplicitIso(value: string): number | null {
 
 /** Validates both service timestamps without consulting the wall clock. */
 export function hasValidServiceTimes(service: ScheduledService): boolean {
-  const departure = parseExplicitIso(service.departureAt);
-  const arrival = parseExplicitIso(service.arrivalAt);
+  const departure = parseExplicitIsoTimestamp(service.departureAt);
+  const arrival = parseExplicitIsoTimestamp(service.arrivalAt);
   return departure !== null && arrival !== null && arrival >= departure;
 }
 
@@ -40,8 +40,8 @@ export function isServiceAvailableAtDeparture(
   service: ScheduledService,
   departAt: string,
 ): boolean {
-  const serviceDeparture = parseExplicitIso(service.departureAt);
-  const requestDeparture = parseExplicitIso(departAt);
+  const serviceDeparture = parseExplicitIsoTimestamp(service.departureAt);
+  const requestDeparture = parseExplicitIsoTimestamp(departAt);
   return serviceDeparture !== null
     && requestDeparture !== null
     && serviceDeparture >= requestDeparture;
@@ -72,8 +72,8 @@ export function evaluateTransferFeasibility(
 ): TransferFeasibilityResult {
   const previousArrivalAt = previousService.arrivalAt;
   const nextDepartureAt = nextService.departureAt;
-  const previousArrival = parseExplicitIso(previousArrivalAt);
-  const nextDeparture = parseExplicitIso(nextDepartureAt);
+  const previousArrival = parseExplicitIsoTimestamp(previousArrivalAt);
+  const nextDeparture = parseExplicitIsoTimestamp(nextDepartureAt);
 
   if (previousArrival === null || nextDeparture === null) {
     return {

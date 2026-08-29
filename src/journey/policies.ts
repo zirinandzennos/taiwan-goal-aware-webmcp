@@ -1,5 +1,11 @@
 import type { JourneyPolicyPreset } from "./types";
 
+/** Challenge deterministic policy, not a universal transportation standard. */
+export const DEFAULT_ARRIVAL_SAFETY_BUFFER_MINUTES = 10;
+
+/** A technically feasible transfer below this slack is treated as tight. */
+export const TIGHT_TRANSFER_SLACK_MINUTES = 5;
+
 /**
  * Hand-authored Challenge v0 policy weights. They are not trained by an ML
  * model. Each preset sums to 100 so its trade-offs are easy to inspect.
