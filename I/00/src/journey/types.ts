@@ -1,0 +1,514 @@
+/**
+ * Provider-neutral, trip-scoped contracts for the future Journey Engine.
+ * These types deliberately contain no account, identity, or persistent-history data.
+ */
+
+export type TransportMode =
+  | "WALK"
+  | "BUS"
+  | "MRT"
+  | "TRA"
+  | "THSR"
+  | "BIKE"
+  | "TAXI"
+  | "CAR"
+  | "SCOOTER";
+
+export type JourneyPolicyPreset =
+  | "FASTEST"
+  | "BALANCED"
+  | "CHEAPEST"
+  | "LEISURE"
+  | "DEADLINE_CRITICAL";
+
+export type TravelerDataSource =
+  | "USER_STATED"
+  | "CURRENT_REQUEST"
+  | "PAGE_STATE"
+  | "UNKNOWN";
+
+/** A value and the trip-scoped source that supplied it. Never use AI_GUESSED. */
+export interface KnownUnknown<T> {
+  value: T;
+  source: TravelerDataSource;
+}
+
+export interface PlaceInput {
+  text: string;
+  canonicalPlaceId?: string;
+}
+
+export type Luggage = "NONE" | "LIGHT" | "LARGE" | "UNKNOWN";
+export type TripPurpose = "BUSINESS" | "LEISURE" | "ERRAND" | "COMMUTE" | "UNKNOWN";
+export type PriorityLevel = "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN";
+export type Availability = "YES" | "NO" | "UNKNOWN";
+
+/** Information relevant only to the journey currently being planned. */
+export interface TravelerState {
+  luggage: KnownUnknown<Luggage>;
+  purpose: KnownUnknown<TripPurpose>;
+  speedPriority: KnownUnknown<PriorityLevel>;
+  costSensitivity: KnownUnknown<PriorityLevel>;
+  ownsCar: KnownUnknown<Availability>;
+  ownsScooter: KnownUnknown<Availability>;
+  canUseBike: KnownUnknown<Availability>;
+  willingToUseTaxi: KnownUnknown<Availability>;
+}
+
+/** Hard limits. A future engine filters these before applying policy weights. */
+export interface JourneyConstraints {
+  arriveBy?: string;
+  maxWalkingMinutes?: number;
+  maxTransfers?: number;
+  budgetLimit?: number;
+  avoidTaxi?: boolean;
+  allowedModes?: TransportMode[];
+  forbiddenModes?: TransportMode[];
+}
+
+/** Lightweight trip preferences; these are not a persistent user profile. */
+export interface JourneyPreferences {
+  luggage?: "NONE" | "NORMAL" | "BULKY";
+}
+
+export type JourneyActivityType = "MEAL" | "REST" | "CUSTOM";
+
+export interface JourneyActivityRequest {
+  type: JourneyActivityType;
+  durationMinutes: number;
+  preferredLocation?: string;
+  earliestStartAt?: string;
+  latestEndAt?: string;
+}
+
+export type JourneyGoalType = "VENUE_ENTRY" | "SCHEDULED_SERVICE" | "APPOINTMENT_CUTOFF";
+
+export interface JourneyGoalSource {
+  label: string;
+  url?: string;
+  retrievedAt?: string;
+}
+
+export interface JourneyAccessInstruction {
+  mode: TransportMode;
+  fromNodeId: string;
+  toNodeId: string;
+  destinationLabel: string;
+  durationMinutes: number;
+  source: JourneyGoalSource;
+}
+
+export interface JourneyGoalCompletion {
+  access: JourneyAccessInstruction;
+  actionDurationMinutes?: number;
+}
+
+/** A real-world outcome with an explicit, inspectable hard deadline policy. */
+export interface JourneyGoal {
+  id: string;
+  title: string;
+  goalType: JourneyGoalType;
+  destinationId: string;
+  deadlineAt: string | null;
+  deadlineVerified: boolean;
+  requiredSafetyBufferMinutes: number;
+  /** @deprecated Use completion.access and completion.actionDurationMinutes. */
+  goalActionBufferMinutes?: number;
+  completion?: JourneyGoalCompletion;
+  source: JourneyGoalSource;
+}
+
+/**
+ * Canonical, resolved domain input. WebMCP adapters must merge explicit AI
+ * arguments and page state before they create this request.
+ */
+export interface JourneyRequest {
+  originId: string;
+  destinationId: string;
+  origin: PlaceInput;
+  destination: PlaceInput;
+  departAt: string;
+  travelerState: TravelerState;
+  preferences: JourneyPreferences;
+  policy: JourneyPolicyPreset;
+  constraints: JourneyConstraints;
+  activities: JourneyActivityRequest[];
+  /** Explicit request-start access. Omit when originId is already a boarding node. */
+  originAccess?: JourneyAccessInstruction;
+  goal?: JourneyGoal;
+}
+
+export type JourneyNodeKind =
+  | "PLACE"
+  | "BUS_STOP"
+  | "MRT_STATION"
+  | "RAIL_STATION"
+  | "THSR_STATION"
+  | "BIKE_STATION"
+  | "PARKING";
+
+export interface JourneyNode {
+  id: string;
+  name: string;
+  kind: JourneyNodeKind;
+  latitude?: number;
+  longitude?: number;
+}
+
+/** TransitStop is an equivalent name where a JourneyNode is specifically a stop. */
+export type TransitStop = JourneyNode;
+
+export interface ScheduledService {
+  id: string;
+  mode: TransportMode;
+  fromNodeId: string;
+  toNodeId: string;
+  departureAt: string;
+  arrivalAt: string;
+  cost: number;
+  routeId?: string;
+  operator?: string;
+  serviceName?: string;
+  /** False when the frozen schedule contains no licensed fare dataset. */
+  fareDataAvailable?: boolean;
+}
+
+export type JourneyStepKind =
+  | "WALK"
+  | "WAIT"
+  | "BOARD"
+  | "RIDE"
+  | "ALIGHT"
+  | "TRANSFER_WALK"
+  | "TRANSFER_BUFFER"
+  | "GOAL_ACCESS"
+  | "GOAL_COMPLETE";
+
+export type JourneyStepSourceClassification =
+  | "REQUEST"
+  | "TIMETABLE"
+  | "TRANSFER_RULE"
+  | "GOAL";
+
+export interface JourneyStep {
+  id: string;
+  sequence: number;
+  kind: JourneyStepKind;
+  startAt: string;
+  endAt: string;
+  durationMinutes: number;
+  fromNodeId?: string;
+  toNodeId?: string;
+  serviceId?: string;
+  mode?: TransportMode;
+  costContribution: number | null;
+  sourceClassification: JourneyStepSourceClassification;
+  sourceReference?: string;
+}
+
+export type FareCoverage = "COMPLETE" | "PARTIAL" | "UNAVAILABLE";
+
+export interface TimetableDepartureOptions {
+  limit?: number;
+  allowedModes?: readonly TransportMode[];
+}
+
+export interface TimetableStore {
+  findNextDepartures(
+    nodeId: string,
+    readyAt: string,
+    options?: TimetableDepartureOptions,
+  ): readonly ScheduledService[];
+}
+
+/**
+ * Kept as the earlier contract name; all scheduled provider data uses the
+ * canonical ScheduledService shape.
+ */
+export type TransitService = ScheduledService;
+
+/** An explicit transfer policy, including same-node transfer buffers. */
+export interface TransferRule {
+  fromNodeId: string;
+  toNodeId: string;
+  /** Deterministic walking time from arrival point to the next boarding point. */
+  walkingMinutes: number;
+  /** Mandatory operational buffer applied after walking; never walking time. */
+  minimumTransferMinutes: number;
+}
+
+export interface TravelLeg {
+  type: "TRAVEL";
+  mode: TransportMode;
+  fromNodeId: string;
+  toNodeId: string;
+  departAt: string;
+  arriveAt: string;
+  durationMinutes: number;
+  /** The source scheduled service used to build this leg. */
+  serviceId: string;
+  walkingMinutes?: number;
+  estimatedCost: number;
+}
+
+export interface ActivityLeg {
+  type: "ACTIVITY";
+  activityType: JourneyActivityType;
+  locationNodeId: string;
+  startAt: string;
+  endAt: string;
+  durationMinutes: number;
+}
+
+export type JourneyLeg = TravelLeg | ActivityLeg;
+
+export interface JourneyCandidate {
+  id: string;
+  originId: string;
+  destinationId: string;
+  legs: JourneyLeg[];
+  /** Canonical executable timeline; generated candidates always provide it. */
+  steps?: JourneyStep[];
+  /** Complete journey start. Legacy departAt remains first service departure. */
+  journeyStartAt?: string;
+  /** Complete goal time. Legacy arriveAt remains last scheduled-service arrival. */
+  goalCompletedAt?: string;
+  departAt: string;
+  arriveAt: string;
+  totalDurationMinutes: number;
+  initialWaitingMinutes?: number;
+  transferWaitingMinutes?: number;
+  /** Time after completing transfer preparation and before the next departure. */
+  totalWaitingMinutes: number;
+  totalRideMinutes?: number;
+  totalTransferBufferMinutes?: number;
+  /** Walking plus mandatory buffer across each service-to-service transfer. */
+  totalTransferMinutes: number;
+  /** Walking is tracked separately from mandatory transfer buffers and waiting. */
+  totalWalkingMinutes: number;
+  /** Null only when no transfer is needed; direct journeys are lowest transfer risk. */
+  minimumTransferSlackMinutes: number | null;
+  /** Feasible transfers with fewer than five minutes of slack. */
+  tightTransferCount: number;
+  /** Legacy numeric sum; do not interpret it as complete when fareCoverage is not COMPLETE. */
+  totalCost: number;
+  totalKnownCost?: number | null;
+  fareCoverage?: FareCoverage;
+  walkingMinutes: number;
+  transferCount: number;
+  /** Kept for the earlier result contract; candidate generation sets it to totalCost. */
+  estimatedCost: number;
+  connectionRiskScore: number;
+  /** Future ranking output; this contract does not calculate it. */
+  policyScore?: number;
+}
+
+/** Canonical candidate journey assembled from scheduled services. */
+export type CandidateJourney = JourneyCandidate;
+
+export interface JourneyScoreBreakdown {
+  durationPenalty: number;
+  costPenalty: number;
+  transferPenalty: number;
+  walkingPenalty: number;
+  riskPenalty: number;
+  waitingPenalty: number;
+  costDimensionIncluded: boolean;
+  weightedDuration: number;
+  weightedCost: number;
+  weightedTransfers: number;
+  weightedWalking: number;
+  weightedRisk: number;
+  weightedWaiting: number;
+  totalScore: number;
+}
+
+export interface RankedJourney {
+  candidate: CandidateJourney;
+  rank: number;
+  score: number;
+  scoreBreakdown: JourneyScoreBreakdown;
+}
+
+export interface JourneyRecommendations {
+  fastest: CandidateJourney | null;
+  cheapest: CandidateJourney | null;
+  balanced: RankedJourney | null;
+}
+
+export type JourneyOptionCategory = "FASTEST" | "BALANCED" | "CHEAPEST";
+
+export type JourneySelectionReason =
+  | "EARLIEST_GOAL_COMPLETION"
+  | "LOWEST_COMPLETE_COST"
+  | "LOWEST_BALANCED_SCORE"
+  | "FEWER_TRANSFERS_THAN_FASTEST"
+  | "MORE_CONNECTION_SLACK_THAN_FASTEST"
+  | "MODEST_TIME_INCREASE"
+  | "LOWER_WALKING_THAN_FASTEST"
+  | "FARE_COST_DIMENSION_EXCLUDED";
+
+export type JourneyOptionUnavailableReason =
+  | "NO_EXECUTABLE_JOURNEY"
+  | "FARE_DATA_UNAVAILABLE";
+
+export interface JourneyOptionAvailability {
+  available: boolean;
+  reasonCodes: JourneyOptionUnavailableReason[];
+}
+
+export interface JourneyOptionOverlap {
+  candidateId: string;
+  categories: JourneyOptionCategory[];
+}
+
+export type FeasibilityStatus = "FEASIBLE" | "RISKY" | "IMPOSSIBLE" | "UNKNOWN";
+
+export type JourneyFeasibilityReasonCode =
+  | "JOURNEY_MEETS_CONSTRAINTS"
+  | "MEETS_DEADLINE_WITH_BUFFER"
+  | "INSUFFICIENT_ARRIVAL_BUFFER"
+  | "TIGHT_TRANSFER"
+  | "ARRIVAL_AFTER_HARD_DEADLINE"
+  | "NO_EXECUTABLE_JOURNEY"
+  | "REQUIRED_DEADLINE_UNAVAILABLE"
+  | "REQUIRED_JOURNEY_DATA_UNAVAILABLE"
+  | "INVALID_REQUIRED_TIMESTAMP"
+  | "GOAL_DEADLINE_UNVERIFIED";
+
+export type JourneyDataAvailability = "AVAILABLE" | "UNAVAILABLE";
+
+/**
+ * Explicit data state supplied by a future adapter. Omitted fields mean that
+ * no deadline was requested and the fixed Challenge timetable is complete.
+ */
+export interface JourneyFeasibilityContext {
+  journeyDataAvailability?: JourneyDataAvailability;
+  deadlineRequired?: boolean;
+  deadlineAt?: string | null;
+  deadlineAvailability?: JourneyDataAvailability;
+}
+
+export interface CandidateFeasibility {
+  candidateId: string;
+  status: FeasibilityStatus;
+  arrivalAt: string;
+  deadlineAt: string | null;
+  deadlineMarginMinutes: number | null;
+  goalReadyAt?: string | null;
+  safetyMarginMinutes?: number | null;
+  minimumTransferSlackMinutes: number | null;
+  reasonCodes: JourneyFeasibilityReasonCode[];
+}
+
+export interface JourneyFeasibilityResult {
+  status: FeasibilityStatus;
+  candidateFeasibilities: CandidateFeasibility[];
+  reasonCodes: JourneyFeasibilityReasonCode[];
+}
+
+/** The timetable origin is explicit so callers never mistake demo data for live travel data. */
+export type JourneyTimetableMode = "SYNTHETIC_FIXED_TIMETABLE" | "PROVIDER_NORMALIZED";
+
+export interface JourneyPlanningContext extends JourneyFeasibilityContext {
+  timetable: readonly ScheduledService[];
+  timetableStore?: TimetableStore;
+  transferRules: readonly TransferRule[];
+  timetableMode: JourneyTimetableMode;
+  dataSnapshot?: {
+    snapshotId: string;
+    periodStart: string;
+    periodEnd: string;
+    sourceLabel: string;
+    actualOperationsClaimed: boolean;
+  };
+}
+
+export interface JourneyOption {
+  optionId: string;
+  category: JourneyOptionCategory;
+  candidateId: string;
+  summary: string;
+  steps: JourneyStep[];
+  journeyStartAt: string;
+  goalCompletedAt: string;
+  totalDurationMinutes: number;
+  initialWaitingMinutes: number;
+  transferWaitingMinutes: number;
+  totalWaitingMinutes: number;
+  totalRideMinutes: number;
+  totalWalkingMinutes: number;
+  totalTransferBufferMinutes: number;
+  transferCount: number;
+  minimumConnectionSlackMinutes: number | null;
+  totalCost: number | null;
+  fareCoverage: FareCoverage;
+  selectionReasons: JourneySelectionReason[];
+  timetableMode: JourneyTimetableMode;
+  dataProvenance: {
+    snapshotId?: string;
+    sourceLabel: string;
+    actualOperationsClaimed: boolean;
+  };
+  /** Legacy compatibility view retained for existing UI and adapters. */
+  candidate: CandidateJourney;
+  feasibility: CandidateFeasibility;
+  rank?: number;
+  score?: number;
+  scoreBreakdown?: JourneyScoreBreakdown;
+}
+
+export interface JourneyPlanResult {
+  status: FeasibilityStatus;
+  candidateCount: number;
+  fastest: JourneyOption | null;
+  cheapest: JourneyOption | null;
+  balanced: JourneyOption | null;
+  optionAvailability: Record<Lowercase<JourneyOptionCategory>, JourneyOptionAvailability>;
+  overlaps: JourneyOptionOverlap[];
+  reasonCodes: JourneyFeasibilityReasonCode[];
+  timetableMode: JourneyTimetableMode;
+  goalId?: string;
+  goalDeadline?: string | null;
+}
+
+export interface JourneyCurrentState {
+  nodeId: string;
+  at: string;
+}
+
+export interface JourneyReplanRequest {
+  originalRequest: JourneyRequest;
+  currentState: JourneyCurrentState;
+}
+
+export type JourneyReplanReasonCode =
+  | "CURRENT_NODE_NOT_IN_TIMETABLE"
+  | "INVALID_CURRENT_TIMESTAMP"
+  | "ALREADY_AT_DESTINATION";
+
+export interface JourneyReplanResult {
+  previousOriginId: string;
+  currentNodeId: string;
+  replannedAt: string;
+  request: JourneyRequest | null;
+  plan: JourneyPlanResult | null;
+  alreadyAtDestination: boolean;
+  reasonCodes: JourneyReplanReasonCode[];
+  clarification?: ClarificationRequest;
+}
+
+export interface ClarificationRequest {
+  field: string;
+  question: string;
+  reason: string;
+}
+
+export interface JourneyResult {
+  status: FeasibilityStatus;
+  recommended: JourneyCandidate | null;
+  alternatives: JourneyCandidate[];
+  warnings: string[];
+  reasonCodes: string[];
+  clarification?: ClarificationRequest;
+}

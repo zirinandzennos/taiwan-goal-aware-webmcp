@@ -1,0 +1,17 @@
+{
+  "schema_version": 3,
+  "sandbox_kind": "PER_CASE_PERSISTENT",
+  "case_root": "C:\\Users\\htcdr\\.codex\\AI_WORKSPACE\\projects\\taiwan_goal_aware_webmcp\\JC_CASES\\TAIWAN-GOAL-JOURNEY-THREE-CARDS-UI-V1-20260831",
+  "archive_remote": "https://github.com/zirinandzennos/taiwan-goal-aware-webmcp.git",
+  "sources": [
+    {
+      "source": "C:\\Users\\htcdr\\.codex\\AI_WORKSPACE\\projects\\taiwan_goal_aware_webmcp\\JC_CASES\\TAIWAN-GOAL-JOURNEY-THREE-CARDS-UI-V1-20260831\\WORKSPACE",
+      "destination": "I\\00",
+      "excluded": [
+        ".git"
+      ],
+      "runtime_junction": null
+    }
+  ],
+  "rule": "All Codex runs for this case reuse this sandbox; source roots remain read-only inputs."
+}

@@ -1,0 +1,17 @@
+{
+  "name": "taiwan-goal-aware-webmcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "timetable:canary": "node --env-file-if-exists=.env scripts/import/fetch-tdx-thsr.ts --canary",
+    "timetable:fetch": "node --env-file-if-exists=.env scripts/import/fetch-tdx-thsr.ts",
+    "timetable:build-db": "node scripts/import/build-timetable-db.ts",
+    "timetable:export": "node scripts/import/export-runtime-timetable.ts",
+    "timetable:golden": "vite-node scripts/import/run-golden-cli.ts"
+  },
+  "devDependencies": { "@types/node": "^22.13.10", "typescript": "^5.7.3", "vite": "^6.2.0", "vitest": "^3.0.8" }
+}
