@@ -1,10 +1,12 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import { pathToFileURL } from "node:url";
 import { normalizeTdxThsrRecords } from "./normalize-tdx-thsr.ts";
 import type { TdxDailyTimetableRecord, TdxTrainDateList } from "./types.ts";
 
-export const REQUESTED_DATES = ["2026-08-27", "2026-08-28", "2026-08-29", "2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02"] as const;
+export const REQUESTED_DATES = ["2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-06"] as const;
+export const CANARY_DATE = REQUESTED_DATES[0];
 export const TOKEN_ENDPOINT = "https://tdx.transportdata.tw/auth/realms/TDXConnect/protocol/openid-connect/token";
 export const SUPPLY_DATE_ENDPOINT = "https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/TrainDates?%24format=JSON";
 export const DAILY_TIMETABLE_ENDPOINT_TEMPLATE = "https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/TrainDate/{date}";
@@ -51,9 +53,16 @@ export function dailyTimetableUrl(date: string, skip = 0): string {
 }
 
 async function fetchJson(url: string, authorization: string, fetchImplementation: typeof fetch): Promise<unknown> {
-  const response = await fetchImplementation(url, { headers: { Authorization: authorization, Accept: "application/json" } });
-  if (!response.ok) throw new Error(`TDX request failed: HTTP ${response.status} (${url})`);
-  return response.json();
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
+    const response = await fetchImplementation(url, { headers: { Authorization: authorization, Accept: "application/json" } });
+    if (response.ok) return response.json();
+    if (response.status !== 429 || attempt === 5) throw new Error(`TDX request failed: HTTP ${response.status} (${url})`);
+    const retryAfterSeconds = Number(response.headers.get("Retry-After"));
+    const waitMs = Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0 ? retryAfterSeconds * 1000 : 15_000;
+    console.log(JSON.stringify({ stage: "rate-limit-retry", endpoint: url, attempt, waitMs }));
+    await delay(waitMs);
+  }
+  throw new Error(`TDX request retry exhausted (${url})`);
 }
 
 function isDate(value: unknown): value is string {
@@ -101,7 +110,8 @@ export async function fetchCompleteDate(date: string, authorization: string, fet
 export async function acquireRequestedDailyTimetables(authorization: string, fetchImplementation: typeof fetch = fetch): Promise<{ assessment: SupplyDateAssessment; records: TdxDailyTimetableRecord[] }> {
   const assessment = await fetchSupplyDateAssessment(authorization, fetchImplementation);
   if (assessment.missingDates.length > 0) return { assessment, records: [] };
-  const records = (await Promise.all(REQUESTED_DATES.map((date) => fetchCompleteDate(date, authorization, fetchImplementation)))).flat();
+  const records: TdxDailyTimetableRecord[] = [];
+  for (const date of REQUESTED_DATES) records.push(...await fetchCompleteDate(date, authorization, fetchImplementation));
   return { assessment, records };
 }
 
@@ -109,14 +119,21 @@ async function main(): Promise<void> {
   const authorization = await resolveAuthorizationHeader();
   const assessment = await fetchSupplyDateAssessment(authorization);
   console.log(JSON.stringify({ stage: "supply-date", endpoint: supplyDateUrl(), ...assessment }));
+  if (process.argv.includes("--canary")) {
+    if (!assessment.availableDates.includes(CANARY_DATE)) throw new Error(`TDX canary date is unavailable: ${CANARY_DATE}`);
+    const canaryRecords = await fetchCompleteDate(CANARY_DATE, authorization);
+    console.log(JSON.stringify({ stage: "canary", date: CANARY_DATE, endpoint: dailyTimetableUrl(CANARY_DATE), httpResult: "SUCCESS", records: canaryRecords.length, trainDateMatches: canaryRecords.every((record) => record.TrainDate === CANARY_DATE) }));
+    return;
+  }
   if (assessment.missingDates.length > 0) {
     throw new Error(`TDX supply-date check failed; missing dates: ${assessment.missingDates.join(", ")}`);
   }
-  const records = (await Promise.all(REQUESTED_DATES.map((date) => fetchCompleteDate(date, authorization)))).flat();
+  const records: TdxDailyTimetableRecord[] = [];
+  for (const date of REQUESTED_DATES) records.push(...await fetchCompleteDate(date, authorization));
   const fetchedDates = [...new Set(records.map((record) => record.TrainDate))].sort();
   if (fetchedDates.join(",") !== REQUESTED_DATES.join(",")) throw new Error(`Fetched date set does not match requested period: ${fetchedDates.join(", ")}`);
   const retrievedAt = new Date().toISOString();
-  const snapshotId = `tdx-thsr-20260827-20260902-${retrievedAt.slice(0, 10).replaceAll("-", "")}`;
+  const snapshotId = `tdx-thsr-20260831-20260906-${retrievedAt.slice(0, 10).replaceAll("-", "")}`;
   const snapshot = normalizeTdxThsrRecords(records, { snapshotId, retrievedAt });
   const outputPath = resolve(process.argv[2] ?? ".cache/timetable-import/tdx-thsr-normalized.json");
   await mkdir(dirname(outputPath), { recursive: true });

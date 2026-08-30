@@ -2,8 +2,8 @@
 
 ## Required snapshot
 
-- Period: 2026-08-24 00:00 through 2026-08-30 23:59, Asia/Taipei
-- Primary demo date: 2026-08-24
+- Period: 2026-08-31 through 2026-09-06, Asia/Taipei
+- Primary demo date: 2026-08-31
 - Intended provider: Ministry of Transportation and Communications TDX
 - Dataset: THSR daily timetable by train date
 - License: Open Government Data License, version 1.0
@@ -11,23 +11,32 @@
 
 Official dataset metadata: https://data.gov.tw/en/datasets/161163
 
-## Retrieval status
+## Date decision and retrieval evidence
 
-`Needs verification / BLOCKED` as of 2026-08-30.
+An earlier implementation attempt targeted recent historical dates. The first plan was 2026-08-24 through 2026-08-30; the official supply-date response no longer included its first three dates. A second canary used 2026-08-27, which still appeared in supply-date metadata, but the actual dated endpoint returned HTTP 400 with `TrainDate: 無提供查詢歷史資料`.
 
-The official TDX endpoint returned HTTP 401 when called without credentials. No `TDX_API_KEY` or `TDX_AUTHORIZATION` environment variable was available in the workspace. The fetch script therefore exits with an explicit error and does not fall back to synthetic data.
+TDX's dated timetable endpoint does not provide historical queries. The Challenge therefore froze the official future scheduled timetable for 2026-08-31 through 2026-09-06 while every date was available. No historical row was inferred, backfilled, scraped, or replaced with a regular timetable.
+
+The 2026-08-31 canary returned 161 records whose `TrainDate` matched. The completed seven-day snapshot was retrieved at `2026-08-30T09:02:00.865Z` and contains 12 nodes, 1,141 dated service runs, and 9,481 stop times. Its manifest SHA-256 is `7b3eeeb6abe068c9cb2447e03f3813f2310c059efe5807dba7337f847e327b6c`.
 
 The Taiwan High Speed Rail corporate timetable page shows a schedule effective from 2026-02-02, but the corporate website terms reserve the site's compilation and do not provide the same clear redistribution grant as the TDX open-data listing. It was inspected for source discovery only and was not converted into a committed snapshot.
 
 ## Pipeline
 
-- `scripts/import/fetch-tdx-thsr.ts`: fetches the seven fixed service dates using environment-provided authorization.
+- `scripts/import/fetch-tdx-thsr.ts`: obtains one local Client Credentials token, verifies the supply-date gate, and fetches the seven fixed service dates with pagination.
 - `scripts/import/normalize-tdx-thsr.ts`: validates provider rows and materializes dated service-run and stop-time records with explicit `+08:00` offsets.
 - `scripts/import/build-timetable-db.ts`: loads normalized facts into SQLite and creates `idx_stop_times_node_departure`.
 - `scripts/import/export-runtime-timetable.ts`: exports static browser data and a SHA-256 manifest. It expands individual service runs into usable origin/destination service segments; it does not store complete journey answers.
 
-Raw responses, credentials, SQLite files, and local import caches are excluded from Git. Only normalized factual fields may be considered for a future commit after the authorized fetch and final attribution check.
+Raw responses, credentials, SQLite files, and local import caches are excluded from Git. The committed public artifacts contain only normalized scheduled facts, manifest metadata, and the dated goal rule needed for deterministic reproduction.
+
+## Golden goal provenance
+
+The 2026-08-31 `ENTER_XPARK` evaluation uses Xpark's published Monday rule: Sunday through Friday hours are 10:00–18:00 and final entry is one hour before closing, producing a general-rule deadline of `2026-08-31T17:00:00+08:00`. Xpark's access page states about nine minutes on foot from THSR Taoyuan Station. Xpark also states that business hours may change under special circumstances, so this is a dated evaluation of a published rule, not a claim about historical actual venue operation.
+
+- Hours: https://www.xpark.com.tw/en/index
+- Access: https://www.xpark.com.tw/visit
 
 ## Current runtime
 
-The current runtime is `SYNTHETIC_FIXED_TIMETABLE`. Its 2030 values and goal deadlines are deterministic test fixtures, not official transport or venue information. No 2026 real-data golden result, record count, selected service, or performance claim is made until the licensed snapshot has been imported and verified.
+The static `officialTimetableSnapshot.json`, manifest, goal reference, and golden runner operate without credentials or live TDX calls. The browser UI and its existing WebMCP page-state demo remain on the clearly labeled `SYNTHETIC_FIXED_TIMETABLE`; the official snapshot currently powers the reproducible P0 golden and replan proof only.

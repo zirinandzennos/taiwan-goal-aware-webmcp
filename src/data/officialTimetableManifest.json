@@ -1,0 +1,24 @@
+{
+  "snapshotId": "tdx-thsr-20260831-20260906-20260830",
+  "source": "https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/TrainDates; https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/TrainDate/{date}",
+  "provider": "Ministry of Transportation and Communications TDX",
+  "dataset": "THSR daily timetable by train date",
+  "dataType": "OFFICIAL_SCHEDULED_TIMETABLE_SNAPSHOT",
+  "retrievedAt": "2026-08-30T09:02:00.865Z",
+  "periodStart": "2026-08-31",
+  "periodEnd": "2026-09-06",
+  "timezone": "Asia/Taipei",
+  "license": "Open Government Data License, version 1.0",
+  "attribution": "Ministry of Transportation and Communications TDX; Taiwan High Speed Rail scheduled timetable",
+  "normalizationVersion": "tdx-thsr-v1",
+  "counts": {
+    "nodes": 12,
+    "serviceRuns": 1141,
+    "stopTimes": 9481,
+    "transferRules": 0,
+    "services": 37878
+  },
+  "runtimeSha256": "cae51af3d6738933cf49a900d961b6ec0911a4979e83d5cb334a5190f570c6fc",
+  "factualFieldsOnly": true,
+  "actualOperationsClaimed": false
+}

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildTimetableDatabase } from "../scripts/import/build-timetable-db";
-import { acquireRequestedDailyTimetables, assessSupplyDates, authorizationHeader, dailyTimetableUrl, REQUESTED_DATES, resolveAuthorizationHeader, supplyDateUrl, TOKEN_ENDPOINT } from "../scripts/import/fetch-tdx-thsr";
+import { acquireRequestedDailyTimetables, assessSupplyDates, authorizationHeader, CANARY_DATE, dailyTimetableUrl, REQUESTED_DATES, resolveAuthorizationHeader, supplyDateUrl, TOKEN_ENDPOINT } from "../scripts/import/fetch-tdx-thsr";
 import { normalizeTdxThsrRecords } from "../scripts/import/normalize-tdx-thsr";
 import type { TdxDailyTimetableRecord } from "../scripts/import/types";
 
@@ -14,7 +14,7 @@ afterEach(() => {
 });
 function record(overrides: Partial<TdxDailyTimetableRecord> = {}): TdxDailyTimetableRecord {
   return {
-    TrainDate: "2026-08-27",
+    TrainDate: "2026-08-31",
     DailyTrainInfo: { TrainNo: "0126" },
     StopTimes: [
       { StopSequence: 1, StationID: "1070", StationName: { En: "Zuoying" }, ArrivalTime: "17:35:00", DepartureTime: "17:35:00" },
@@ -28,8 +28,9 @@ describe("TDX THSR snapshot pipeline", () => {
   it("requires credentials and never silently falls back", () => {
     expect(() => authorizationHeader({})).toThrow("TDX credentials missing");
     expect(authorizationHeader({ TDX_API_KEY: "secret" })).toBe("Bearer secret");
-    expect(dailyTimetableUrl("2026-08-27")).toContain("2026-08-27");
-    expect(dailyTimetableUrl("2026-08-27")).toContain("%24top=1000");
+    expect(CANARY_DATE).toBe("2026-08-31");
+    expect(dailyTimetableUrl(CANARY_DATE)).toContain(CANARY_DATE);
+    expect(dailyTimetableUrl(CANARY_DATE)).toContain("%24top=1000");
     expect(supplyDateUrl()).toContain("/DailyTimetable/TrainDates");
   });
 
@@ -43,14 +44,14 @@ describe("TDX THSR snapshot pipeline", () => {
 
   it("checks the official supply-date list before fetching any daily payload", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({
-      StartDate: "2026-08-28",
-      EndDate: "2026-09-02",
+      StartDate: "2026-09-01",
+      EndDate: "2026-09-06",
       TrainDates: REQUESTED_DATES.slice(1),
       UpdateTime: "2026-08-30T04:00:00+08:00",
     }), { status: 200 }));
     const result = await acquireRequestedDailyTimetables("Bearer redacted", fetchMock);
     expect(result.assessment.availableDates).toEqual(REQUESTED_DATES.slice(1));
-    expect(result.assessment.missingDates).toEqual(["2026-08-27"]);
+    expect(result.assessment.missingDates).toEqual(["2026-08-31"]);
     expect(result.records).toEqual([]);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0][0]).toBe(supplyDateUrl());
@@ -75,14 +76,27 @@ describe("TDX THSR snapshot pipeline", () => {
 
   it("normalizes dated service instances with explicit Taipei offsets", () => {
     const snapshot = normalizeTdxThsrRecords([record()], { snapshotId: "snapshot-test", retrievedAt: "2026-08-30T00:00:00Z" });
-    expect(snapshot.serviceRuns[0]).toMatchObject({ id: "THSR_0126_20260827", serviceDate: "2026-08-27", sourceSnapshotId: "snapshot-test" });
-    expect(snapshot.stopTimes.map((stop) => stop.departureAt)).toEqual(["2026-08-27T17:35:00+08:00", "2026-08-27T19:16:00+08:00"]);
+    expect(snapshot.metadata).toMatchObject({ periodStart: "2026-08-31", periodEnd: "2026-09-06", dataType: "OFFICIAL_SCHEDULED_TIMETABLE_SNAPSHOT" });
+    expect(snapshot.serviceRuns[0]).toMatchObject({ id: "THSR_0126_20260831", serviceDate: "2026-08-31", sourceSnapshotId: "snapshot-test" });
+    expect(snapshot.stopTimes.map((stop) => stop.departureAt)).toEqual(["2026-08-31T17:35:00+08:00", "2026-08-31T19:16:00+08:00"]);
     expect(snapshot.nodes).toHaveLength(2);
+  });
+
+  it("preserves provider minute precision as explicit zero-second timestamps", () => {
+    const minutePrecision = record({ StopTimes: [
+      { ...record().StopTimes[0], ArrivalTime: "07:55", DepartureTime: "07:55" },
+      { ...record().StopTimes[1], ArrivalTime: "09:34", DepartureTime: "09:36" },
+    ] });
+    const snapshot = normalizeTdxThsrRecords([minutePrecision], { snapshotId: "snapshot-test", retrievedAt: "2026-08-30T00:00:00Z" });
+    expect(snapshot.stopTimes.map((stop) => [stop.arrivalAt, stop.departureAt])).toEqual([
+      ["2026-08-31T07:55:00+08:00", "2026-08-31T07:55:00+08:00"],
+      ["2026-08-31T09:34:00+08:00", "2026-08-31T09:36:00+08:00"],
+    ]);
   });
 
   it("rejects dates outside the snapshot, duplicate runs, and invalid rows", () => {
     const metadata = { snapshotId: "snapshot-test", retrievedAt: "2026-08-30T00:00:00Z" };
-    expect(() => normalizeTdxThsrRecords([record({ TrainDate: "2026-09-03" })], metadata)).toThrow("outside fixed snapshot period");
+    expect(() => normalizeTdxThsrRecords([record({ TrainDate: "2026-09-07" })], metadata)).toThrow("outside fixed snapshot period");
     expect(() => normalizeTdxThsrRecords([record(), record()], metadata)).toThrow("Duplicate service run");
     expect(() => normalizeTdxThsrRecords([record({ StopTimes: [{ ...record().StopTimes[0], ArrivalTime: "bad" }, record().StopTimes[1]] })], metadata)).toThrow("Invalid provider time");
     expect(() => normalizeTdxThsrRecords([record({ StopTimes: [record().StopTimes[1], record().StopTimes[0]] })], metadata)).toThrow("Unordered stop sequence");
@@ -98,7 +112,7 @@ describe("TDX THSR snapshot pipeline", () => {
       ],
     });
     const snapshot = normalizeTdxThsrRecords([overnight], { snapshotId: "snapshot-test", retrievedAt: "2026-08-30T00:00:00Z" });
-    expect(snapshot.stopTimes[1]).toMatchObject({ arrivalAt: "2026-08-28T00:05:00+08:00", departureAt: "2026-08-28T00:06:00+08:00" });
+    expect(snapshot.stopTimes[1]).toMatchObject({ arrivalAt: "2026-09-01T00:05:00+08:00", departureAt: "2026-09-01T00:06:00+08:00" });
     expect(() => normalizeTdxThsrRecords([{ ...overnight, DailyTrainInfo: { TrainNo: "0999", Overnight: false } }], { snapshotId: "snapshot-test", retrievedAt: "2026-08-30T00:00:00Z" })).toThrow("Unexpected cross-midnight");
   });
 

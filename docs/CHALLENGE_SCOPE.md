@@ -27,8 +27,8 @@
 
 This document intentionally does not attribute the pre-existing concept or research to the Challenge period.
 
-## Current boundary and blocker
+## Official snapshot boundary
 
-The official scheduled-timetable pipeline is implemented, but the normalized 2026-08-24 through 2026-08-30 snapshot is not checked in. The TDX endpoint returned HTTP 401 without credentials, and no `TDX_API_KEY` or `TDX_AUTHORIZATION` environment variable was available. The THSR corporate timetable page was not used as a redistribution source because its website terms do not provide the same clear open-data license.
+An earlier implementation attempt targeted recent historical dates: first 2026-08-24, then a 2026-08-27 canary. TDX supply metadata may still list recently past dates, but the actual dated timetable endpoint rejects historical queries. The Challenge therefore froze the official future scheduled window 2026-08-31 through 2026-09-06 while it was available. Missing historical dates were not fabricated or replaced with regular-timetable inference; corporate-site samples remain reference-only and are not the runtime redistribution source.
 
-Therefore the checked-in runtime remains synthetic and the real-data golden demo is not complete. This repository does not claim live real-time transit, historical actual operations, Remote MCP, GPS, bookings, payment, or operational transportation data.
+The real-data golden date is 2026-08-31. The frozen snapshot is official scheduled timetable data, not historical actual operations, archived delays, or train performance. The browser's existing synthetic fixture remains a separate, clearly labeled UI fallback. This repository does not claim live real-time transit, Remote MCP, GPS, bookings, payment, or operational transportation data.

@@ -1,9 +1,9 @@
 import { NORMALIZATION_VERSION, SNAPSHOT_PERIOD_END, SNAPSHOT_PERIOD_START, SNAPSHOT_TIMEZONE, type NormalizedNode, type NormalizedServiceRun, type NormalizedStopTime, type NormalizedTimetableSnapshot, type SnapshotMetadata, type TdxDailyTimetableRecord } from "./types.ts";
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-const TIME_PATTERN = /^(\d{2}):(\d{2}):(\d{2})$/;
-const FIRST_DATE = "2026-08-27";
-const LAST_DATE = "2026-09-02";
+const TIME_PATTERN = /^(\d{2}):(\d{2})(?::(\d{2}))?$/;
+const FIRST_DATE = "2026-08-31";
+const LAST_DATE = "2026-09-06";
 
 function assertDateInSnapshot(date: string): void {
   if (!DATE_PATTERN.test(date) || date < FIRST_DATE || date > LAST_DATE) throw new Error(`Service date outside fixed snapshot period: ${date}`);
@@ -14,7 +14,7 @@ function parseClockSeconds(time: string | null | undefined): number {
   if (!match) throw new Error(`Invalid provider time: ${time}`);
   const hours = Number(match[1]);
   const minutes = Number(match[2]);
-  const seconds = Number(match[3]);
+  const seconds = Number(match[3] ?? "0");
   if (hours > 23 || minutes > 59 || seconds > 59) throw new Error(`Invalid provider time: ${time}`);
   return hours * 60 * 60 + minutes * 60 + seconds;
 }
@@ -76,7 +76,7 @@ export function normalizeTdxThsrRecords(records: readonly TdxDailyTimetableRecor
     }
   }
   return {
-    metadata: { ...metadataOverrides, source: "https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/TrainDates; https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/TrainDate/{date}", provider: "Ministry of Transportation and Communications TDX", dataset: "THSR daily timetable by train date", periodStart: SNAPSHOT_PERIOD_START, periodEnd: SNAPSHOT_PERIOD_END, timezone: SNAPSHOT_TIMEZONE, license: "Open Government Data License, version 1.0", attribution: "Ministry of Transportation and Communications TDX; Taiwan High Speed Rail scheduled timetable", normalizationVersion: NORMALIZATION_VERSION },
+    metadata: { ...metadataOverrides, source: "https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/TrainDates; https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/TrainDate/{date}", provider: "Ministry of Transportation and Communications TDX", dataset: "THSR daily timetable by train date", dataType: "OFFICIAL_SCHEDULED_TIMETABLE_SNAPSHOT", periodStart: SNAPSHOT_PERIOD_START, periodEnd: SNAPSHOT_PERIOD_END, timezone: SNAPSHOT_TIMEZONE, license: "Open Government Data License, version 1.0", attribution: "Ministry of Transportation and Communications TDX; Taiwan High Speed Rail scheduled timetable", normalizationVersion: NORMALIZATION_VERSION },
     nodes: [...nodes.values()].sort((a, b) => a.id.localeCompare(b.id)),
     serviceRuns: [...serviceRuns.values()].sort((a, b) => a.id.localeCompare(b.id)),
     stopTimes: [...stopTimes.values()].sort((a, b) => a.serviceRunId.localeCompare(b.serviceRunId) || a.stopSequence - b.stopSequence),

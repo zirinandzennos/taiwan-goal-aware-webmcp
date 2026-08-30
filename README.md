@@ -102,14 +102,14 @@ The browser runtime currently uses fixed Challenge fixtures. It must not be pres
 
 The repository now includes a credential-gated TDX pipeline under `scripts/import/`:
 
-1. fetch THSR daily timetable records for 2026-08-24 through 2026-08-30;
+1. verify and fetch THSR daily timetable records for 2026-08-31 through 2026-09-06;
 2. normalize dated service runs and full offset timestamps;
 3. validate them in an indexed SQLite snapshot database; and
 4. export a static runtime JSON file plus SHA-256 manifest.
 
-Set `TDX_API_KEY` or `TDX_AUTHORIZATION` locally before running `npm run timetable:fetch`. No credentials, raw provider responses, SQLite databases, or secrets are committed. The fetch command fails closed when credentials are absent.
+Set `TDX_CLIENT_ID` and `TDX_CLIENT_SECRET` only in the Git-ignored local `.env` before running `npm run timetable:fetch`. No credentials, raw provider responses, SQLite databases, or secrets are committed. The fetch command fails closed when credentials are absent.
 
-See [Data provenance](docs/DATA_PROVENANCE.md). The required frozen official snapshot is **not checked in yet**, so the 2026-08-24 real-data golden demo remains blocked.
+See [Data provenance](docs/DATA_PROVENANCE.md). The frozen official scheduled window is 2026-08-31 through 2026-09-06, with 2026-08-31 as the real-data golden date. `npm run timetable:golden` reproduces the goal and delay/replan proof from static public files without TDX credentials.
 
 ## Live demo
 
@@ -129,7 +129,7 @@ npm test
 npm run build
 ```
 
-Current local status: 106 deterministic tests pass. The suite covers import normalization, SQLite schema/index validation, binary-search departure lookup, transfers, candidates, goal feasibility, replanning, shared page state, and human/WebMCP domain parity.
+Current local status: 114 deterministic tests pass. The suite covers import normalization, SQLite schema/index validation, frozen real-data lookup, binary-search departure lookup, transfers, candidates, goal feasibility, delay replanning, shared page state, and human/WebMCP domain parity.
 
 ## Challenge scope
 
@@ -143,7 +143,7 @@ See [Challenge scope](docs/CHALLENGE_SCOPE.md) for the explicit boundary.
 
 Post-Challenge directions only:
 
-- Authorized TDX snapshot retrieval and checked-in 2026-08-24..30 normalized data
+- Additional licensed transport providers beyond the frozen 2026-08-31..2026-09-06 THSR snapshot
 - Real-time updates
 - Remote MCP
 - GPS-aware current state

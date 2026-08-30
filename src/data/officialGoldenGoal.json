@@ -1,0 +1,16 @@
+{
+  "classification": "OFFICIAL_PUBLISHED_RULE_DATED_EVALUATION",
+  "date": "2026-08-31",
+  "weekday": "Monday",
+  "goalId": "ENTER_XPARK",
+  "destinationNodeId": "1020",
+  "deadlineAt": "2026-08-31T17:00:00+08:00",
+  "requiredSafetyBufferMinutes": 15,
+  "goalActionBufferMinutes": 9,
+  "source": {
+    "hoursUrl": "https://www.xpark.com.tw/en/index",
+    "accessUrl": "https://www.xpark.com.tw/visit",
+    "retrievedAt": "2026-08-30"
+  },
+  "caveat": "Xpark states business hours may change under special circumstances. This is a dated goal evaluation using the official published rule, not a claim about historical actual venue operation."
+}

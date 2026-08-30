@@ -17,7 +17,7 @@ function sourceCounts(databasePath: string): SourceCounts {
 export function exportRuntimeTimetable(databasePath: string): Record<string, unknown> {
   const database = new DatabaseSync(databasePath, { readOnly: true });
   try {
-    const metadata = database.prepare("SELECT snapshot_id AS snapshotId, source, provider, dataset, retrieved_at AS retrievedAt, period_start AS periodStart, period_end AS periodEnd, timezone, license, attribution, normalization_version AS normalizationVersion FROM snapshots LIMIT 1").get() as Row;
+    const metadata = database.prepare("SELECT snapshot_id AS snapshotId, source, provider, dataset, data_type AS dataType, retrieved_at AS retrievedAt, period_start AS periodStart, period_end AS periodEnd, timezone, license, attribution, normalization_version AS normalizationVersion FROM snapshots LIMIT 1").get() as Row;
     const nodes = database.prepare("SELECT id, name, type AS kind, latitude, longitude FROM nodes ORDER BY id").all() as Row[];
     const runs = database.prepare("SELECT id, operator, mode, route_id AS routeId, service_number AS serviceNumber FROM service_runs ORDER BY id").all() as Row[];
     const stopQuery = database.prepare("SELECT stop_sequence AS stopSequence, node_id AS nodeId, arrival_at AS arrivalAt, departure_at AS departureAt FROM stop_times WHERE service_run_id = ? ORDER BY stop_sequence");
