@@ -1,4 +1,6 @@
-import "./style.css";
+import "./app";
+
+/* Legacy UI retained as commented history; app.ts is the single active implementation.
 import { syntheticJourneyNodes } from "./journey/syntheticTimetable";
 import type { JourneyOption, JourneyPlanResult } from "./journey/types";
 import { planCurrentJourney, replanCurrentJourney } from "./ui/journeyActions";
@@ -159,3 +161,4 @@ required<HTMLButtonElement>("#replan-button").addEventListener("click", () => {
 webmcpStatus.textContent = registerJourneyTool()
   ? "WebMCP: Ready"
   : "WebMCP: Not available in this browser";
+*/

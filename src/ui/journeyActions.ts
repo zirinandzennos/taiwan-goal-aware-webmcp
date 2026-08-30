@@ -31,7 +31,7 @@ function stateError(reasonCode: string, missingFields: string[]): JourneyUiState
   return { status: "UNKNOWN", reasonCodes: [reasonCode], missingFields };
 }
 
-/** Uses the same live state mapper and engine entry point as plan_taiwan_journey. */
+/** Uses the same live state mapper and engine entry point as check_taiwan_goal_feasibility. */
 export function planCurrentJourney(): HumanPlanExecution {
   const request = toJourneyRequest(getCurrentJourneyPageState());
   if (isIncompleteState(request)) {

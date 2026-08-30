@@ -4,6 +4,7 @@ import type {
   ScheduledService,
   TransferRule,
 } from "./types";
+import { createIndexedTimetableStore } from "./timetableStore";
 
 /** SYNTHETIC CHALLENGE FIXTURE — NOT REAL OPERATIONAL TRANSPORT INFORMATION. */
 export const SYNTHETIC_CHALLENGE_FIXTURE_NOTICE =
@@ -55,6 +56,14 @@ export const syntheticScheduledServices: ScheduledService[] = [
 /** Shared fixed Challenge context for both the human UI and WebMCP adapter. */
 export const syntheticJourneyPlanningContext: JourneyPlanningContext = {
   timetable: syntheticScheduledServices,
+  timetableStore: createIndexedTimetableStore(syntheticScheduledServices),
   transferRules: syntheticTransferRules,
   timetableMode: "SYNTHETIC_FIXED_TIMETABLE",
+  dataSnapshot: {
+    snapshotId: "synthetic-2030-challenge-fixture",
+    periodStart: "2030-06-15T00:00:00+08:00",
+    periodEnd: "2030-06-15T23:59:59+08:00",
+    sourceLabel: SYNTHETIC_CHALLENGE_FIXTURE_NOTICE,
+    actualOperationsClaimed: false,
+  },
 };

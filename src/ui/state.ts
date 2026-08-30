@@ -1,4 +1,4 @@
-import { demoGoals } from "../data/demoGoals";
+import { journeyGoals } from "../data/demoGoals";
 import type {
   JourneyConstraints,
   JourneyCurrentState,
@@ -7,15 +7,12 @@ import type {
   TravelerState,
 } from "../journey/types";
 
-let selectedGoalId = demoGoals[0].id;
-export function setSelectedGoalId(goalId: string): void { selectedGoalId = goalId; }
-export function getCurrentPageState(): { selectedGoalId: string } { return { selectedGoalId }; }
-
 /**
  * Live, page-owned state for the synthetic Journey challenge. A later UI can
  * update this store without changing the WebMCP adapter or journey engine.
  */
 export interface JourneyPageState {
+  goalId: string;
   originId: string;
   destinationId: string;
   departAt: string;
@@ -39,6 +36,7 @@ const unknownPageTravelerState: TravelerState = {
 };
 
 const defaultJourneyPageState: JourneyPageState = {
+  goalId: journeyGoals[0].id,
   originId: "kaohsiung-xiaogang",
   destinationId: "taoyuan-bade",
   departAt: "2030-06-15T07:00:00+08:00",
@@ -60,4 +58,13 @@ export function getJourneyPageState(): JourneyPageState {
 
 export function resetJourneyPageState(): void {
   journeyPageState = structuredClone(defaultJourneyPageState);
+}
+
+/** Compatibility for the earlier page-state demo; both functions now use the canonical store. */
+export function setSelectedGoalId(goalId: string): void {
+  setJourneyPageState({ ...getJourneyPageState(), goalId });
+}
+
+export function getCurrentPageState(): { selectedGoalId: string } {
+  return { selectedGoalId: getJourneyPageState().goalId };
 }

@@ -81,6 +81,27 @@ export interface JourneyActivityRequest {
   latestEndAt?: string;
 }
 
+export type JourneyGoalType = "VENUE_ENTRY" | "SCHEDULED_SERVICE" | "APPOINTMENT_CUTOFF";
+
+export interface JourneyGoalSource {
+  label: string;
+  url?: string;
+  retrievedAt?: string;
+}
+
+/** A real-world outcome with an explicit, inspectable hard deadline policy. */
+export interface JourneyGoal {
+  id: string;
+  title: string;
+  goalType: JourneyGoalType;
+  destinationId: string;
+  deadlineAt: string | null;
+  deadlineVerified: boolean;
+  requiredSafetyBufferMinutes: number;
+  goalActionBufferMinutes?: number;
+  source: JourneyGoalSource;
+}
+
 /**
  * Canonical, resolved domain input. WebMCP adapters must merge explicit AI
  * arguments and page state before they create this request.
@@ -96,6 +117,7 @@ export interface JourneyRequest {
   policy: JourneyPolicyPreset;
   constraints: JourneyConstraints;
   activities: JourneyActivityRequest[];
+  goal?: JourneyGoal;
 }
 
 export type JourneyNodeKind =
@@ -129,6 +151,21 @@ export interface ScheduledService {
   routeId?: string;
   operator?: string;
   serviceName?: string;
+  /** False when the frozen schedule contains no licensed fare dataset. */
+  fareDataAvailable?: boolean;
+}
+
+export interface TimetableDepartureOptions {
+  limit?: number;
+  allowedModes?: readonly TransportMode[];
+}
+
+export interface TimetableStore {
+  findNextDepartures(
+    nodeId: string,
+    readyAt: string,
+    options?: TimetableDepartureOptions,
+  ): readonly ScheduledService[];
 }
 
 /**
@@ -241,7 +278,8 @@ export type JourneyFeasibilityReasonCode =
   | "NO_EXECUTABLE_JOURNEY"
   | "REQUIRED_DEADLINE_UNAVAILABLE"
   | "REQUIRED_JOURNEY_DATA_UNAVAILABLE"
-  | "INVALID_REQUIRED_TIMESTAMP";
+  | "INVALID_REQUIRED_TIMESTAMP"
+  | "GOAL_DEADLINE_UNVERIFIED";
 
 export type JourneyDataAvailability = "AVAILABLE" | "UNAVAILABLE";
 
@@ -262,6 +300,8 @@ export interface CandidateFeasibility {
   arrivalAt: string;
   deadlineAt: string | null;
   deadlineMarginMinutes: number | null;
+  goalReadyAt?: string | null;
+  safetyMarginMinutes?: number | null;
   minimumTransferSlackMinutes: number | null;
   reasonCodes: JourneyFeasibilityReasonCode[];
 }
@@ -277,8 +317,16 @@ export type JourneyTimetableMode = "SYNTHETIC_FIXED_TIMETABLE" | "PROVIDER_NORMA
 
 export interface JourneyPlanningContext extends JourneyFeasibilityContext {
   timetable: readonly ScheduledService[];
+  timetableStore?: TimetableStore;
   transferRules: readonly TransferRule[];
   timetableMode: JourneyTimetableMode;
+  dataSnapshot?: {
+    snapshotId: string;
+    periodStart: string;
+    periodEnd: string;
+    sourceLabel: string;
+    actualOperationsClaimed: boolean;
+  };
 }
 
 export interface JourneyOption {
@@ -297,6 +345,8 @@ export interface JourneyPlanResult {
   balanced: JourneyOption | null;
   reasonCodes: JourneyFeasibilityReasonCode[];
   timetableMode: JourneyTimetableMode;
+  goalId?: string;
+  goalDeadline?: string | null;
 }
 
 export interface JourneyCurrentState {

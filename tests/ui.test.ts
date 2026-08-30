@@ -38,7 +38,7 @@ function registerPlanTool(): RegisteredTool {
     value: { modelContext: { registerTool: (tool: RegisteredTool) => tools.set(tool.name, tool) } },
   });
   expect(registerJourneyTool()).toBe(true);
-  return tools.get("plan_taiwan_journey")!;
+  return tools.get("check_taiwan_goal_feasibility")!;
 }
 
 function registerReplanTool(): RegisteredTool {
@@ -78,13 +78,14 @@ describe("minimal human journey UI execution path", () => {
   it("returns domain-equivalent human and WebMCP plan results", async () => {
     const human = planCurrentJourney();
     const agent = await toolOutput(registerPlanTool());
+    if (human.kind !== "PLAN_RESULT") throw new Error("expected a human plan");
+    const expected = [human.plan.fastest, human.plan.balanced, human.plan.cheapest]
+      .find((option) => option?.feasibility.status === human.plan.status) ?? human.plan.fastest ?? human.plan.balanced ?? human.plan.cheapest;
     expect(human).toMatchObject({ kind: "PLAN_RESULT", plan: {
       status: agent.status,
-      candidateCount: agent.candidateCount,
-      fastest: { candidate: { id: agent.fastest.candidateId } },
-      cheapest: { candidate: { id: agent.cheapest.candidateId } },
-      balanced: { candidate: { id: agent.balanced.candidateId } },
+      goalId: agent.goalId,
     } });
+    expect(agent.recommendedJourney.candidateId).toBe(expected?.candidate.id);
   });
 
   it("applies avoidTaxi identically to human and WebMCP planning", async () => {

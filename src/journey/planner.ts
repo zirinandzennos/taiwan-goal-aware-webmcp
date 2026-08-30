@@ -45,7 +45,7 @@ export function planJourney(
   request: JourneyRequest,
   context: JourneyPlanningContext,
 ): JourneyPlanResult {
-  const candidates = generateCandidateJourneys(request, context.timetable, context.transferRules);
+  const candidates = generateCandidateJourneys(request, context.timetable, context.transferRules, context.timetableStore);
   const feasibility = evaluateJourneyFeasibility(candidates, request, context);
   const feasibilityByCandidateId = new Map(
     feasibility.candidateFeasibilities.map((result) => [result.candidateId, result]),
@@ -60,5 +60,6 @@ export function planJourney(
     balanced: attachBalancedOption(recommendations.balanced, feasibilityByCandidateId),
     reasonCodes: feasibility.reasonCodes,
     timetableMode: context.timetableMode,
+    ...(request.goal ? { goalId: request.goal.id, goalDeadline: request.goal.deadlineAt } : {}),
   };
 }

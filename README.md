@@ -11,22 +11,22 @@ This Challenge project explores a different question: **Can an AI directly use a
 ## What the Challenge version does
 
 ```text
-Journey requirements
+Selected real-world goal
         ↓
-Synthetic fixed timetable
+Goal hard deadline
+        ↓
+Page-owned journey state
+        ↓
+TimetableStore node/time index
         ↓
 Executable service connections
         ↓
-Candidate journeys
-        ↓
-Fastest / Cheapest / Balanced
-        ↓
-Feasibility verification
+Goal feasibility + recommendations
         ↓
 WebMCP
 ```
 
-The public web app holds the current journey state. It plans a synthetic Kaohsiung Xiaogang to Bade, Taoyuan journey, evaluates technically executable connections, and returns deterministic recommendations.
+The public web app holds the current journey state. The current checked-in runtime still uses a clearly labeled synthetic Kaohsiung Xiaogang to Bade, Taoyuan fixture while the official 2026 snapshot remains credential-blocked. It evaluates technically executable connections and the selected goal's verified hard deadline without LLM arithmetic.
 
 ## Why WebMCP
 
@@ -34,7 +34,7 @@ The user configures the journey on the webpage. An agent does not need the user 
 
 The webpage exposes two structured, read-only Journey capabilities:
 
-- `plan_taiwan_journey`
+- `check_taiwan_goal_feasibility`
 - `replan_taiwan_journey`
 
 Both tools read the current live page state. Human UI actions use that same state and the same Journey Engine entry points.
@@ -91,18 +91,29 @@ This ensures previously completed or missed services are not treated as still av
 
 ## WebMCP tools
 
-`plan_taiwan_journey` reads the live journey configuration and plans it. `replan_taiwan_journey` reads the original journey plus current node and time, then recalculates the remaining journey. Both tools are read-only and accept no user data beyond the webpage's current state.
+`check_taiwan_goal_feasibility` reads the selected goal and live journey configuration, then returns a compact status, arrival, deadline, safety margin, recommended executable journey, and data-snapshot metadata. `replan_taiwan_journey` reads the original goal plus current node and time, then recalculates the remaining journey. Both tools are read-only and accept no duplicated itinerary input.
 
 ## Demo data
 
 > **SYNTHETIC FIXED TIMETABLE DEMO**
 > Not real-time or operational Taiwan transportation information.
 
-All timetable values, transfer rules, and services are fixed Challenge fixtures. This project does not connect to TDX, real Taiwan schedules, or operational transit systems.
+The browser runtime currently uses fixed Challenge fixtures. It must not be presented as official or operational data.
+
+The repository now includes a credential-gated TDX pipeline under `scripts/import/`:
+
+1. fetch THSR daily timetable records for 2026-08-24 through 2026-08-30;
+2. normalize dated service runs and full offset timestamps;
+3. validate them in an indexed SQLite snapshot database; and
+4. export a static runtime JSON file plus SHA-256 manifest.
+
+Set `TDX_API_KEY` or `TDX_AUTHORIZATION` locally before running `npm run timetable:fetch`. No credentials, raw provider responses, SQLite databases, or secrets are committed. The fetch command fails closed when credentials are absent.
+
+See [Data provenance](docs/DATA_PROVENANCE.md). The required frozen official snapshot is **not checked in yet**, so the 2026-08-24 real-data golden demo remains blocked.
 
 ## Live demo
 
-https://taiwan-goal-aware-webmcp.netlify.app/
+The prior synthetic deployment is at https://taiwan-goal-aware-webmcp.netlify.app/. It may not include the current local goal-first changes until an authorized deployment occurs.
 
 ## Local development
 
@@ -118,13 +129,13 @@ npm test
 npm run build
 ```
 
-Current Challenge status: 93 deterministic tests pass. The suite covers timetable eligibility, transfers, candidates, ranking, feasibility, replanning, shared page state, and human/WebMCP domain parity.
+Current local status: 106 deterministic tests pass. The suite covers import normalization, SQLite schema/index validation, binary-search departure lookup, transfers, candidates, goal feasibility, replanning, shared page state, and human/WebMCP domain parity.
 
 ## Challenge scope
 
 Pre-existing work includes the Taiwan Goal-aware Journey concept and research, the goal-aware transportation vision, and long-term architecture ideas.
 
-Challenge-period implementation includes the public web app, deterministic timetable engine, candidate generation, transfer feasibility, ranking, feasibility model, replanning, WebMCP integration, shared page state, UI, tests, and public deployment.
+Challenge-period implementation includes the public web app, deterministic timetable engine, indexed candidate generation, transfer feasibility, ranking, goal-aware feasibility, replanning, WebMCP integration, shared page state, importer architecture, UI, tests, and the earlier public deployment.
 
 See [Challenge scope](docs/CHALLENGE_SCOPE.md) for the explicit boundary.
 
@@ -132,7 +143,7 @@ See [Challenge scope](docs/CHALLENGE_SCOPE.md) for the explicit boundary.
 
 Post-Challenge directions only:
 
-- TDX and real transportation data
+- Authorized TDX snapshot retrieval and checked-in 2026-08-24..30 normalized data
 - Real-time updates
 - Remote MCP
 - GPS-aware current state

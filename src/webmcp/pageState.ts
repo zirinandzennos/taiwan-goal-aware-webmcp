@@ -1,4 +1,5 @@
 import { getJourneyPageState } from "../ui/state";
+import { findJourneyGoal } from "../data/demoGoals";
 import type { JourneyReplanRequest, JourneyRequest } from "../journey/types";
 import type { JourneyPageState } from "../ui/state";
 
@@ -8,6 +9,7 @@ export interface IncompletePageJourneyState {
 
 function missingRequiredFields(state: JourneyPageState, includeCurrentState: boolean): string[] {
   const fields = [
+    ["goalId", state.goalId],
     ["originId", state.originId],
     ["destinationId", state.destinationId],
     ["departAt", state.departAt],
@@ -32,13 +34,15 @@ export function toJourneyRequest(
   state: JourneyPageState,
 ): JourneyRequest | IncompletePageJourneyState {
   const missingFields = missingRequiredFields(state, false);
+  const goal = findJourneyGoal(state.goalId);
+  if (!goal) missingFields.push("goalId");
   if (missingFields.length > 0) return { missingFields };
 
   return {
     originId: state.originId,
-    destinationId: state.destinationId,
+    destinationId: goal!.destinationId,
     origin: { text: state.originId, canonicalPlaceId: state.originId },
-    destination: { text: state.destinationId, canonicalPlaceId: state.destinationId },
+    destination: { text: goal!.destinationId, canonicalPlaceId: goal!.destinationId },
     departAt: state.departAt,
     travelerState: state.travelerState,
     preferences: state.preferences,
@@ -49,6 +53,7 @@ export function toJourneyRequest(
       avoidTaxi: state.preferences.avoidTaxi,
     },
     activities: [],
+    goal: structuredClone(goal!),
   };
 }
 

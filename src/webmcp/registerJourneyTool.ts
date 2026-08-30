@@ -80,14 +80,43 @@ function serializeOption(option: JourneyOption | null): Record<string, unknown> 
     tightTransferCount: candidate.tightTransferCount,
     feasibilityStatus: feasibility.status,
     reasonCodes: feasibility.reasonCodes,
+    safetyMarginMinutes: feasibility.safetyMarginMinutes ?? feasibility.deadlineMarginMinutes,
+    legs: candidate.legs.filter((leg) => leg.type === "TRAVEL").map((leg) => ({
+      serviceId: leg.serviceId,
+      mode: leg.mode,
+      fromNodeId: leg.fromNodeId,
+      toNodeId: leg.toNodeId,
+      departureAt: leg.departAt,
+      arrivalAt: leg.arriveAt,
+    })),
     ...(option.score === undefined ? {} : { score: option.score }),
     ...(option.scoreBreakdown === undefined ? {} : { scoreBreakdown: option.scoreBreakdown }),
+  };
+}
+
+function serializeGoalCheck(plan: JourneyPlanResult): Record<string, unknown> {
+  const options = [plan.fastest, plan.balanced, plan.cheapest].filter((option): option is JourneyOption => option !== null);
+  const recommended = options.find((option) => option.feasibility.status === plan.status) ?? options[0] ?? null;
+  const feasibility = recommended?.feasibility;
+  return {
+    status: plan.status,
+    goalId: plan.goalId ?? null,
+    goalDeadline: plan.goalDeadline ?? feasibility?.deadlineAt ?? null,
+    arrivalAt: recommended?.candidate.arriveAt ?? null,
+    safetyMarginMinutes: feasibility?.safetyMarginMinutes ?? feasibility?.deadlineMarginMinutes ?? null,
+    reasonCodes: plan.reasonCodes,
+    candidateCount: plan.candidateCount,
+    recommendedJourney: serializeOption(recommended),
+    fallbackAvailable: false,
+    dataSnapshot: syntheticJourneyPlanningContext.dataSnapshot ?? null,
   };
 }
 
 function serializePlan(plan: JourneyPlanResult): Record<string, unknown> {
   return {
     status: plan.status,
+    goalId: plan.goalId ?? null,
+    goalDeadline: plan.goalDeadline ?? null,
     timetableMode: plan.timetableMode,
     candidateCount: plan.candidateCount,
     reasonCodes: plan.reasonCodes,
@@ -106,19 +135,20 @@ function serializeReplan(replan: JourneyReplanResult): Record<string, unknown> {
     replannedAt: replan.replannedAt,
     alreadyAtDestination: replan.alreadyAtDestination,
     reasonCodes: replan.reasonCodes,
+    dataSnapshot: syntheticJourneyPlanningContext.dataSnapshot ?? null,
     ...(replan.clarification === undefined ? {} : { clarification: replan.clarification }),
     plan: replan.plan === null ? null : serializePlan(replan.plan),
   };
 }
 
-/** Registers the two stable, read-only WebMCP entry points once per page lifecycle. */
+/** Registers the goal-first and replan read-only WebMCP entry points once per page lifecycle. */
 export function registerJourneyTool(): boolean {
   if (!document.modelContext) return false;
 
   document.modelContext.registerTool({
-    name: "plan_taiwan_journey",
-    title: "Plan Taiwan journey",
-    description: "Use this read-only tool when the user wants to plan or compare the Taiwan journey currently configured on this page. It reads the current origin, destination, departure time, constraints and preferences from the live page, deterministically generates executable options from the site's timetable data, and returns Fastest, Cheapest and Balanced options with feasibility status. Do not use for general destination information, tourism facts, weather, or trips outside this journey-planning context.",
+    name: "check_taiwan_goal_feasibility",
+    title: "Check selected Taiwan goal",
+    description: "Use this read-only tool when the user wants to know whether the real-world goal currently selected on this page can still be accomplished. It reads the current origin, selected goal, date, departure time, preferences and constraints from live page state, then uses the deterministic Journey Engine. Do not use for general destination information, tourism facts, weather, or trips outside this goal-feasibility context.",
     inputSchema: EMPTY_INPUT_SCHEMA,
     annotations: { readOnlyHint: true, untrustedContentHint: false },
     execute: async (_input, { signal } = {}) => {
@@ -128,7 +158,7 @@ export function registerJourneyTool(): boolean {
         return incompleteStateResult("PAGE_JOURNEY_STATE_INCOMPLETE", request.missingFields);
       }
       abortIfNeeded(signal);
-      return textResult(serializePlan(planJourney(request, syntheticJourneyPlanningContext)));
+      return textResult(serializeGoalCheck(planJourney(request, syntheticJourneyPlanningContext)));
     },
   });
 

@@ -4,3 +4,12 @@ coverage/
 .netlify/
 *.log
 .DS_Store
+node_modules/
+dist/
+.cache/
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal

@@ -86,21 +86,19 @@ function updateState(overrides: Partial<JourneyPageState>): void {
 }
 
 function selectedCandidateIds(output: Record<string, any>): string[] {
-  return [output.fastest, output.cheapest, output.balanced]
-    .flatMap((option) => option ? [option.candidateId as string] : []);
+  return output.recommendedJourney ? [output.recommendedJourney.candidateId as string] : [];
 }
 
 describe("Taiwan journey WebMCP tools", () => {
   it("registers exactly the two stable read-only tools with narrow metadata", () => {
     const tools = registerTools();
-    expect([...tools.keys()]).toEqual(["plan_taiwan_journey", "replan_taiwan_journey"]);
-    expect(tools.has("check_goal_feasibility")).toBe(false);
+    expect([...tools.keys()]).toEqual(["check_taiwan_goal_feasibility", "replan_taiwan_journey"]);
     for (const tool of tools.values()) {
       expect(tool.inputSchema).toEqual({ type: "object", properties: {}, additionalProperties: false });
       expect(tool.annotations).toEqual({ readOnlyHint: true, untrustedContentHint: false });
     }
-    expect(tools.get("plan_taiwan_journey")?.description).toContain("currently configured on this page");
-    expect(tools.get("plan_taiwan_journey")?.description).toContain("weather");
+    expect(tools.get("check_taiwan_goal_feasibility")?.description).toContain("currently selected on this page");
+    expect(tools.get("check_taiwan_goal_feasibility")?.description).toContain("weather");
     expect(tools.get("replan_taiwan_journey")?.description).toContain("location or time has changed");
   });
 
@@ -118,7 +116,7 @@ describe("Taiwan journey WebMCP tools", () => {
   it("returns a compact structured error when the planning state is incomplete", async () => {
     const tools = registerTools();
     updateState({ destinationId: "" });
-    await expect(json(tools.get("plan_taiwan_journey")!)).resolves.toEqual({
+    await expect(json(tools.get("check_taiwan_goal_feasibility")!)).resolves.toEqual({
       status: "UNKNOWN",
       reasonCodes: ["PAGE_JOURNEY_STATE_INCOMPLETE"],
       missingFields: ["destinationId"],
@@ -145,23 +143,31 @@ describe("Taiwan journey WebMCP tools", () => {
   });
 
   it("reads 07:00 then 07:12 live state without registering the plan tool again", async () => {
-    const plan = registerTools().get("plan_taiwan_journey")!;
+    const plan = registerTools().get("check_taiwan_goal_feasibility")!;
     updateState({ preferences: { avoidTaxi: true } });
     const early = await json(plan);
     updateState({ departAt: "2030-06-15T07:12:00+08:00" });
     const late = await json(plan);
-    expect(selectedCandidateIds(early).join("|")).toContain("bus-xiaogang-0705");
+    expect(late.candidateCount).toBeLessThan(early.candidateCount);
     expect(selectedCandidateIds(late).join("|")).not.toContain("bus-xiaogang-0705");
-    expect(selectedCandidateIds(late).join("|")).toContain("bus-xiaogang-0720");
   });
 
   it("reads a changed avoidTaxi preference from the same registered plan tool", async () => {
-    const plan = registerTools().get("plan_taiwan_journey")!;
+    const plan = registerTools().get("check_taiwan_goal_feasibility")!;
     const taxiAllowed = await json(plan);
     updateState({ preferences: { avoidTaxi: true } });
     const taxiAvoided = await json(plan);
     expect(selectedCandidateIds(taxiAllowed).join("|")).toContain("taxi-");
     expect(selectedCandidateIds(taxiAvoided).join("|")).not.toContain("taxi-");
+  });
+
+  it("reads a changed selected goal from the same registered feasibility tool", async () => {
+    const check = registerTools().get("check_taiwan_goal_feasibility")!;
+    const verified = await json(check);
+    updateState({ goalId: "bade-deadline-unverified" });
+    const unknown = await json(check);
+    expect(verified.goalId).toBe("bade-evening-appointment");
+    expect(unknown).toMatchObject({ goalId: "bade-deadline-unverified", status: "UNKNOWN", reasonCodes: ["GOAL_DEADLINE_UNVERIFIED"] });
   });
 
   it("replans live state from Zuoying THSR after the 08:30 service has been missed", async () => {
@@ -192,19 +198,19 @@ describe("Taiwan journey WebMCP tools", () => {
   });
 
   it("has plan output parity with planJourney for the same live state", async () => {
-    const plan = registerTools().get("plan_taiwan_journey")!;
+    const plan = registerTools().get("check_taiwan_goal_feasibility")!;
     updateState({ preferences: { avoidTaxi: true } });
     const request = toJourneyRequest(getCurrentJourneyPageState());
     if ("missingFields" in request) throw new Error("test state should be complete");
     const domain = planJourney(request, syntheticContext);
     const output = await json(plan);
+    const expected = [domain.fastest, domain.balanced, domain.cheapest]
+      .find((option) => option?.feasibility.status === domain.status) ?? domain.fastest ?? domain.balanced ?? domain.cheapest;
     expect(output).toMatchObject({
       status: domain.status,
-      timetableMode: domain.timetableMode,
-      candidateCount: domain.candidateCount,
-      fastest: { candidateId: domain.fastest?.candidate.id },
-      cheapest: { candidateId: domain.cheapest?.candidate.id },
-      balanced: { candidateId: domain.balanced?.candidate.id },
+      goalId: domain.goalId,
+      recommendedJourney: { candidateId: expected?.candidate.id },
+      dataSnapshot: { snapshotId: "synthetic-2030-challenge-fixture" },
     });
   });
 
@@ -219,25 +225,26 @@ describe("Taiwan journey WebMCP tools", () => {
       status: domain.plan?.status ?? "UNKNOWN",
       currentNodeId: domain.currentNodeId,
       reasonCodes: domain.reasonCodes,
-      plan: { fastest: { candidateId: domain.plan?.fastest?.candidate.id } },
+      dataSnapshot: { snapshotId: "synthetic-2030-challenge-fixture" },
+      plan: { goalId: "bade-evening-appointment", fastest: { candidateId: domain.plan?.fastest?.candidate.id } },
     });
   });
 
   it("honors cancellation before reading state or calling the deterministic engine", async () => {
-    const plan = registerTools().get("plan_taiwan_journey")!;
+    const plan = registerTools().get("check_taiwan_goal_feasibility")!;
     const controller = new AbortController();
     controller.abort();
     await expect(plan.execute({}, { signal: controller.signal })).rejects.toMatchObject({ name: "AbortError" });
   });
 
   it("does not read network or wall clock during WebMCP planning", async () => {
-    const plan = registerTools().get("plan_taiwan_journey")!;
+    const plan = registerTools().get("check_taiwan_goal_feasibility")!;
     const originalNow = Date.now;
     const originalFetch = globalThis.fetch;
     Date.now = () => { throw new Error("wall clock must not be read"); };
     globalThis.fetch = (() => { throw new Error("network must not be read"); }) as typeof fetch;
     try {
-      await expect(json(plan)).resolves.toMatchObject({ timetableMode: "SYNTHETIC_FIXED_TIMETABLE" });
+      await expect(json(plan)).resolves.toMatchObject({ dataSnapshot: { actualOperationsClaimed: false } });
     } finally {
       Date.now = originalNow;
       globalThis.fetch = originalFetch;

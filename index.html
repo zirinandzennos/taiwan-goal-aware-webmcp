@@ -3,39 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="A deterministic synthetic Taiwan journey planning WebMCP demo." />
+    <meta name="description" content="A goal-first Taiwan journey feasibility tool powered by a deterministic Journey Engine." />
     <title>Taiwan Goal-aware Journey</title>
   </head>
   <body>
-    <main class="page-shell">
-      <section class="journey-card" aria-labelledby="page-title">
-        <p class="eyebrow">TAIWAN GOAL-AWARE JOURNEY</p>
-        <h1 id="page-title">Taiwan Goal-aware Journey</h1>
-        <p class="intro">AI understands the traveler. We calculate how the journey can actually work.</p>
-        <div class="notice" role="note"><strong>SYNTHETIC FIXED TIMETABLE DEMO</strong><br />Not real-time or operational Taiwan transportation information.</div>
-        <p id="webmcp-status" class="webmcp-status" aria-live="polite"></p>
-        <section class="form-section" aria-labelledby="plan-title">
-          <div class="section-heading"><h2 id="plan-title">Plan journey</h2><button id="load-demo" class="secondary-button" type="button">Load demo journey</button></div>
-          <label for="origin-select">From</label><select id="origin-select" name="origin"></select>
-          <label for="destination-select">To</label><select id="destination-select" name="destination"></select>
-          <label for="depart-at">Depart at</label><input id="depart-at" type="datetime-local" />
-          <label for="arrive-by">Arrive by <span>(optional)</span></label><input id="arrive-by" type="datetime-local" />
-          <label class="check-label" for="avoid-taxi"><input id="avoid-taxi" type="checkbox" /> Avoid taxi</label>
-          <button id="plan-button" type="button">Plan journey</button>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup"><span class="brand-mark" aria-hidden="true">台</span><div><p class="eyebrow">TAIWAN JOURNEY DESK</p><h1>Taiwan Goal-aware Journey</h1></div></div>
+        <div class="system-status"><span class="status-dot" aria-hidden="true"></span><span id="webmcp-status">Checking WebMCP</span></div>
+      </header>
+      <div class="data-banner" role="note"><strong>Test-data workspace</strong><span>Current runtime still uses a clearly labeled synthetic timetable. Official 2026 snapshot import is credential-blocked.</span></div>
+      <section class="workspace" aria-label="Goal feasibility workspace">
+        <section class="control-panel" aria-labelledby="plan-title">
+          <div class="panel-heading"><div><p class="step-label">01 · SET THE INTENT</p><h2 id="plan-title">What must you accomplish?</h2></div><button id="load-demo" class="text-button" type="button">Reset demo</button></div>
+          <div class="field-grid">
+            <div class="field-block"><label for="origin-select">From</label><select id="origin-select" name="origin"></select></div>
+            <div class="field-block field-wide"><label for="goal-select">Goal</label><select id="goal-select" name="goal"></select><p id="goal-source" class="field-note"></p></div>
+            <div class="field-block field-wide"><label for="depart-at">Date / departure</label><input id="depart-at" type="datetime-local" /></div>
+          </div>
+          <fieldset class="preference-group"><legend>Preferences</legend><label class="choice-pill" for="avoid-taxi"><input id="avoid-taxi" type="checkbox" /><span>Avoid taxi</span></label><label class="select-pill" for="policy-select"><span>Priority</span><select id="policy-select"><option value="DEADLINE_CRITICAL">Goal safety</option><option value="FASTEST">Fastest</option><option value="BALANCED">Balanced</option><option value="CHEAPEST">Cheapest</option></select></label></fieldset>
+          <button id="plan-button" class="primary-button" type="button"><span>Can I still make it?</span><span aria-hidden="true">→</span></button>
         </section>
-        <section class="form-section" aria-labelledby="current-title">
-          <h2 id="current-title">Current journey state</h2>
-          <label for="current-node">Current node</label><select id="current-node" name="current-node"></select>
-          <label for="current-at">Current journey time</label><input id="current-at" type="datetime-local" />
-          <button id="replan-button" type="button">Replan remaining trip</button>
-        </section>
-        <section class="result" aria-live="polite" aria-labelledby="result-heading">
-          <h2 id="result-heading">Result</h2>
-          <p id="result-status">Set the journey and choose Plan journey.</p>
-          <p id="result-message"></p>
-          <div id="option-cards" class="option-cards"></div>
+        <section class="result-panel" aria-live="polite" aria-labelledby="result-heading">
+          <div class="result-topline"><p class="step-label">02 · DECISION</p><span id="result-status" class="status-badge is-neutral">READY</span></div>
+          <h2 id="result-heading">Goal feasibility</h2><p id="result-message" class="result-message">Choose a goal and check whether the journey still works.</p>
+          <div class="metric-grid"><div class="metric"><span>Arrival</span><strong id="arrival-value">—</strong></div><div class="metric"><span>Goal deadline</span><strong id="deadline-value">—</strong></div><div class="metric metric-accent"><span>Safety margin</span><strong id="margin-value">—</strong></div></div>
+          <div id="option-tabs" class="option-tabs" aria-label="Journey option" hidden></div>
+          <details id="journey-details" class="journey-details" hidden><summary>View journey <span aria-hidden="true">↓</span></summary><ol id="journey-legs" class="journey-legs"></ol></details>
+          <details id="progress-details" class="progress-details" hidden><summary>Update progress or recalculate from here</summary><div class="progress-fields"><div class="field-block"><label for="current-node">Current location</label><select id="current-node" name="current-node"></select></div><div class="field-block"><label for="current-at">Current time</label><input id="current-at" type="datetime-local" /></div><button id="replan-button" class="secondary-button" type="button">Recalculate remainder</button></div></details>
         </section>
       </section>
+      <footer><span>Deterministic planning · Read-only WebMCP</span><span>Scheduled timetable ≠ actual operations</span></footer>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

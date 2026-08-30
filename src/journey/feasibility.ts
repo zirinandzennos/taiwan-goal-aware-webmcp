@@ -22,6 +22,14 @@ function resolveDeadline(
   request: JourneyRequest,
   context: JourneyFeasibilityContext | undefined,
 ): DeadlineResolution {
+  if (request.goal) {
+    if (!request.goal.deadlineVerified || request.goal.deadlineAt === null) {
+      return { deadlineAt: request.goal.deadlineAt, deadlineMs: null, unknownReason: "GOAL_DEADLINE_UNVERIFIED" };
+    }
+    const deadlineMs = parseExplicitIsoTimestamp(request.goal.deadlineAt);
+    if (deadlineMs === null) return { deadlineAt: request.goal.deadlineAt, deadlineMs: null, unknownReason: "INVALID_REQUIRED_TIMESTAMP" };
+    return { deadlineAt: request.goal.deadlineAt, deadlineMs };
+  }
   const deadlineRequired = request.constraints.arriveBy !== undefined
     || context?.deadlineRequired === true
     || context?.deadlineAt !== undefined;
@@ -53,6 +61,8 @@ function unavailableCandidate(
     arrivalAt: candidate.arriveAt,
     deadlineAt: deadline.deadlineAt,
     deadlineMarginMinutes: null,
+    goalReadyAt: null,
+    safetyMarginMinutes: null,
     minimumTransferSlackMinutes: candidate.minimumTransferSlackMinutes,
     reasonCodes: [reasonCode],
   };
@@ -76,9 +86,12 @@ export function evaluateCandidateFeasibility(
   const arrivalMs = parseExplicitIsoTimestamp(candidate.arriveAt);
   if (arrivalMs === null) return unavailableCandidate(candidate, deadline, "INVALID_REQUIRED_TIMESTAMP");
 
+  const actionBufferMinutes = request.goal?.goalActionBufferMinutes ?? 0;
+  const goalReadyMs = arrivalMs + actionBufferMinutes * 60_000;
+  const goalReadyAt = new Date(goalReadyMs).toISOString();
   const deadlineMarginMinutes = deadline.deadlineMs === null
     ? null
-    : Math.round((deadline.deadlineMs - arrivalMs) / 60_000);
+    : Math.round((deadline.deadlineMs - goalReadyMs) / 60_000);
   if (deadlineMarginMinutes !== null && deadlineMarginMinutes < 0) {
     return {
       candidateId: candidate.id,
@@ -86,13 +99,16 @@ export function evaluateCandidateFeasibility(
       arrivalAt: candidate.arriveAt,
       deadlineAt: deadline.deadlineAt,
       deadlineMarginMinutes,
+      goalReadyAt,
+      safetyMarginMinutes: deadlineMarginMinutes,
       minimumTransferSlackMinutes: candidate.minimumTransferSlackMinutes,
       reasonCodes: ["ARRIVAL_AFTER_HARD_DEADLINE"],
     };
   }
 
   const riskCodes: JourneyFeasibilityReasonCode[] = [];
-  if (deadlineMarginMinutes !== null && deadlineMarginMinutes < DEFAULT_ARRIVAL_SAFETY_BUFFER_MINUTES) {
+  const requiredSafetyBufferMinutes = request.goal?.requiredSafetyBufferMinutes ?? DEFAULT_ARRIVAL_SAFETY_BUFFER_MINUTES;
+  if (deadlineMarginMinutes !== null && deadlineMarginMinutes < requiredSafetyBufferMinutes) {
     riskCodes.push("INSUFFICIENT_ARRIVAL_BUFFER");
   }
   if (
@@ -109,6 +125,8 @@ export function evaluateCandidateFeasibility(
       arrivalAt: candidate.arriveAt,
       deadlineAt: deadline.deadlineAt,
       deadlineMarginMinutes,
+      goalReadyAt,
+      safetyMarginMinutes: deadlineMarginMinutes,
       minimumTransferSlackMinutes: candidate.minimumTransferSlackMinutes,
       reasonCodes: riskCodes,
     };
@@ -120,6 +138,8 @@ export function evaluateCandidateFeasibility(
     arrivalAt: candidate.arriveAt,
     deadlineAt: deadline.deadlineAt,
     deadlineMarginMinutes,
+    goalReadyAt,
+    safetyMarginMinutes: deadlineMarginMinutes,
     minimumTransferSlackMinutes: candidate.minimumTransferSlackMinutes,
     reasonCodes: [deadline.deadlineAt === null ? "JOURNEY_MEETS_CONSTRAINTS" : "MEETS_DEADLINE_WITH_BUFFER"],
   };

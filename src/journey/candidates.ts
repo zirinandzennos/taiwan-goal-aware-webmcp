@@ -1,13 +1,14 @@
 import {
-  eligibleFirstServices,
   evaluateTransferFeasibility,
   hasValidServiceTimes,
 } from "./timetable";
+import { createIndexedTimetableStore } from "./timetableStore";
 import { TIGHT_TRANSFER_SLACK_MINUTES } from "./policies";
 import type {
   CandidateJourney,
   JourneyRequest,
   ScheduledService,
+  TimetableStore,
   TransferRule,
   TravelLeg,
 } from "./types";
@@ -81,13 +82,19 @@ export function generateCandidateJourneys(
   request: JourneyRequest,
   timetable: readonly ScheduledService[],
   transferRules: readonly TransferRule[],
+  timetableStore: TimetableStore = createIndexedTimetableStore(timetable),
 ): CandidateJourney[] {
   const maxTransfers = Math.max(0, request.constraints.maxTransfers ?? DEFAULT_MAX_TRANSFERS);
   const candidates: CandidateJourney[] = [];
   const permittedService = (service: ScheduledService): boolean => (
     hasValidServiceTimes(service)
     && !(request.constraints.avoidTaxi === true && service.mode === "TAXI")
+    && !(request.constraints.forbiddenModes?.includes(service.mode) ?? false)
   );
+  const departureOptions = {
+    limit: 32,
+    ...(request.constraints.allowedModes ? { allowedModes: request.constraints.allowedModes } : {}),
+  };
 
   const search = (state: SearchState): void => {
     const currentService = state.services[state.services.length - 1];
@@ -98,35 +105,34 @@ export function generateCandidateJourneys(
 
     if (state.services.length - 1 >= maxTransfers) return;
 
-    for (const nextService of timetable) {
-      if (!permittedService(nextService)) continue;
-      if (state.usedServiceIds.has(nextService.id)) continue;
-      if (state.visitedNodeIds.has(nextService.toNodeId)) continue;
+    const outgoingTransferRules = transferRules.filter((rule) => rule.fromNodeId === currentService.toNodeId);
+    for (const transferRule of outgoingTransferRules) {
+      const readyAt = new Date(Date.parse(currentService.arrivalAt) + (transferRule.walkingMinutes + transferRule.minimumTransferMinutes) * 60_000).toISOString();
+      for (const nextService of timetableStore.findNextDepartures(transferRule.toNodeId, readyAt, departureOptions)) {
+        if (!permittedService(nextService)) continue;
+        if (state.usedServiceIds.has(nextService.id)) continue;
+        if (state.visitedNodeIds.has(nextService.toNodeId)) continue;
+        const transfer = evaluateTransferFeasibility(currentService, nextService, transferRule);
+        if (!transfer.connectable || transfer.transferMinutes === null || transfer.earliestReadyAt === null) continue;
 
-      const transferRule = transferRules.find((rule) => (
-        rule.fromNodeId === currentService.toNodeId
-        && rule.toNodeId === nextService.fromNodeId
-      ));
-      const transfer = evaluateTransferFeasibility(currentService, nextService, transferRule);
-      if (!transferRule || !transfer.connectable || transfer.transferMinutes === null || transfer.earliestReadyAt === null) continue;
-
-      const additionalWaitingMinutes = Math.round((Date.parse(nextService.departureAt) - Date.parse(transfer.earliestReadyAt)) / 60_000);
-      search({
-        services: [...state.services, nextService],
-        walkingMinutes: state.walkingMinutes + transferRule.walkingMinutes,
-        transferMinutes: state.transferMinutes + transfer.transferMinutes,
-        waitingMinutes: state.waitingMinutes + additionalWaitingMinutes,
-        minimumTransferSlackMinutes: state.minimumTransferSlackMinutes === null
-          ? additionalWaitingMinutes
-          : Math.min(state.minimumTransferSlackMinutes, additionalWaitingMinutes),
-        tightTransferCount: state.tightTransferCount + (additionalWaitingMinutes < TIGHT_TRANSFER_SLACK_MINUTES ? 1 : 0),
-        visitedNodeIds: new Set([...state.visitedNodeIds, nextService.toNodeId]),
-        usedServiceIds: new Set([...state.usedServiceIds, nextService.id]),
-      });
+        const additionalWaitingMinutes = Math.round((Date.parse(nextService.departureAt) - Date.parse(transfer.earliestReadyAt)) / 60_000);
+        search({
+          services: [...state.services, nextService],
+          walkingMinutes: state.walkingMinutes + transferRule.walkingMinutes,
+          transferMinutes: state.transferMinutes + transfer.transferMinutes,
+          waitingMinutes: state.waitingMinutes + additionalWaitingMinutes,
+          minimumTransferSlackMinutes: state.minimumTransferSlackMinutes === null
+            ? additionalWaitingMinutes
+            : Math.min(state.minimumTransferSlackMinutes, additionalWaitingMinutes),
+          tightTransferCount: state.tightTransferCount + (additionalWaitingMinutes < TIGHT_TRANSFER_SLACK_MINUTES ? 1 : 0),
+          visitedNodeIds: new Set([...state.visitedNodeIds, nextService.toNodeId]),
+          usedServiceIds: new Set([...state.usedServiceIds, nextService.id]),
+        });
+      }
     }
   };
 
-  for (const firstService of eligibleFirstServices(timetable, request)) {
+  for (const firstService of timetableStore.findNextDepartures(request.originId, request.departAt, departureOptions)) {
     if (!permittedService(firstService)) continue;
     search({
       services: [firstService],
