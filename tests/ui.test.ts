@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { officialJourneyPlanningContext } from "../src/journey/officialTimetable";
 import { planCurrentJourney, replanCurrentJourney } from "../src/ui/journeyActions";
 import {
   getJourneyPageState,
@@ -55,64 +56,75 @@ async function toolOutput(tool: RegisteredTool): Promise<Record<string, any>> {
   return JSON.parse((await tool.execute({})).content[0].text) as Record<string, any>;
 }
 
-function optionIds(plan: Exclude<ReturnType<typeof planCurrentJourney>, { kind: "STATE_ERROR" }> ["plan"]): string[] {
-  return [plan.fastest, plan.cheapest, plan.balanced]
-    .flatMap((option) => option ? [option.candidate.id] : []);
-}
+describe("official browser journey execution path", () => {
+  it("loads the official snapshot and 2026-08-31 primary page state", () => {
+    expect(officialJourneyPlanningContext).toMatchObject({
+      timetableMode: "PROVIDER_NORMALIZED",
+      dataSnapshot: { snapshotId: "tdx-thsr-20260831-20260906-20260830", periodStart: "2026-08-31", periodEnd: "2026-09-06", actualOperationsClaimed: false },
+    });
+    expect(getJourneyPageState()).toMatchObject({
+      goalId: "ENTER_XPARK", originId: "1070", destinationId: "1020", departAt: "2026-08-31T11:30:00+08:00",
+      currentState: { nodeId: "1060", at: "2026-08-31T11:49:00+08:00" },
+    });
+  });
 
-describe("minimal human journey UI execution path", () => {
-  it("uses the same live state for a human 07:00 plan and later WebMCP 07:12 plan", async () => {
+  it("changes the computed service after departAt moves past train 1634", async () => {
     const planTool = registerPlanTool();
-    updateState({ preferences: { avoidTaxi: true } });
-    const human = planCurrentJourney();
-    expect(human.kind).toBe("PLAN_RESULT");
-    if (human.kind !== "PLAN_RESULT") throw new Error("expected a human plan");
-    expect(optionIds(human.plan).join("|")).toContain("bus-xiaogang-0705");
-
-    updateState({ departAt: "2030-06-15T07:12:00+08:00" });
-    const agent = await toolOutput(planTool);
-    expect(JSON.stringify(agent)).not.toContain("bus-xiaogang-0705");
-    expect(JSON.stringify(agent)).toContain("bus-xiaogang-0720");
+    const early = await toolOutput(planTool);
+    updateState({ departAt: "2026-08-31T11:36:00+08:00" });
+    const late = await toolOutput(planTool);
+    expect(JSON.stringify(early)).toContain("THSR_1634_20260831:1070-1020");
+    expect(JSON.stringify(late)).not.toContain("THSR_1634_20260831:1070-1020");
+    expect(late.recommendedJourney.candidateId).not.toBe(early.recommendedJourney.candidateId);
   });
 
   it("returns domain-equivalent human and WebMCP plan results", async () => {
     const human = planCurrentJourney();
     const agent = await toolOutput(registerPlanTool());
     if (human.kind !== "PLAN_RESULT") throw new Error("expected a human plan");
-    const expected = [human.plan.fastest, human.plan.balanced, human.plan.cheapest]
-      .find((option) => option?.feasibility.status === human.plan.status) ?? human.plan.fastest ?? human.plan.balanced ?? human.plan.cheapest;
+    const expected = human.plan.balanced ?? human.plan.fastest ?? human.plan.cheapest;
     expect(human).toMatchObject({ kind: "PLAN_RESULT", plan: {
       status: agent.status,
-      goalId: agent.goalId,
+      goalId: agent.goal.id,
     } });
     expect(agent.recommendedJourney.candidateId).toBe(expected?.candidate.id);
+    expect(agent).toMatchObject({ arrivalAt: "2026-08-31T13:09:00+08:00", goalReadyAt: "2026-08-31T05:18:00.000Z", safetyMarginMinutes: 222 });
   });
 
-  it("applies avoidTaxi identically to human and WebMCP planning", async () => {
-    updateState({ preferences: { avoidTaxi: true } });
-    const human = planCurrentJourney();
-    expect(human.kind).toBe("PLAN_RESULT");
-    if (human.kind !== "PLAN_RESULT") throw new Error("expected a human plan");
-    for (const option of [human.plan.fastest, human.plan.cheapest, human.plan.balanced]) {
-      expect(option?.candidate.legs.some((leg) => leg.type === "TRAVEL" && leg.mode === "TAXI")).toBe(false);
+  it("uses the provider-normalized THSR context without browser credentials", async () => {
+    const previousId = process.env.TDX_CLIENT_ID;
+    const previousSecret = process.env.TDX_CLIENT_SECRET;
+    delete process.env.TDX_CLIENT_ID;
+    delete process.env.TDX_CLIENT_SECRET;
+    try {
+      const human = planCurrentJourney();
+      expect(human).toMatchObject({ kind: "PLAN_RESULT", plan: { status: "FEASIBLE", timetableMode: "PROVIDER_NORMALIZED", balanced: { candidate: { legs: [{ serviceId: "THSR_1634_20260831:1070-1020" }] } } } });
+      expect(JSON.stringify(await toolOutput(registerPlanTool()))).not.toContain("synthetic-2030-challenge-fixture");
+    } finally {
+      if (previousId === undefined) delete process.env.TDX_CLIENT_ID; else process.env.TDX_CLIENT_ID = previousId;
+      if (previousSecret === undefined) delete process.env.TDX_CLIENT_SECRET; else process.env.TDX_CLIENT_SECRET = previousSecret;
     }
-    expect(JSON.stringify(await toolOutput(registerPlanTool()))).not.toContain("taxi-");
   });
 
-  it("replans from the same live state for human and WebMCP paths", async () => {
-    updateState({ currentState: { nodeId: "zuoying-thsr", at: "2030-06-15T08:31:00+08:00" } });
+  it("replans from Tainan identically and discovers 0640 after departed 1634", async () => {
     const human = replanCurrentJourney();
     const agent = await toolOutput(registerReplanTool());
     expect(human).toMatchObject({ kind: "REPLAN_RESULT", replan: {
-      currentNodeId: "zuoying-thsr",
-      plan: { fastest: { candidate: { id: agent.plan.fastest.candidateId } } },
+      currentNodeId: "1060",
+      replannedAt: "2026-08-31T11:49:00+08:00",
+      plan: { balanced: { candidate: { id: agent.plan.balanced.candidateId, legs: [{ serviceId: "THSR_0640_20260831:1060-1020" }] } } },
     } });
-    expect(JSON.stringify(human)).not.toContain("thsr-zuoying-0830");
-    expect(JSON.stringify(agent)).not.toContain("thsr-zuoying-0830");
+    expect(agent).toMatchObject({
+      status: "FEASIBLE",
+      safetyMarginMinutes: 162,
+      recommendedJourney: { legs: [{ serviceId: "THSR_0640_20260831:1060-1020" }] },
+    });
+    expect(JSON.stringify(human)).not.toContain("THSR_1634_20260831:1060-1020");
+    expect(JSON.stringify(agent)).not.toContain("THSR_1634_20260831:1060-1020");
   });
 
   it("keeps the empty candidate invariant for the human plan path", () => {
-    updateState({ departAt: "2030-06-15T22:00:00+08:00" });
+    updateState({ departAt: "2026-09-06T23:59:00+08:00" });
     expect(planCurrentJourney()).toMatchObject({ kind: "PLAN_RESULT", plan: {
       candidateCount: 0,
       fastest: null,
@@ -126,7 +138,6 @@ describe("minimal human journey UI execution path", () => {
     Object.defineProperty(globalThis, "document", { configurable: true, value: {} });
     expect(registerJourneyTool()).toBe(false);
     expect(planCurrentJourney().kind).toBe("PLAN_RESULT");
-    updateState({ currentState: { nodeId: "zuoying-thsr", at: "2030-06-15T08:31:00+08:00" } });
     expect(replanCurrentJourney().kind).toBe("REPLAN_RESULT");
   });
 });

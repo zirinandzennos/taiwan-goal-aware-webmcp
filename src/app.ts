@@ -1,7 +1,7 @@
 import "./app.css";
 import { findJourneyGoal, journeyGoals } from "./data/demoGoals";
-import { syntheticJourneyNodes } from "./journey/syntheticTimetable";
-import type { JourneyOption, JourneyPlanResult, JourneyPolicyPreset } from "./journey/types";
+import { findOfficialNode, findOfficialService, officialJourneyNodes } from "./journey/officialTimetable";
+import type { JourneyOption, JourneyPlanResult } from "./journey/types";
 import { planCurrentJourney, replanCurrentJourney } from "./ui/journeyActions";
 import { getJourneyPageState, resetJourneyPageState, setJourneyPageState } from "./ui/state";
 import { registerJourneyTool } from "./webmcp/registerJourneyTool";
@@ -16,13 +16,12 @@ const origin = required<HTMLSelectElement>("#origin-select");
 const goal = required<HTMLSelectElement>("#goal-select");
 const goalSource = required<HTMLElement>("#goal-source");
 const departAt = required<HTMLInputElement>("#depart-at");
-const avoidTaxi = required<HTMLInputElement>("#avoid-taxi");
-const policy = required<HTMLSelectElement>("#policy-select");
 const currentNode = required<HTMLSelectElement>("#current-node");
 const currentAt = required<HTMLInputElement>("#current-at");
 const resultStatus = required<HTMLElement>("#result-status");
 const resultMessage = required<HTMLElement>("#result-message");
 const arrivalValue = required<HTMLElement>("#arrival-value");
+const goalReadyValue = required<HTMLElement>("#goal-ready-value");
 const deadlineValue = required<HTMLElement>("#deadline-value");
 const marginValue = required<HTMLElement>("#margin-value");
 const optionTabs = required<HTMLElement>("#option-tabs");
@@ -42,7 +41,7 @@ function timeOnly(value: string | null | undefined): string {
 function reasonText(plan: JourneyPlanResult, option: JourneyOption | null): string {
   const code = option?.feasibility.reasonCodes[0] ?? plan.reasonCodes[0];
   const messages: Record<string, string> = {
-    MEETS_DEADLINE_WITH_BUFFER: "Safe enough to complete this goal.",
+    MEETS_DEADLINE_WITH_BUFFER: "Meets the hard goal deadline with buffer.",
     INSUFFICIENT_ARRIVAL_BUFFER: "The journey arrives before the deadline, but the margin is tight.",
     ARRIVAL_AFTER_HARD_DEADLINE: "The earliest executable journey misses the hard deadline.",
     GOAL_DEADLINE_UNVERIFIED: "The goal deadline is not verified, so a safe answer is not possible.",
@@ -63,13 +62,16 @@ function renderJourney(option: JourneyOption | null): void {
   if (!option) { journeyDetails.hidden = true; return; }
   for (const leg of option.candidate.legs) {
     if (leg.type !== "TRAVEL") continue;
+    const service = findOfficialService(leg.serviceId);
+    const from = findOfficialNode(leg.fromNodeId)?.name ?? "Unknown station";
+    const to = findOfficialNode(leg.toNodeId)?.name ?? "Unknown station";
     const item = document.createElement("li");
     const title = document.createElement("p");
     title.className = "leg-title";
-    title.textContent = `${leg.mode} · ${leg.fromNodeId} → ${leg.toNodeId}`;
+    title.textContent = `${leg.mode} train ${service?.serviceName ?? "—"} · ${from} → ${to}`;
     const meta = document.createElement("p");
     meta.className = "leg-meta";
-    meta.textContent = `${timeOnly(leg.departAt)}–${timeOnly(leg.arriveAt)} · ${leg.serviceId}`;
+    meta.textContent = `${timeOnly(leg.departAt)}–${timeOnly(leg.arriveAt)} · Official scheduled service`;
     item.append(title, meta);
     journeyLegs.append(item);
   }
@@ -80,6 +82,7 @@ function renderOption(plan: JourneyPlanResult, option: JourneyOption | null): vo
   setStatus(option?.feasibility.status ?? plan.status);
   resultMessage.textContent = reasonText(plan, option);
   arrivalValue.textContent = timeOnly(option?.candidate.arriveAt);
+  goalReadyValue.textContent = timeOnly(option?.feasibility.goalReadyAt);
   deadlineValue.textContent = timeOnly(option?.feasibility.deadlineAt ?? plan.goalDeadline);
   const margin = option?.feasibility.safetyMarginMinutes ?? option?.feasibility.deadlineMarginMinutes;
   marginValue.textContent = margin === null || margin === undefined ? "—" : `${margin >= 0 ? "+" : ""}${margin} min`;
@@ -87,10 +90,16 @@ function renderOption(plan: JourneyPlanResult, option: JourneyOption | null): vo
 }
 
 function renderPlan(plan: JourneyPlanResult): void {
-  const options = [["Fastest", plan.fastest], ["Balanced", plan.balanced], ["Cheapest", plan.cheapest]] as const;
+  const options = [["Balanced", plan.balanced], ["Fastest", plan.fastest], ["Cheapest", plan.cheapest]] as const;
   optionTabs.replaceChildren();
   const available: Array<readonly [string, JourneyOption]> = [];
-  for (const [label, option] of options) if (option) available.push([label, option]);
+  const candidateIds = new Set<string>();
+  for (const [label, option] of options) {
+    if (option && !candidateIds.has(option.candidate.id)) {
+      available.push([label, option]);
+      candidateIds.add(option.candidate.id);
+    }
+  }
   optionTabs.hidden = available.length < 2;
   const initial = available.map(([, option]) => option).find((option) => option.feasibility.status === plan.status)
     ?? plan.fastest ?? plan.balanced ?? plan.cheapest;
@@ -112,13 +121,13 @@ function renderPlan(plan: JourneyPlanResult): void {
 function renderStateError(reasonCodes: string[], missingFields: string[]): void {
   setStatus("UNKNOWN");
   resultMessage.textContent = `${reasonCodes.join(", ")}: ${missingFields.join(", ")}`;
-  arrivalValue.textContent = deadlineValue.textContent = marginValue.textContent = "—";
+  arrivalValue.textContent = goalReadyValue.textContent = deadlineValue.textContent = marginValue.textContent = "—";
   optionTabs.hidden = journeyDetails.hidden = progressDetails.hidden = true;
 }
 
 function addOptions(): void {
-  for (const node of syntheticJourneyNodes) {
-    origin.add(new Option(node.name, node.id));
+  for (const node of officialJourneyNodes) {
+    origin.add(new Option(`${node.name} THSR`, node.id));
     currentNode.add(new Option(node.name, node.id));
   }
   currentNode.add(new Option("Select current location", ""), 0);
@@ -130,8 +139,6 @@ function syncControlsFromState(): void {
   origin.value = state.originId;
   goal.value = state.goalId;
   departAt.value = toLocalInputValue(state.departAt);
-  avoidTaxi.checked = state.preferences.avoidTaxi;
-  policy.value = state.policy;
   currentNode.value = state.currentState?.nodeId ?? "";
   currentAt.value = toLocalInputValue(state.currentState?.at);
   goalSource.textContent = findJourneyGoal(state.goalId)?.source.label ?? "Goal source unavailable";
@@ -147,8 +154,6 @@ function syncStateFromControls(): void {
     originId: origin.value,
     destinationId: selectedGoal?.destinationId ?? previous.destinationId,
     departAt: toExplicitTaipeiIso(departAt.value),
-    preferences: { ...previous.preferences, avoidTaxi: avoidTaxi.checked },
-    policy: policy.value as JourneyPolicyPreset,
     currentState: currentNode.value && currentTime ? { nodeId: currentNode.value, at: currentTime } : undefined,
   });
   goalSource.textContent = selectedGoal?.source.label ?? "Goal source unavailable";
@@ -163,7 +168,7 @@ function executePlan(): void {
 
 addOptions();
 syncControlsFromState();
-for (const control of [origin, goal, departAt, avoidTaxi, policy, currentNode, currentAt]) control.addEventListener("change", syncStateFromControls);
+for (const control of [origin, goal, departAt, currentNode, currentAt]) control.addEventListener("change", syncStateFromControls);
 required<HTMLButtonElement>("#load-demo").addEventListener("click", () => { resetJourneyPageState(); syncControlsFromState(); executePlan(); });
 required<HTMLButtonElement>("#plan-button").addEventListener("click", executePlan);
 required<HTMLButtonElement>("#replan-button").addEventListener("click", () => {

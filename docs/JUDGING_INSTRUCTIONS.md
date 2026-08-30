@@ -3,23 +3,20 @@
 ## Human UI
 
 1. Open https://taiwan-goal-aware-webmcp.netlify.app/
-2. Confirm the **SYNTHETIC FIXED TIMETABLE DEMO** warning.
-3. Click **Load demo journey** if needed. The default is Kaohsiung Xiaogang to Bade, Taoyuan at synthetic time `2030-06-15 07:00`.
-4. Click **Plan journey**.
-5. Observe **Fastest**, **Cheapest**, and **Balanced** recommendations.
-6. Change departure time to `07:12` and click **Plan journey** again.
-7. Observe that the earlier 07:05 synthetic service is no longer available.
-8. Enable **Avoid taxi** and plan again.
-9. Confirm the returned options contain no taxi service.
-10. Set **Current node** to **Zuoying THSR** and **Current journey time** to `2030-06-15 08:31`.
-11. Click **Replan remaining trip**.
-12. Observe that completed or missed earlier services are not offered in the new downstream journey.
+2. Confirm the page states **Official scheduled timetable snapshot — 2026-08-31 – 2026-09-06** and **Not realtime data**.
+3. Confirm the user-facing controls show **Zuoying THSR**, **Enter Xpark before last admission**, and `2026-08-31 11:30`, without raw node IDs.
+4. Click **Can I still make it?**
+5. Observe `FEASIBLE`, arrival `13:09`, goal ready `13:18`, last admission `17:00`, and safety margin `+222 min`.
+6. Open **View journey** and confirm the engine-selected service is THSR train 1634, `11:35–13:09`.
+7. Open **Update progress**. The proof state is Tainan at `2026-08-31 11:49`.
+8. Click **Recalculate remaining journey**.
+9. Observe that departed train 1634 is gone and the regenerated Balanced journey uses train 0640, `12:48–14:09`, with a recalculated `+162 min` margin.
 
 ## WebMCP
 
 In a WebMCP-capable environment, the production page exposes these read-only Site Tools:
 
-- `plan_taiwan_journey`
+- `check_taiwan_goal_feasibility`
 - `replan_taiwan_journey`
 
-Production Site Tool discovery for these two tools has been verified. Actual ChatGPT Site Tool invocation is intentionally not claimed here because it remains unverified.
+Both tools read the live page-owned goal state and call the same deterministic engine path as the human buttons. They accept no duplicate journey arguments and are read-only.

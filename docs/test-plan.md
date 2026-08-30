@@ -9,12 +9,12 @@ npm test
 npm run build
 ```
 
-The deterministic suite covers synthetic timetable eligibility, transfer feasibility, candidate generation, Fastest/Cheapest/Balanced ranking, feasibility states, replanning, shared page state, and human/WebMCP parity.
+The deterministic suite covers official browser snapshot loading, indexed timetable eligibility, transfer feasibility, candidate generation, Fastest/Cheapest/Balanced ranking, feasibility states, replanning, credential-free runtime execution, shared page state, and human/WebMCP parity. Synthetic fixtures remain scoped to unit tests.
 
 ## Human UI smoke test
 
-Follow [Judging instructions](JUDGING_INSTRUCTIONS.md): plan at 07:00, change to 07:12, enable Avoid taxi, then replan from Zuoying THSR at 08:31.
+Follow [Judging instructions](JUDGING_INSTRUCTIONS.md): verify the Zuoying 11:30 goal result, open the train 1634 journey, then update progress to Tainan at 11:49 and confirm the regenerated Balanced journey uses train 0640.
 
 ## WebMCP verification boundary
 
-Production discovery of `plan_taiwan_journey` and `replan_taiwan_journey` has been verified. Actual ChatGPT Site Tool invocation remains PENDING and must not be represented as verified until it has been executed successfully.
+The production page should expose `check_taiwan_goal_feasibility` and `replan_taiwan_journey`. Verify discovery and invocation against the deployed build; do not represent ChatGPT invocation as verified until it has executed successfully.

@@ -39,4 +39,4 @@ The 2026-08-31 `ENTER_XPARK` evaluation uses Xpark's published Monday rule: Sund
 
 ## Current runtime
 
-The static `officialTimetableSnapshot.json`, manifest, goal reference, and golden runner operate without credentials or live TDX calls. The browser UI and its existing WebMCP page-state demo remain on the clearly labeled `SYNTHETIC_FIXED_TIMETABLE`; the official snapshot currently powers the reproducible P0 golden and replan proof only.
+The static `officialTimetableSnapshot.json`, manifest, goal reference, browser UI, WebMCP tools, and golden runner operate without credentials or live TDX calls. The primary browser context is `PROVIDER_NORMALIZED` and uses the indexed frozen snapshot. Synthetic timetables remain deterministic test fixtures only. The demonstrated Tainan 11:49 progress update is simulated; all selected THSR services and timestamps are discovered from the frozen official schedule.

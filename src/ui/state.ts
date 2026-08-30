@@ -7,10 +7,7 @@ import type {
   TravelerState,
 } from "../journey/types";
 
-/**
- * Live, page-owned state for the synthetic Journey challenge. A later UI can
- * update this store without changing the WebMCP adapter or journey engine.
- */
+/** Live page-owned intent shared by the human UI and both WebMCP tools. */
 export interface JourneyPageState {
   goalId: string;
   originId: string;
@@ -37,13 +34,14 @@ const unknownPageTravelerState: TravelerState = {
 
 const defaultJourneyPageState: JourneyPageState = {
   goalId: journeyGoals[0].id,
-  originId: "kaohsiung-xiaogang",
-  destinationId: "taoyuan-bade",
-  departAt: "2030-06-15T07:00:00+08:00",
+  originId: "1070",
+  destinationId: "1020",
+  departAt: "2026-08-31T11:30:00+08:00",
   preferences: { avoidTaxi: false },
-  constraints: {},
+  constraints: { allowedModes: ["THSR"], maxTransfers: 0 },
   travelerState: unknownPageTravelerState,
   policy: "BALANCED",
+  currentState: { nodeId: "1060", at: "2026-08-31T11:49:00+08:00" },
 };
 
 let journeyPageState = structuredClone(defaultJourneyPageState);

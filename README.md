@@ -26,7 +26,7 @@ Goal feasibility + recommendations
 WebMCP
 ```
 
-The public web app holds the current journey state. The current checked-in runtime still uses a clearly labeled synthetic Kaohsiung Xiaogang to Bade, Taoyuan fixture while the official 2026 snapshot remains credential-blocked. It evaluates technically executable connections and the selected goal's verified hard deadline without LLM arithmetic.
+The public web app holds the current journey state and uses the frozen official TDX THSR scheduled timetable for 2026-08-31 through 2026-09-06. Its primary goal asks whether a traveler leaving THSR Zuoying can enter Xpark before the published final-admission rule. The browser needs no TDX credential or live provider call, and the deterministic engine evaluates the timetable and goal deadline without LLM arithmetic.
 
 ## Why WebMCP
 
@@ -41,7 +41,7 @@ Both tools read the current live page state. Human UI actions use that same stat
 
 ## Journey Engine
 
-Fixed data does **not** mean fixed answers. For example, changing the departure time from 07:00 to 07:12 changes which synthetic services can be caught.
+Fixed data does **not** mean fixed answers. For example, moving the 2026-08-31 departure time past 11:35 removes THSR train 1634 from the indexed next departures.
 
 Each transfer uses deterministic, location-specific preparation:
 
@@ -93,12 +93,11 @@ This ensures previously completed or missed services are not treated as still av
 
 `check_taiwan_goal_feasibility` reads the selected goal and live journey configuration, then returns a compact status, arrival, deadline, safety margin, recommended executable journey, and data-snapshot metadata. `replan_taiwan_journey` reads the original goal plus current node and time, then recalculates the remaining journey. Both tools are read-only and accept no duplicated itinerary input.
 
-## Demo data
+## Real and simulated data
 
-> **SYNTHETIC FIXED TIMETABLE DEMO**
-> Not real-time or operational Taiwan transportation information.
+**REAL scheduled facts:** the primary browser and WebMCP flow use the frozen official TDX THSR scheduled timetable snapshot for 2026-08-31 through 2026-09-06. The golden journey is dated 2026-08-31. Xpark's published last-admission rule and its approximately nine-minute walking reference supply the dated goal rule. This is not realtime data and does not claim historical actual operations.
 
-The browser runtime currently uses fixed Challenge fixtures. It must not be presented as official or operational data.
+**SIMULATED:** the delay/current-progress event is a deterministic demonstration input. Any remaining non-THSR connector or synthetic timetable exists only in explicitly scoped tests or secondary fixtures; it is not the primary browser runtime.
 
 The repository now includes a credential-gated TDX pipeline under `scripts/import/`:
 
@@ -113,7 +112,7 @@ See [Data provenance](docs/DATA_PROVENANCE.md). The frozen official scheduled wi
 
 ## Live demo
 
-The prior synthetic deployment is at https://taiwan-goal-aware-webmcp.netlify.app/. It may not include the current local goal-first changes until an authorized deployment occurs.
+https://taiwan-goal-aware-webmcp.netlify.app/
 
 ## Local development
 
@@ -129,7 +128,7 @@ npm test
 npm run build
 ```
 
-Current local status: 114 deterministic tests pass. The suite covers import normalization, SQLite schema/index validation, frozen real-data lookup, binary-search departure lookup, transfers, candidates, goal feasibility, delay replanning, shared page state, and human/WebMCP domain parity.
+Current local status: 115 deterministic tests pass. The suite covers import normalization, SQLite schema/index validation, frozen real-data lookup, browser runtime loading, binary-search departure lookup, transfers, candidates, goal feasibility, delay replanning, shared page state, and human/WebMCP domain parity.
 
 ## Challenge scope
 

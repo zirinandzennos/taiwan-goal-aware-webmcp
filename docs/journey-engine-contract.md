@@ -55,7 +55,7 @@ Future ranking modifiers are intentionally documented rather than implemented:
 
 ```text
 Challenge:
-FrozenTimetableProvider
+Frozen official TDX scheduled-timetable export
         ↓
 Journey Engine
 
@@ -65,4 +65,4 @@ TDX / realtime providers
 Same Journey Engine
 ```
 
-The current Challenge application uses this contract for fixed-timetable candidate generation, deterministic ranking, feasibility evaluation, planning, replanning, and WebMCP mapping. It does not collect live timetable data or call external transportation services.
+The current Challenge browser uses this contract for frozen scheduled-timetable candidate generation, deterministic ranking, feasibility evaluation, planning, replanning, and WebMCP mapping. Acquisition is an offline credential-gated pipeline; the browser does not collect live timetable data or call external transportation services.

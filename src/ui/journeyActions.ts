@@ -1,6 +1,6 @@
 import { planJourney } from "../journey/planner";
 import { replanJourney } from "../journey/replanner";
-import { syntheticJourneyPlanningContext } from "../journey/syntheticTimetable";
+import { officialJourneyPlanningContext } from "../journey/officialTimetable";
 import type { JourneyPlanResult, JourneyReplanResult } from "../journey/types";
 import {
   getCurrentJourneyPageState,
@@ -37,7 +37,7 @@ export function planCurrentJourney(): HumanPlanExecution {
   if (isIncompleteState(request)) {
     return { kind: "STATE_ERROR", error: stateError("PAGE_JOURNEY_STATE_INCOMPLETE", request.missingFields) };
   }
-  return { kind: "PLAN_RESULT", plan: planJourney(request, syntheticJourneyPlanningContext) };
+  return { kind: "PLAN_RESULT", plan: planJourney(request, officialJourneyPlanningContext) };
 }
 
 /** Uses the same live state mapper and engine entry point as replan_taiwan_journey. */
@@ -51,5 +51,5 @@ export function replanCurrentJourney(): HumanReplanExecution {
   if (isIncompleteState(replanRequest)) {
     return { kind: "STATE_ERROR", error: stateError("CURRENT_JOURNEY_STATE_INCOMPLETE", replanRequest.missingFields) };
   }
-  return { kind: "REPLAN_RESULT", replan: replanJourney(replanRequest, syntheticJourneyPlanningContext) };
+  return { kind: "REPLAN_RESULT", replan: replanJourney(replanRequest, officialJourneyPlanningContext) };
 }

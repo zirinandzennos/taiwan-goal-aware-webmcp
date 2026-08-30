@@ -2,14 +2,14 @@
 
 | Time | On screen | Narration |
 | --- | --- | --- |
-| 0:00–0:15 | Title and synthetic-data warning | “AI understands the traveler. We calculate how the journey can actually work. Route planners answer how to get somewhere; this prototype asks whether the journey can still work.” |
-| 0:15–0:35 | Journey controls | “The webpage holds the current origin, destination, departure time, constraints, and current journey state.” |
-| 0:35–0:55 | WebMCP-ready status and controls | “The Journey Engine uses a synthetic fixed timetable and the page exposes the same live state to the human interface and WebMCP.” |
-| 0:55–1:20 | Initial Plan Journey result | “Planning produces technically executable candidates and recommends Fastest, Cheapest, and Balanced options.” |
-| 1:20–1:40 | Change 07:00 to 07:12 and plan again | “Fixed data does not mean fixed answers. After the time changes, the earlier service cannot be caught.” |
-| 1:40–2:00 | Result metrics or transfer explanation | “Each connection is checked from arrival plus transfer-specific walking and a mandatory buffer. Only then can the next service be used.” |
-| 2:00–2:20 | Current node: Zuoying THSR; current time: 08:31; Replan | “Replanning makes a fresh JourneyRequest from where and when the traveler is now. It does not patch an old itinerary.” |
-| 2:20–2:35 | Site Tools panel | “The production page exposes two read-only Site Tools: `plan_taiwan_journey` and `replan_taiwan_journey`.” |
+| 0:00–0:15 | Title and official-snapshot notice | “This demo asks whether a real-world goal can still be accomplished. It uses a frozen official THSR scheduled timetable, not realtime data.” |
+| 0:15–0:35 | Zuoying, Xpark goal, and 2026-08-31 11:30 | “The webpage owns the selected goal and journey intent. Users choose normal place and goal labels, not internal node IDs.” |
+| 0:35–0:55 | Initial FEASIBLE result | “The deterministic engine finds train 1634, arrives at 13:09, includes the nine-minute final walk, and compares 13:18 with the 17:00 last-admission rule.” |
+| 0:55–1:15 | View journey | “The result is calculated from indexed scheduled departures. The itinerary is not hard-coded into the interface.” |
+| 1:15–1:35 | WebMCP-ready status and Site Tools | “WebMCP reads the same live page state. `check_taiwan_goal_feasibility` calls the same engine and returns the same result.” |
+| 1:35–2:05 | Update progress: Tainan at 11:49; recalculate | “This simulated delay is one minute after train 1634 left Tainan. Replanning creates a fresh JourneyRequest; it never patches the old itinerary.” |
+| 2:05–2:30 | Replanned train 0640 and margin | “The departed service disappears. The index discovers train 0640, regenerates the downstream journey, and recalculates goal feasibility.” |
+| 2:30–2:45 | Data notice / final result | “The THSR schedule and Xpark rule are sourced facts. The delay event is simulated and clearly separated.” |
 | 2:35–2:45 | Title / final result | “AI understands the traveler. We understand the journey.” |
 
 Do not script a successful ChatGPT tool invocation unless it has been verified before recording. If invocation remains unavailable, show production Site Tool discovery, live page state, and the deterministic human/UI flow without implying execution occurred.

@@ -1,6 +1,7 @@
 import { planJourney } from "../journey/planner";
 import { replanJourney } from "../journey/replanner";
-import { syntheticJourneyPlanningContext } from "../journey/syntheticTimetable";
+import { officialJourneyPlanningContext } from "../journey/officialTimetable";
+import { findJourneyGoal } from "../data/demoGoals";
 import type {
   JourneyOption,
   JourneyPlanResult,
@@ -94,21 +95,31 @@ function serializeOption(option: JourneyOption | null): Record<string, unknown> 
   };
 }
 
+function recommendedOption(plan: JourneyPlanResult): JourneyOption | null {
+  const options = [plan.balanced, plan.fastest, plan.cheapest].filter((option): option is JourneyOption => option !== null);
+  return options.find((option) => option.feasibility.status === plan.status) ?? options[0] ?? null;
+}
+
 function serializeGoalCheck(plan: JourneyPlanResult): Record<string, unknown> {
-  const options = [plan.fastest, plan.balanced, plan.cheapest].filter((option): option is JourneyOption => option !== null);
-  const recommended = options.find((option) => option.feasibility.status === plan.status) ?? options[0] ?? null;
+  const recommended = recommendedOption(plan);
   const feasibility = recommended?.feasibility;
+  const pageGoal = getCurrentJourneyPageState().goalId;
+  const goal = findJourneyGoal(plan.goalId ?? pageGoal);
   return {
     status: plan.status,
-    goalId: plan.goalId ?? null,
+    goal: goal ? {
+      id: goal.id,
+      title: goal.title,
+      destinationNodeId: goal.destinationId,
+      source: goal.source,
+    } : { id: plan.goalId ?? pageGoal },
     goalDeadline: plan.goalDeadline ?? feasibility?.deadlineAt ?? null,
     arrivalAt: recommended?.candidate.arriveAt ?? null,
+    goalReadyAt: feasibility?.goalReadyAt ?? null,
     safetyMarginMinutes: feasibility?.safetyMarginMinutes ?? feasibility?.deadlineMarginMinutes ?? null,
     reasonCodes: plan.reasonCodes,
-    candidateCount: plan.candidateCount,
     recommendedJourney: serializeOption(recommended),
-    fallbackAvailable: false,
-    dataSnapshot: syntheticJourneyPlanningContext.dataSnapshot ?? null,
+    snapshot: officialJourneyPlanningContext.dataSnapshot ?? null,
   };
 }
 
@@ -127,15 +138,20 @@ function serializePlan(plan: JourneyPlanResult): Record<string, unknown> {
 }
 
 function serializeReplan(replan: JourneyReplanResult): Record<string, unknown> {
+  const recommended = replan.plan ? recommendedOption(replan.plan) : null;
   return {
     status: replan.plan?.status ?? "UNKNOWN",
-    timetableMode: replan.plan?.timetableMode ?? syntheticJourneyPlanningContext.timetableMode,
+    timetableMode: replan.plan?.timetableMode ?? officialJourneyPlanningContext.timetableMode,
     previousOriginId: replan.previousOriginId,
     currentNodeId: replan.currentNodeId,
     replannedAt: replan.replannedAt,
     alreadyAtDestination: replan.alreadyAtDestination,
     reasonCodes: replan.reasonCodes,
-    dataSnapshot: syntheticJourneyPlanningContext.dataSnapshot ?? null,
+    goalDeadline: recommended?.feasibility.deadlineAt ?? replan.plan?.goalDeadline ?? null,
+    goalReadyAt: recommended?.feasibility.goalReadyAt ?? null,
+    safetyMarginMinutes: recommended?.feasibility.safetyMarginMinutes ?? recommended?.feasibility.deadlineMarginMinutes ?? null,
+    recommendedJourney: serializeOption(recommended),
+    snapshot: officialJourneyPlanningContext.dataSnapshot ?? null,
     ...(replan.clarification === undefined ? {} : { clarification: replan.clarification }),
     plan: replan.plan === null ? null : serializePlan(replan.plan),
   };
@@ -158,7 +174,7 @@ export function registerJourneyTool(): boolean {
         return incompleteStateResult("PAGE_JOURNEY_STATE_INCOMPLETE", request.missingFields);
       }
       abortIfNeeded(signal);
-      return textResult(serializeGoalCheck(planJourney(request, syntheticJourneyPlanningContext)));
+      return textResult(serializeGoalCheck(planJourney(request, officialJourneyPlanningContext)));
     },
   });
 
@@ -180,7 +196,7 @@ export function registerJourneyTool(): boolean {
         return incompleteStateResult("CURRENT_JOURNEY_STATE_INCOMPLETE", replanRequest.missingFields);
       }
       abortIfNeeded(signal);
-      return textResult(serializeReplan(replanJourney(replanRequest, syntheticJourneyPlanningContext)));
+      return textResult(serializeReplan(replanJourney(replanRequest, officialJourneyPlanningContext)));
     },
   });
 

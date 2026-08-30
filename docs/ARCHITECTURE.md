@@ -22,4 +22,4 @@ Current node + current journey time
         → same planJourney()
 ```
 
-Replanning recomputes the remaining trip rather than modifying a prior itinerary. The current checked-in context is a synthetic fixed timetable shared by the UI and WebMCP adapter. The import layer can build a dated SQLite validation database and export a static browser runtime; the browser never depends on the private import database or provider credentials.
+Replanning recomputes the remaining trip rather than modifying a prior itinerary. The primary checked-in context is the frozen official 2026-08-31..2026-09-06 THSR scheduled-timetable export shared by the UI and WebMCP adapter. The import layer builds a dated SQLite validation database and exports the static browser runtime; the browser never depends on the private import database, provider credentials, or live TDX calls. Synthetic fixtures remain test-only.
