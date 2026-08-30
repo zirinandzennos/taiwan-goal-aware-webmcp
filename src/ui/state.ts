@@ -35,13 +35,12 @@ const unknownPageTravelerState: TravelerState = {
 const defaultJourneyPageState: JourneyPageState = {
   goalId: journeyGoals[0].id,
   originId: "1070",
-  destinationId: "1020",
+  destinationId: journeyGoals[0].destinationId,
   departAt: "2026-08-31T11:30:00+08:00",
-  preferences: { avoidTaxi: false },
+  preferences: { avoidTaxi: true },
   constraints: { allowedModes: ["THSR"], maxTransfers: 0 },
   travelerState: unknownPageTravelerState,
-  policy: "BALANCED",
-  currentState: { nodeId: "1060", at: "2026-08-31T11:49:00+08:00" },
+  policy: "DEADLINE_CRITICAL",
 };
 
 let journeyPageState = structuredClone(defaultJourneyPageState);

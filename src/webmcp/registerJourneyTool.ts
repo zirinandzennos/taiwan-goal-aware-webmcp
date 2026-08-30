@@ -1,11 +1,18 @@
+import { findJourneyGoal } from "../data/demoGoals";
+import { buildJourneyExecutionSteps } from "../journey/executionSteps";
+import {
+  findSaferFallback,
+  selectRecommendedOption,
+  type JourneyFallbackSuggestion,
+} from "../journey/fallback";
+import { officialJourneyPlanningContext } from "../journey/officialTimetable";
 import { planJourney } from "../journey/planner";
 import { replanJourney } from "../journey/replanner";
-import { officialJourneyPlanningContext } from "../journey/officialTimetable";
-import { findJourneyGoal } from "../data/demoGoals";
 import type {
   JourneyOption,
   JourneyPlanResult,
   JourneyReplanResult,
+  JourneyRequest,
 } from "../journey/types";
 import {
   getCurrentJourneyPageState,
@@ -66,16 +73,21 @@ function isIncompleteState(value: unknown): value is IncompletePageJourneyState 
   return typeof value === "object" && value !== null && "missingFields" in value;
 }
 
-function serializeOption(option: JourneyOption | null): Record<string, unknown> | null {
+function serializeOption(
+  option: JourneyOption | null,
+  request: JourneyRequest,
+): Record<string, unknown> | null {
   if (!option) return null;
   const { candidate, feasibility } = option;
   return {
     candidateId: candidate.id,
     departureAt: candidate.departAt,
     arrivalAt: candidate.arriveAt,
+    goalReadyAt: feasibility.goalReadyAt ?? null,
     durationMinutes: candidate.totalDurationMinutes,
     totalCost: candidate.totalCost,
     transferCount: candidate.transferCount,
+    totalWaitingMinutes: candidate.totalWaitingMinutes,
     totalWalkingMinutes: candidate.totalWalkingMinutes,
     minimumTransferSlackMinutes: candidate.minimumTransferSlackMinutes,
     tightTransferCount: candidate.tightTransferCount,
@@ -90,40 +102,71 @@ function serializeOption(option: JourneyOption | null): Record<string, unknown> 
       departureAt: leg.departAt,
       arrivalAt: leg.arriveAt,
     })),
+    executionSteps: buildJourneyExecutionSteps(option, request, officialJourneyPlanningContext),
     ...(option.score === undefined ? {} : { score: option.score }),
     ...(option.scoreBreakdown === undefined ? {} : { scoreBreakdown: option.scoreBreakdown }),
   };
 }
 
-function recommendedOption(plan: JourneyPlanResult): JourneyOption | null {
-  const options = [plan.balanced, plan.fastest, plan.cheapest].filter((option): option is JourneyOption => option !== null);
-  return options.find((option) => option.feasibility.status === plan.status) ?? options[0] ?? null;
+function serializeFallback(
+  fallback: JourneyFallbackSuggestion | null,
+  request: JourneyRequest,
+): Record<string, unknown> | null {
+  if (!fallback) return null;
+  return {
+    strategy: fallback.strategy,
+    originalStatus: fallback.originalStatus,
+    requestedDepartAt: fallback.requestedDepartAt,
+    recommendedServiceDepartureAt: fallback.recommendedServiceDepartureAt,
+    arrivalAt: fallback.arrivalAt,
+    goalReadyAt: fallback.goalReadyAt,
+    goalDeadline: fallback.goalDeadline,
+    safetyMarginMinutes: fallback.safetyMarginMinutes,
+    reasonCodes: fallback.reasonCodes,
+    recommendedJourney: serializeOption(
+      fallback.option,
+      { ...request, departAt: fallback.requestedDepartAt },
+    ),
+  };
 }
 
-function serializeGoalCheck(plan: JourneyPlanResult): Record<string, unknown> {
-  const recommended = recommendedOption(plan);
+function serializeGoalCheck(
+  plan: JourneyPlanResult,
+  request: JourneyRequest,
+  fallback: JourneyFallbackSuggestion | null,
+): Record<string, unknown> {
+  const recommended = selectRecommendedOption(plan);
   const feasibility = recommended?.feasibility;
-  const pageGoal = getCurrentJourneyPageState().goalId;
-  const goal = findJourneyGoal(plan.goalId ?? pageGoal);
+  const pageState = getCurrentJourneyPageState();
+  const goal = findJourneyGoal(plan.goalId ?? pageState.goalId);
   return {
     status: plan.status,
+    pageStateUsed: {
+      selectedGoalId: pageState.goalId,
+      originNodeId: pageState.originId,
+      destinationNodeId: pageState.destinationId,
+      departAt: pageState.departAt,
+      avoidTaxi: pageState.preferences.avoidTaxi,
+    },
     goal: goal ? {
       id: goal.id,
       title: goal.title,
       destinationNodeId: goal.destinationId,
+      deadlineVerified: goal.deadlineVerified,
       source: goal.source,
-    } : { id: plan.goalId ?? pageGoal },
+    } : { id: plan.goalId ?? pageState.goalId },
     goalDeadline: plan.goalDeadline ?? feasibility?.deadlineAt ?? null,
     arrivalAt: recommended?.candidate.arriveAt ?? null,
     goalReadyAt: feasibility?.goalReadyAt ?? null,
     safetyMarginMinutes: feasibility?.safetyMarginMinutes ?? feasibility?.deadlineMarginMinutes ?? null,
-    reasonCodes: plan.reasonCodes,
-    recommendedJourney: serializeOption(recommended),
+    reasonCodes: feasibility?.reasonCodes ?? plan.reasonCodes,
+    recommendedJourney: serializeOption(recommended, request),
+    fallback: serializeFallback(fallback, request),
     snapshot: officialJourneyPlanningContext.dataSnapshot ?? null,
   };
 }
 
-function serializePlan(plan: JourneyPlanResult): Record<string, unknown> {
+function serializePlan(plan: JourneyPlanResult, request: JourneyRequest): Record<string, unknown> {
   return {
     status: plan.status,
     goalId: plan.goalId ?? null,
@@ -131,14 +174,18 @@ function serializePlan(plan: JourneyPlanResult): Record<string, unknown> {
     timetableMode: plan.timetableMode,
     candidateCount: plan.candidateCount,
     reasonCodes: plan.reasonCodes,
-    fastest: serializeOption(plan.fastest),
-    cheapest: serializeOption(plan.cheapest),
-    balanced: serializeOption(plan.balanced),
+    fastest: serializeOption(plan.fastest, request),
+    cheapest: serializeOption(plan.cheapest, request),
+    balanced: serializeOption(plan.balanced, request),
   };
 }
 
-function serializeReplan(replan: JourneyReplanResult): Record<string, unknown> {
-  const recommended = replan.plan ? recommendedOption(replan.plan) : null;
+function serializeReplan(
+  replan: JourneyReplanResult,
+  fallback: JourneyFallbackSuggestion | null,
+): Record<string, unknown> {
+  const request = replan.request;
+  const recommended = replan.plan ? selectRecommendedOption(replan.plan) : null;
   return {
     status: replan.plan?.status ?? "UNKNOWN",
     timetableMode: replan.plan?.timetableMode ?? officialJourneyPlanningContext.timetableMode,
@@ -147,13 +194,17 @@ function serializeReplan(replan: JourneyReplanResult): Record<string, unknown> {
     replannedAt: replan.replannedAt,
     alreadyAtDestination: replan.alreadyAtDestination,
     reasonCodes: replan.reasonCodes,
+    feasibilityReasonCodes: recommended?.feasibility.reasonCodes ?? [],
     goalDeadline: recommended?.feasibility.deadlineAt ?? replan.plan?.goalDeadline ?? null,
     goalReadyAt: recommended?.feasibility.goalReadyAt ?? null,
-    safetyMarginMinutes: recommended?.feasibility.safetyMarginMinutes ?? recommended?.feasibility.deadlineMarginMinutes ?? null,
-    recommendedJourney: serializeOption(recommended),
+    safetyMarginMinutes: recommended?.feasibility.safetyMarginMinutes
+      ?? recommended?.feasibility.deadlineMarginMinutes
+      ?? null,
+    recommendedJourney: request ? serializeOption(recommended, request) : null,
+    fallback: request ? serializeFallback(fallback, request) : null,
     snapshot: officialJourneyPlanningContext.dataSnapshot ?? null,
     ...(replan.clarification === undefined ? {} : { clarification: replan.clarification }),
-    plan: replan.plan === null ? null : serializePlan(replan.plan),
+    plan: replan.plan === null || request === null ? null : serializePlan(replan.plan, request),
   };
 }
 
@@ -164,7 +215,7 @@ export function registerJourneyTool(): boolean {
   document.modelContext.registerTool({
     name: "check_taiwan_goal_feasibility",
     title: "Check selected Taiwan goal",
-    description: "Use this read-only tool when the user wants to know whether the real-world goal currently selected on this page can still be accomplished. It reads the current origin, selected goal, date, departure time, preferences and constraints from live page state, then uses the deterministic Journey Engine. Do not use for general destination information, tourism facts, weather, or trips outside this goal-feasibility context.",
+    description: "Use this read-only tool when the user asks whether the real-world goal currently selected on this page can still be accomplished. Read the live origin, goal, departure time and preferences from the page; do not ask the user to repeat them. Return FEASIBLE, RISKY, IMPOSSIBLE or UNKNOWN with deadline, goal-ready time, safety margin, reason code and deterministic fallback when available. Do not use for tourism facts, weather or unrelated trips.",
     inputSchema: EMPTY_INPUT_SCHEMA,
     annotations: { readOnlyHint: true, untrustedContentHint: false },
     execute: async (_input, { signal } = {}) => {
@@ -174,14 +225,16 @@ export function registerJourneyTool(): boolean {
         return incompleteStateResult("PAGE_JOURNEY_STATE_INCOMPLETE", request.missingFields);
       }
       abortIfNeeded(signal);
-      return textResult(serializeGoalCheck(planJourney(request, officialJourneyPlanningContext)));
+      const plan = planJourney(request, officialJourneyPlanningContext);
+      const fallback = findSaferFallback(request, plan, officialJourneyPlanningContext);
+      return textResult(serializeGoalCheck(plan, request, fallback));
     },
   });
 
   document.modelContext.registerTool({
     name: "replan_taiwan_journey",
-    title: "Replan Taiwan journey",
-    description: "Use this read-only tool when the traveler is continuing or recalculating the currently configured journey after their location or time has changed. It reads the original journey intent plus the current node and current journey time from the live page, then recalculates the remaining trip with the same deterministic Journey Engine. Use after the traveler is delayed, missed a service, is ready to continue, or wants the remainder recalculated. It is not for planning a new unrelated trip.",
+    title: "Replan remaining Taiwan journey",
+    description: "Use this read-only tool after the traveler is delayed, misses a service, or changes current location or time. Read the original goal plus current node and time from the live page, create a new remaining JourneyRequest, and recalculate every downstream step with the same deterministic engine. Do not patch the old itinerary and do not use for a new unrelated trip.",
     inputSchema: EMPTY_INPUT_SCHEMA,
     annotations: { readOnlyHint: true, untrustedContentHint: false },
     execute: async (_input, { signal } = {}) => {
@@ -196,7 +249,11 @@ export function registerJourneyTool(): boolean {
         return incompleteStateResult("CURRENT_JOURNEY_STATE_INCOMPLETE", replanRequest.missingFields);
       }
       abortIfNeeded(signal);
-      return textResult(serializeReplan(replanJourney(replanRequest, officialJourneyPlanningContext)));
+      const replan = replanJourney(replanRequest, officialJourneyPlanningContext);
+      const fallback = replan.plan && replan.request
+        ? findSaferFallback(replan.request, replan.plan, officialJourneyPlanningContext)
+        : null;
+      return textResult(serializeReplan(replan, fallback));
     },
   });
 

@@ -1,7 +1,8 @@
+import { findSaferFallback, type JourneyFallbackSuggestion } from "../journey/fallback";
 import { planJourney } from "../journey/planner";
 import { replanJourney } from "../journey/replanner";
 import { officialJourneyPlanningContext } from "../journey/officialTimetable";
-import type { JourneyPlanResult, JourneyReplanResult } from "../journey/types";
+import type { JourneyPlanResult, JourneyReplanResult, JourneyRequest } from "../journey/types";
 import {
   getCurrentJourneyPageState,
   toJourneyReplanRequest,
@@ -16,11 +17,20 @@ export interface JourneyUiStateError {
 }
 
 export type HumanPlanExecution =
-  | { kind: "PLAN_RESULT"; plan: JourneyPlanResult }
+  | {
+    kind: "PLAN_RESULT";
+    plan: JourneyPlanResult;
+    request: JourneyRequest;
+    fallback: JourneyFallbackSuggestion | null;
+  }
   | { kind: "STATE_ERROR"; error: JourneyUiStateError };
 
 export type HumanReplanExecution =
-  | { kind: "REPLAN_RESULT"; replan: JourneyReplanResult }
+  | {
+    kind: "REPLAN_RESULT";
+    replan: JourneyReplanResult;
+    fallback: JourneyFallbackSuggestion | null;
+  }
   | { kind: "STATE_ERROR"; error: JourneyUiStateError };
 
 function isIncompleteState(value: unknown): value is IncompletePageJourneyState {
@@ -37,7 +47,13 @@ export function planCurrentJourney(): HumanPlanExecution {
   if (isIncompleteState(request)) {
     return { kind: "STATE_ERROR", error: stateError("PAGE_JOURNEY_STATE_INCOMPLETE", request.missingFields) };
   }
-  return { kind: "PLAN_RESULT", plan: planJourney(request, officialJourneyPlanningContext) };
+  const plan = planJourney(request, officialJourneyPlanningContext);
+  return {
+    kind: "PLAN_RESULT",
+    plan,
+    request,
+    fallback: findSaferFallback(request, plan, officialJourneyPlanningContext),
+  };
 }
 
 /** Uses the same live state mapper and engine entry point as replan_taiwan_journey. */
@@ -51,5 +67,12 @@ export function replanCurrentJourney(): HumanReplanExecution {
   if (isIncompleteState(replanRequest)) {
     return { kind: "STATE_ERROR", error: stateError("CURRENT_JOURNEY_STATE_INCOMPLETE", replanRequest.missingFields) };
   }
-  return { kind: "REPLAN_RESULT", replan: replanJourney(replanRequest, officialJourneyPlanningContext) };
+  const replan = replanJourney(replanRequest, officialJourneyPlanningContext);
+  return {
+    kind: "REPLAN_RESULT",
+    replan,
+    fallback: replan.plan && replan.request
+      ? findSaferFallback(replan.request, replan.plan, officialJourneyPlanningContext)
+      : null,
+  };
 }
