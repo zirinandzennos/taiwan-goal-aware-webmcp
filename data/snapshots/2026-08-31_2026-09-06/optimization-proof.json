@@ -23,6 +23,373 @@
     "lowerBoundOnly": 0,
     "unknown": 0
   },
+  "busTerminalProofs": [
+    {
+      "candidateId": "journey:tdx-maas:72cc6fbc",
+      "candidateBoardingStopId": "TAO9677",
+      "officialTerminalStopId": "TAO9677",
+      "directionMatched": true,
+      "serviceDateMatched": true,
+      "publishedDepartures": [
+        "08:15",
+        "11:40",
+        "14:05",
+        "17:45"
+      ],
+      "candidateBoardingTime": "14:19",
+      "boardingStopIsPublishedDepartureTerminal": true,
+      "status": "PROVEN_IMPOSSIBLE",
+      "reasonCode": "NO_COMPATIBLE_TERMINAL_DEPARTURE"
+    },
+    {
+      "candidateId": "journey:tdx-maas:741ae287",
+      "candidateBoardingStopId": "TAO9677",
+      "officialTerminalStopId": "TAO9677",
+      "directionMatched": true,
+      "serviceDateMatched": true,
+      "publishedDepartures": [
+        "08:15",
+        "11:40",
+        "14:05",
+        "17:45"
+      ],
+      "candidateBoardingTime": "14:19",
+      "boardingStopIsPublishedDepartureTerminal": true,
+      "status": "PROVEN_IMPOSSIBLE",
+      "reasonCode": "NO_COMPATIBLE_TERMINAL_DEPARTURE"
+    },
+    {
+      "candidateId": "journey:tdx-maas:94e37614",
+      "candidateBoardingStopId": "TAO9677",
+      "officialTerminalStopId": "TAO9677",
+      "directionMatched": true,
+      "serviceDateMatched": true,
+      "publishedDepartures": [
+        "08:15",
+        "11:40",
+        "14:05",
+        "17:45"
+      ],
+      "candidateBoardingTime": "14:19",
+      "boardingStopIsPublishedDepartureTerminal": true,
+      "status": "PROVEN_IMPOSSIBLE",
+      "reasonCode": "NO_COMPATIBLE_TERMINAL_DEPARTURE"
+    },
+    {
+      "candidateId": "journey:tdx-maas:a8aed985",
+      "candidateBoardingStopId": "TAO9677",
+      "officialTerminalStopId": "TAO9677",
+      "directionMatched": true,
+      "serviceDateMatched": true,
+      "publishedDepartures": [
+        "08:15",
+        "11:40",
+        "14:05",
+        "17:45"
+      ],
+      "candidateBoardingTime": "14:19",
+      "boardingStopIsPublishedDepartureTerminal": true,
+      "status": "PROVEN_IMPOSSIBLE",
+      "reasonCode": "NO_COMPATIBLE_TERMINAL_DEPARTURE"
+    }
+  ],
+  "layeredCandidateResolutions": [
+    {
+      "candidateId": "journey:tdx-maas:6196da5e",
+      "primaryProviderValidation": {
+        "status": "UNKNOWN",
+        "reasonCodes": [
+          "RAIL_EXACT_SCHEDULE_VERIFIED",
+          "INSUFFICIENT_UNIQUE_SERVICE_IDENTITY",
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "proofResolution": {
+        "status": "PROVEN_IMPOSSIBLE",
+        "reasonCodes": [
+          "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE"
+        ],
+        "sourceEvidenceIds": [
+          "TDX-MODE-VALIDATION-20260831",
+          "TDX-RAIL-V2-THSR-1070-1010-20260831",
+          "THSRC-NORMAL-TIMETABLE-20260202",
+          "THSRC-SUMMER-2026-SPECIAL-TIMETABLE"
+        ]
+      },
+      "effectiveCandidateResolution": {
+        "status": "VALIDATED_IMPOSSIBLE",
+        "reasonCodes": [
+          "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE"
+        ]
+      },
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "journey:tdx-maas:cbee5feb",
+      "primaryProviderValidation": {
+        "status": "UNKNOWN",
+        "reasonCodes": [
+          "RAIL_EXACT_SCHEDULE_VERIFIED",
+          "INSUFFICIENT_UNIQUE_SERVICE_IDENTITY",
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "proofResolution": {
+        "status": "PROVEN_IMPOSSIBLE",
+        "reasonCodes": [
+          "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE"
+        ],
+        "sourceEvidenceIds": [
+          "TDX-MODE-VALIDATION-20260831",
+          "TDX-RAIL-V2-THSR-1070-1010-20260831",
+          "THSRC-NORMAL-TIMETABLE-20260202",
+          "THSRC-SUMMER-2026-SPECIAL-TIMETABLE"
+        ]
+      },
+      "effectiveCandidateResolution": {
+        "status": "VALIDATED_IMPOSSIBLE",
+        "reasonCodes": [
+          "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE"
+        ]
+      },
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "journey:tdx-maas:07fb4bb5",
+      "primaryProviderValidation": {
+        "status": "VALIDATED_FEASIBLE",
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "proofResolution": {
+        "status": "NOT_REQUIRED",
+        "reasonCodes": [
+          "PRIMARY_PROVIDER_TERMINAL"
+        ],
+        "sourceEvidenceIds": [
+          "TDX-MODE-VALIDATION-20260831"
+        ]
+      },
+      "effectiveCandidateResolution": {
+        "status": "VALIDATED_FEASIBLE",
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "rankingEligible": true
+    },
+    {
+      "candidateId": "journey:tdx-maas:ab19cfc6",
+      "primaryProviderValidation": {
+        "status": "VALIDATED_FEASIBLE",
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "proofResolution": {
+        "status": "NOT_REQUIRED",
+        "reasonCodes": [
+          "PRIMARY_PROVIDER_TERMINAL"
+        ],
+        "sourceEvidenceIds": [
+          "TDX-MODE-VALIDATION-20260831"
+        ]
+      },
+      "effectiveCandidateResolution": {
+        "status": "VALIDATED_FEASIBLE",
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "rankingEligible": true
+    },
+    {
+      "candidateId": "journey:tdx-maas:1767bfb5",
+      "primaryProviderValidation": {
+        "status": "VALIDATED_FEASIBLE",
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "proofResolution": {
+        "status": "NOT_REQUIRED",
+        "reasonCodes": [
+          "PRIMARY_PROVIDER_TERMINAL"
+        ],
+        "sourceEvidenceIds": [
+          "TDX-MODE-VALIDATION-20260831"
+        ]
+      },
+      "effectiveCandidateResolution": {
+        "status": "VALIDATED_FEASIBLE",
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "rankingEligible": true
+    },
+    {
+      "candidateId": "journey:tdx-maas:9bad5bc6",
+      "primaryProviderValidation": {
+        "status": "VALIDATED_FEASIBLE",
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "proofResolution": {
+        "status": "NOT_REQUIRED",
+        "reasonCodes": [
+          "PRIMARY_PROVIDER_TERMINAL"
+        ],
+        "sourceEvidenceIds": [
+          "TDX-MODE-VALIDATION-20260831"
+        ]
+      },
+      "effectiveCandidateResolution": {
+        "status": "VALIDATED_FEASIBLE",
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "rankingEligible": true
+    },
+    {
+      "candidateId": "journey:tdx-maas:72cc6fbc",
+      "primaryProviderValidation": {
+        "status": "UNKNOWN",
+        "reasonCodes": [
+          "RAIL_EXACT_SCHEDULE_VERIFIED",
+          "INSUFFICIENT_UNIQUE_SERVICE_IDENTITY",
+          "BUS_STOP_LEVEL_TIMING_AMBIGUOUS",
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "proofResolution": {
+        "status": "PROVEN_IMPOSSIBLE",
+        "reasonCodes": [
+          "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE",
+          "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+        ],
+        "sourceEvidenceIds": [
+          "TDX-MODE-VALIDATION-20260831",
+          "TDX-RAIL-V2-THSR-1070-1010-20260831",
+          "THSRC-NORMAL-TIMETABLE-20260202",
+          "THSRC-SUMMER-2026-SPECIAL-TIMETABLE",
+          "TAOYUAN-EBUS-208A-20260831",
+          "TAOYUAN-EBUS-208A-FARE-1848-1108"
+        ]
+      },
+      "effectiveCandidateResolution": {
+        "status": "VALIDATED_IMPOSSIBLE",
+        "reasonCodes": [
+          "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE",
+          "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+        ]
+      },
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "journey:tdx-maas:741ae287",
+      "primaryProviderValidation": {
+        "status": "UNKNOWN",
+        "reasonCodes": [
+          "RAIL_EXACT_SCHEDULE_VERIFIED",
+          "INSUFFICIENT_UNIQUE_SERVICE_IDENTITY",
+          "BUS_STOP_LEVEL_TIMING_AMBIGUOUS",
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "proofResolution": {
+        "status": "PROVEN_IMPOSSIBLE",
+        "reasonCodes": [
+          "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE",
+          "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+        ],
+        "sourceEvidenceIds": [
+          "TDX-MODE-VALIDATION-20260831",
+          "TDX-RAIL-V2-THSR-1070-1010-20260831",
+          "THSRC-NORMAL-TIMETABLE-20260202",
+          "THSRC-SUMMER-2026-SPECIAL-TIMETABLE",
+          "TAOYUAN-EBUS-208A-20260831",
+          "TAOYUAN-EBUS-208A-FARE-1848-1108"
+        ]
+      },
+      "effectiveCandidateResolution": {
+        "status": "VALIDATED_IMPOSSIBLE",
+        "reasonCodes": [
+          "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE",
+          "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+        ]
+      },
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "journey:tdx-maas:94e37614",
+      "primaryProviderValidation": {
+        "status": "UNKNOWN",
+        "reasonCodes": [
+          "RAIL_EXACT_SCHEDULE_VERIFIED",
+          "BUS_STOP_LEVEL_TIMING_AMBIGUOUS",
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "proofResolution": {
+        "status": "PROVEN_IMPOSSIBLE",
+        "reasonCodes": [
+          "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+        ],
+        "sourceEvidenceIds": [
+          "TDX-MODE-VALIDATION-20260831",
+          "TAOYUAN-EBUS-208A-20260831",
+          "TAOYUAN-EBUS-208A-FARE-1848-1108"
+        ]
+      },
+      "effectiveCandidateResolution": {
+        "status": "VALIDATED_IMPOSSIBLE",
+        "reasonCodes": [
+          "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+        ]
+      },
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "journey:tdx-maas:a8aed985",
+      "primaryProviderValidation": {
+        "status": "UNKNOWN",
+        "reasonCodes": [
+          "RAIL_EXACT_SCHEDULE_VERIFIED",
+          "BUS_STOP_LEVEL_TIMING_AMBIGUOUS",
+          "CONNECTIONS_VALID"
+        ]
+      },
+      "proofResolution": {
+        "status": "PROVEN_IMPOSSIBLE",
+        "reasonCodes": [
+          "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+        ],
+        "sourceEvidenceIds": [
+          "TDX-MODE-VALIDATION-20260831",
+          "TAOYUAN-EBUS-208A-20260831",
+          "TAOYUAN-EBUS-208A-FARE-1848-1108"
+        ]
+      },
+      "effectiveCandidateResolution": {
+        "status": "VALIDATED_IMPOSSIBLE",
+        "reasonCodes": [
+          "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+        ]
+      },
+      "rankingEligible": false
+    }
+  ],
+  "effectiveResolutionCounts": {
+    "feasible": 4,
+    "risky": 0,
+    "impossible": 6,
+    "unknown": 0,
+    "total": 10
+  },
   "candidates": [
     {
       "candidateId": "journey:tdx-maas:6196da5e",
@@ -303,6 +670,11 @@
     "fastest": {
       "available": true,
       "candidateId": "journey:tdx-maas:07fb4bb5",
+      "winnerCandidateIds": [
+        "journey:tdx-maas:07fb4bb5",
+        "journey:tdx-maas:ab19cfc6"
+      ],
+      "selectedRepresentativeId": "journey:tdx-maas:07fb4bb5",
       "reasonCode": "ALL_COMPETITORS_EXACT_BOUNDED_OR_PROVEN_IMPOSSIBLE",
       "unique": false,
       "possibleTieCandidateIds": [
@@ -461,13 +833,299 @@
       ]
     },
     "balanced": {
-      "available": false,
-      "candidateId": null,
-      "reasonCode": "INCOMPLETE_BALANCED_METRICS"
+      "available": true,
+      "candidateId": "journey:tdx-maas:ab19cfc6",
+      "winnerCandidateIds": [
+        "journey:tdx-maas:ab19cfc6"
+      ],
+      "selectedRepresentativeId": "journey:tdx-maas:ab19cfc6",
+      "unique": true,
+      "score": 7.6923076923076925,
+      "reasonCode": "BALANCED_METRICS_COMPLETE",
+      "possibleTieCandidateIds": [],
+      "metricCompleteness": [
+        {
+          "candidateId": "journey:tdx-maas:07fb4bb5",
+          "metrics": [
+            {
+              "metricName": "totalDurationMinutes",
+              "status": "EXACT",
+              "source": "canonical journey timeline",
+              "value": 166
+            },
+            {
+              "metricName": "totalCost",
+              "status": "EXACT",
+              "source": "complete canonical ride fares",
+              "value": 1341
+            },
+            {
+              "metricName": "totalWalkingMinutes",
+              "status": "EXACT",
+              "source": "canonical WALK steps",
+              "value": 10
+            },
+            {
+              "metricName": "totalWaitingMinutes",
+              "status": "EXACT",
+              "source": "canonical WAIT steps",
+              "value": 42
+            },
+            {
+              "metricName": "transferCount",
+              "status": "EXACT",
+              "source": "canonical journey topology",
+              "value": 1
+            },
+            {
+              "metricName": "minimumTransferSlackMinutes",
+              "status": "EXACT",
+              "source": "canonical connection validation",
+              "value": 33
+            },
+            {
+              "metricName": "connectionRiskPenalty",
+              "status": "EXACT",
+              "source": "existing BALANCED slack thresholds",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:ab19cfc6",
+          "metrics": [
+            {
+              "metricName": "totalDurationMinutes",
+              "status": "EXACT",
+              "source": "canonical journey timeline",
+              "value": 159
+            },
+            {
+              "metricName": "totalCost",
+              "status": "EXACT",
+              "source": "complete canonical ride fares",
+              "value": 1341
+            },
+            {
+              "metricName": "totalWalkingMinutes",
+              "status": "EXACT",
+              "source": "canonical WALK steps",
+              "value": 10
+            },
+            {
+              "metricName": "totalWaitingMinutes",
+              "status": "EXACT",
+              "source": "canonical WAIT steps",
+              "value": 39
+            },
+            {
+              "metricName": "transferCount",
+              "status": "EXACT",
+              "source": "canonical journey topology",
+              "value": 1
+            },
+            {
+              "metricName": "minimumTransferSlackMinutes",
+              "status": "EXACT",
+              "source": "canonical connection validation",
+              "value": 45
+            },
+            {
+              "metricName": "connectionRiskPenalty",
+              "status": "EXACT",
+              "source": "existing BALANCED slack thresholds",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:1767bfb5",
+          "metrics": [
+            {
+              "metricName": "totalDurationMinutes",
+              "status": "EXACT",
+              "source": "canonical journey timeline",
+              "value": 168
+            },
+            {
+              "metricName": "totalCost",
+              "status": "EXACT",
+              "source": "complete canonical ride fares",
+              "value": 1341
+            },
+            {
+              "metricName": "totalWalkingMinutes",
+              "status": "EXACT",
+              "source": "canonical WALK steps",
+              "value": 10
+            },
+            {
+              "metricName": "totalWaitingMinutes",
+              "status": "EXACT",
+              "source": "canonical WAIT steps",
+              "value": 29
+            },
+            {
+              "metricName": "transferCount",
+              "status": "EXACT",
+              "source": "canonical journey topology",
+              "value": 1
+            },
+            {
+              "metricName": "minimumTransferSlackMinutes",
+              "status": "EXACT",
+              "source": "canonical connection validation",
+              "value": 35
+            },
+            {
+              "metricName": "connectionRiskPenalty",
+              "status": "EXACT",
+              "source": "existing BALANCED slack thresholds",
+              "value": 0
+            }
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:9bad5bc6",
+          "metrics": [
+            {
+              "metricName": "totalDurationMinutes",
+              "status": "EXACT",
+              "source": "canonical journey timeline",
+              "value": 175
+            },
+            {
+              "metricName": "totalCost",
+              "status": "EXACT",
+              "source": "complete canonical ride fares",
+              "value": 1341
+            },
+            {
+              "metricName": "totalWalkingMinutes",
+              "status": "EXACT",
+              "source": "canonical WALK steps",
+              "value": 10
+            },
+            {
+              "metricName": "totalWaitingMinutes",
+              "status": "EXACT",
+              "source": "canonical WAIT steps",
+              "value": 32
+            },
+            {
+              "metricName": "transferCount",
+              "status": "EXACT",
+              "source": "canonical journey topology",
+              "value": 1
+            },
+            {
+              "metricName": "minimumTransferSlackMinutes",
+              "status": "EXACT",
+              "source": "canonical connection validation",
+              "value": 23
+            },
+            {
+              "metricName": "connectionRiskPenalty",
+              "status": "EXACT",
+              "source": "existing BALANCED slack thresholds",
+              "value": 0
+            }
+          ]
+        }
+      ],
+      "rankedCandidates": [
+        {
+          "candidateId": "journey:tdx-maas:ab19cfc6",
+          "rank": 1,
+          "score": 7.6923076923076925,
+          "scoreBreakdown": {
+            "durationPenalty": 0,
+            "costPenalty": 0,
+            "transferPenalty": 0,
+            "walkingPenalty": 0,
+            "riskPenalty": 0,
+            "waitingPenalty": 0.7692307692307693,
+            "weightedDuration": 0,
+            "weightedCost": 0,
+            "weightedTransfers": 0,
+            "weightedWalking": 0,
+            "weightedRisk": 0,
+            "weightedWaiting": 7.6923076923076925,
+            "totalScore": 7.6923076923076925
+          }
+        },
+        {
+          "candidateId": "journey:tdx-maas:1767bfb5",
+          "rank": 2,
+          "score": 19.6875,
+          "scoreBreakdown": {
+            "durationPenalty": 0.5625,
+            "costPenalty": 0,
+            "transferPenalty": 0,
+            "walkingPenalty": 0,
+            "riskPenalty": 0,
+            "waitingPenalty": 0,
+            "weightedDuration": 19.6875,
+            "weightedCost": 0,
+            "weightedTransfers": 0,
+            "weightedWalking": 0,
+            "weightedRisk": 0,
+            "weightedWaiting": 0,
+            "totalScore": 19.6875
+          }
+        },
+        {
+          "candidateId": "journey:tdx-maas:07fb4bb5",
+          "rank": 3,
+          "score": 25.3125,
+          "scoreBreakdown": {
+            "durationPenalty": 0.4375,
+            "costPenalty": 0,
+            "transferPenalty": 0,
+            "walkingPenalty": 0,
+            "riskPenalty": 0,
+            "waitingPenalty": 1,
+            "weightedDuration": 15.3125,
+            "weightedCost": 0,
+            "weightedTransfers": 0,
+            "weightedWalking": 0,
+            "weightedRisk": 0,
+            "weightedWaiting": 10,
+            "totalScore": 25.3125
+          }
+        },
+        {
+          "candidateId": "journey:tdx-maas:9bad5bc6",
+          "rank": 4,
+          "score": 37.30769230769231,
+          "scoreBreakdown": {
+            "durationPenalty": 1,
+            "costPenalty": 0,
+            "transferPenalty": 0,
+            "walkingPenalty": 0,
+            "riskPenalty": 0,
+            "waitingPenalty": 0.23076923076923078,
+            "weightedDuration": 35,
+            "weightedCost": 0,
+            "weightedTransfers": 0,
+            "weightedWalking": 0,
+            "weightedRisk": 0,
+            "weightedWaiting": 2.307692307692308,
+            "totalScore": 37.30769230769231
+          }
+        }
+      ]
     },
     "cheapest": {
       "available": true,
       "candidateId": "journey:tdx-maas:07fb4bb5",
+      "winnerCandidateIds": [
+        "journey:tdx-maas:07fb4bb5",
+        "journey:tdx-maas:ab19cfc6",
+        "journey:tdx-maas:1767bfb5",
+        "journey:tdx-maas:9bad5bc6"
+      ],
+      "selectedRepresentativeId": "journey:tdx-maas:07fb4bb5",
       "reasonCode": "ALL_COMPETITORS_EXACT_BOUNDED_OR_PROVEN_IMPOSSIBLE",
       "unique": false,
       "possibleTieCandidateIds": [
@@ -633,7 +1291,13 @@
         "NO_NEGATIVE_FARE"
       ]
     },
-    "formalRecommendationStatus": "PARTIAL"
+    "formalRecommendationStatus": "ALL_PRIMARY_RECOMMENDATIONS_AVAILABLE",
+    "availableRecommendations": [
+      "FASTEST",
+      "BALANCED",
+      "CHEAPEST"
+    ],
+    "unavailableRecommendations": []
   },
   "balancedPolicyChanged": false
 }

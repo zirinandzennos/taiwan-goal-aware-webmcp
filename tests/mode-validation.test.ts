@@ -406,6 +406,6 @@ describe("conservative optimality proof gates", () => {
     })];
     const gates = evaluateFormalRecommendationGates([winner, tied], [resolved("winner"), { ...resolved("tied"), resolution: "UNKNOWN" }], evidence);
     expect(gates.cheapest).toMatchObject({ available: true, unique: false, possibleTieCandidateIds: ["tied"] });
-    expect(gates.balanced).toMatchObject({ available: false, reasonCode: "INCOMPLETE_BALANCED_METRICS" });
+    expect(gates.balanced).toMatchObject({ available: false, reasonCode: "UNRESOLVED_CANDIDATE_MAY_AFFECT_BALANCED" });
   });
 });

@@ -3,7 +3,11 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
   evaluateFormalRecommendationGates,
+  evaluateTerminalDepartureMismatch,
+  resolveLayeredCandidateResolutions,
+  summarizeEffectiveResolutionCounts,
   summarizeTimingResolution,
+  toEffectiveCandidateResolutions,
   type CandidateOptimizationEvidence,
   type CandidateResolution,
 } from "../../src/journey/modeValidation.ts";
@@ -130,16 +134,66 @@ export async function buildOptimizationProof(snapshotDirectory = SNAPSHOT_DIRECT
     readFile(officialPath, "utf8").then(JSON.parse),
   ]);
   const railInvalid = new Set<string>(official.conclusions.railNoApplicableServiceCandidateIds);
-  const busInvalid = new Set<string>(official.conclusions.busNoCompatibleTimingCandidateIds);
+  const claimedBusInvalid = new Set<string>(official.conclusions.busNoCompatibleTimingCandidateIds);
   const busFareIds = new Set<string>(official.conclusions.busFareCandidateIds);
   const busFareTwd = Number(official.conclusions.busFullAdultFareTwd);
   const candidates = (snapshot.candidates as CandidateJourney[]).map((candidate) => busFareIds.has(candidate.id) ? enrichBusFare(candidate, busFareTwd) : candidate);
-  const resolutions = (snapshot.candidateResolutions as CandidateResolution[]).map((resolution) => ({
+  const primarySource = (snapshot.primaryCandidateResolutions ?? snapshot.candidateResolutions) as CandidateResolution[];
+  const primaryResolutions = primarySource.map((resolution) => ({
     ...resolution,
     fareComplete: candidates.find((candidate) => candidate.id === resolution.candidateId)?.costCoverage === "COMPLETE",
   }));
-  const optimizationEvidence = buildOptimizationEvidence(candidates, resolutions, railInvalid, busInvalid);
-  const gates = evaluateFormalRecommendationGates(candidates, resolutions, optimizationEvidence);
+  const busOfficial = official.sources.find((source: JsonObject) => source.evidenceId === "TAOYUAN-EBUS-208A-20260831");
+  const busTerminalProofs = candidates.filter((candidate) => claimedBusInvalid.has(candidate.id)).map((candidate) => {
+    const ride = candidate.steps?.find((step) => step.type === "RIDE" && step.service?.mode === "BUS" && step.service.routeId === "208A");
+    return {
+      candidateId: candidate.id,
+      ...evaluateTerminalDepartureMismatch({
+        candidateBoardingStopId: ride?.service?.boardingStopId ?? null,
+        officialTerminalStopId: busOfficial?.extractedFields?.originTerminal?.tdxStopUid ?? null,
+        directionMatched: ride?.service?.direction === busOfficial?.extractedFields?.tdxDirection,
+        serviceDateMatched: ride?.validationEvidence?.serviceDate === busOfficial?.effectivePeriod?.from
+          && busOfficial?.effectivePeriod?.from === busOfficial?.effectivePeriod?.to,
+        publishedDepartures: busOfficial?.extractedFields?.terminalDepartures ?? [],
+        candidateBoardingTime: ride?.plannedStart?.slice(11, 16) ?? null,
+      }),
+    };
+  });
+  const busInvalid = new Set(busTerminalProofs.filter((proof) => proof.status === "PROVEN_IMPOSSIBLE").map((proof) => proof.candidateId));
+  const optimizationEvidence = buildOptimizationEvidence(candidates, primaryResolutions, railInvalid, busInvalid);
+  const layeredResolutions = resolveLayeredCandidateResolutions(candidates, primaryResolutions, optimizationEvidence);
+  const effectiveResolutions = toEffectiveCandidateResolutions(layeredResolutions, primaryResolutions);
+  const effectiveResolutionCounts = summarizeEffectiveResolutionCounts(layeredResolutions);
+  if (effectiveResolutionCounts.total !== candidates.length) throw new Error("Effective resolution count invariant failed");
+  const gates = evaluateFormalRecommendationGates(candidates, primaryResolutions, optimizationEvidence);
+  const compactGates = {
+    fastest: {
+      available: gates.fastest.available,
+      reasonCode: gates.fastest.reasonCode,
+      winnerCandidateIds: gates.fastest.winnerCandidateIds ?? [],
+      selectedRepresentativeId: gates.fastest.selectedRepresentativeId ?? null,
+      unique: gates.fastest.unique ?? false,
+    },
+    balanced: {
+      available: gates.balanced.available,
+      reasonCode: gates.balanced.reasonCode,
+      winnerCandidateIds: gates.balanced.winnerCandidateIds ?? [],
+      selectedRepresentativeId: gates.balanced.selectedRepresentativeId ?? null,
+      unique: gates.balanced.unique ?? false,
+      score: gates.balanced.score ?? null,
+      blockers: gates.balanced.blockers ?? [],
+    },
+    cheapest: {
+      available: gates.cheapest.available,
+      reasonCode: gates.cheapest.reasonCode,
+      winnerCandidateIds: gates.cheapest.winnerCandidateIds ?? [],
+      selectedRepresentativeId: gates.cheapest.selectedRepresentativeId ?? null,
+      unique: gates.cheapest.unique ?? false,
+    },
+    formalRecommendationStatus: gates.formalRecommendationStatus,
+    availableRecommendations: gates.availableRecommendations,
+    unavailableRecommendations: gates.unavailableRecommendations,
+  };
   const rides = candidates.flatMap((candidate) => candidate.steps?.filter((step) => step.type === "RIDE") ?? []);
   const timingSummary = summarizeTimingResolution(rides);
   const proof = {
@@ -161,6 +215,9 @@ export async function buildOptimizationProof(snapshotDirectory = SNAPSHOT_DIRECT
       lowerBoundOnly: optimizationEvidence.filter((entry) => entry.costProof === "NONNEGATIVE_LOWER_BOUND").length,
       unknown: optimizationEvidence.filter((entry) => entry.costProof === "UNBOUNDED").length,
     },
+    busTerminalProofs,
+    layeredCandidateResolutions: layeredResolutions,
+    effectiveResolutionCounts,
     candidates: optimizationEvidence,
     formalProofs: gates,
     balancedPolicyChanged: false,
@@ -168,9 +225,11 @@ export async function buildOptimizationProof(snapshotDirectory = SNAPSHOT_DIRECT
   const updatedSnapshot = {
     ...snapshot,
     candidates,
-    candidateResolutions: resolutions,
+    primaryCandidateResolutions: primaryResolutions,
+    candidateResolutions: effectiveResolutions,
+    effectiveResolutionCounts,
     formalRecommendationStatus: gates.formalRecommendationStatus,
-    formalRecommendations: gates,
+    formalRecommendations: compactGates,
   };
   const updatedSummary = {
     ...summary,
@@ -180,8 +239,10 @@ export async function buildOptimizationProof(snapshotDirectory = SNAPSHOT_DIRECT
       fareIncompleteCandidates: candidates.filter((candidate) => candidate.costCoverage !== "COMPLETE").length,
     },
     ...timingSummary,
-    candidateResolutions: resolutions,
-    formalRecommendations: gates,
+    primaryCandidateResolutions: primaryResolutions,
+    candidateResolutions: effectiveResolutions,
+    effectiveResolutionCounts,
+    formalRecommendations: compactGates,
   };
   delete updatedSummary.totals.exactScheduleVerifiedLegs;
   delete updatedSummary.totals.estimatedOnlyLegs;
@@ -218,10 +279,11 @@ export async function buildOptimizationProof(snapshotDirectory = SNAPSHOT_DIRECT
     knownGaps: [
       "The four 208A legs have no compatible fixed schedule at the MaaS boarding time; their exact adult OD fare is independently verified.",
       "The 12:15 Zuoying-to-Banqiao leg has no applicable TDX/THSRC service on Monday 2026-08-31.",
-      "Formal Balanced remains unavailable because no safe optimistic bound exists for the unchanged score formula.",
+      "Live deployment and current-page-state WebMCP E2E remain outside this proof snapshot.",
     ],
+    effectiveResolutionCounts,
     formalRecommendationStatus: gates.formalRecommendationStatus,
-    formalRecommendations: gates,
+    formalRecommendations: compactGates,
     optimizationProofArtifact: "optimization-proof.json",
     officialSecondaryEvidenceArtifact: "official-secondary-evidence.json",
   };

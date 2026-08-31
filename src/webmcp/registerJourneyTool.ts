@@ -5,6 +5,7 @@ import { findJourneyGoal } from "../data/demoGoals";
 import type {
   JourneyOption,
   JourneyPlanResult,
+  JourneyRecommendationMetadata,
   JourneyReplanResult,
 } from "../journey/types";
 import {
@@ -143,6 +144,30 @@ function serializePlan(plan: JourneyPlanResult): Record<string, unknown> {
   };
 }
 
+function serializeRecommendation(
+  option: JourneyOption | null,
+  metadata: JourneyRecommendationMetadata | undefined,
+): Record<string, unknown> {
+  const fallbackId = option?.candidate.id ?? null;
+  return {
+    status: metadata?.status ?? (fallbackId === null ? "UNAVAILABLE" : "AVAILABLE"),
+    winnerCandidateIds: metadata?.winnerCandidateIds ?? (fallbackId === null ? [] : [fallbackId]),
+    selectedRepresentativeId: metadata?.selectedRepresentativeId ?? fallbackId,
+    unique: metadata?.unique ?? fallbackId !== null,
+    journey: serializeOption(option),
+    blocker: metadata?.blocker ?? (fallbackId === null ? { reasonCode: "NO_ELIGIBLE_CANDIDATE" } : null),
+    proofStatus: metadata?.proofStatus ?? "DETERMINISTIC_ENGINE_RESULT",
+    evidenceIds: metadata?.evidenceIds ?? [],
+    dataMode: metadata?.dataMode ?? "SNAPSHOT",
+    farePolicy: metadata?.farePolicy ?? "COMPLETE_PUBLISHED_FARES_ONLY",
+    effectiveCandidateCount: metadata?.effectiveCandidateCount ?? planCandidateCount(option),
+  };
+}
+
+function planCandidateCount(option: JourneyOption | null): number {
+  return option === null ? 0 : 1;
+}
+
 function serializeGoalAwareJourneyPlan(plan: JourneyPlanResult): Record<string, unknown> {
   const pageState = getCurrentJourneyPageState();
   return {
@@ -156,6 +181,11 @@ function serializeGoalAwareJourneyPlan(plan: JourneyPlanResult): Record<string, 
       fastest: serializeOption(plan.fastest),
       balanced: serializeOption(plan.balanced),
       cheapest: serializeOption(plan.cheapest),
+    },
+    recommendations: {
+      fastest: serializeRecommendation(plan.fastest, plan.recommendationMetadata?.fastest),
+      balanced: serializeRecommendation(plan.balanced, plan.recommendationMetadata?.balanced),
+      cheapest: serializeRecommendation(plan.cheapest, plan.recommendationMetadata?.cheapest),
     },
     snapshot: officialJourneyPlanningContext.dataSnapshot ?? null,
   };

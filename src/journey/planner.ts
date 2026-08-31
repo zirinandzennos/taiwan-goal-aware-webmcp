@@ -1,6 +1,6 @@
 import { generateCandidateJourneys } from "./candidates";
 import { evaluateJourneyFeasibility } from "./feasibility";
-import { recommendJourneys } from "./ranking";
+import { compareCheapest, compareFastest, rankBalancedJourneys, recommendJourneys } from "./ranking";
 import type {
   CandidateFeasibility,
   CandidateJourney,
@@ -9,7 +9,29 @@ import type {
   JourneyPlanningContext,
   JourneyRequest,
   RankedJourney,
+  JourneyRecommendationMetadata,
 } from "./types";
+
+function recommendationMetadata(
+  winners: readonly CandidateJourney[],
+  effectiveCandidateCount: number,
+  context: JourneyPlanningContext,
+  blockerReasonCode: string | null = null,
+): JourneyRecommendationMetadata {
+  const selectedRepresentativeId = winners[0]?.id ?? null;
+  return {
+    status: selectedRepresentativeId === null ? "UNAVAILABLE" : "AVAILABLE",
+    winnerCandidateIds: winners.map((candidate) => candidate.id),
+    selectedRepresentativeId,
+    unique: winners.length === 1,
+    proofStatus: "DETERMINISTIC_ENGINE_RESULT",
+    evidenceIds: context.dataSnapshot ? [context.dataSnapshot.snapshotId] : [],
+    dataMode: context.dataSnapshot ? "SNAPSHOT" : "FIXTURE",
+    farePolicy: "COMPLETE_PUBLISHED_FARES_ONLY",
+    effectiveCandidateCount,
+    blocker: selectedRepresentativeId === null ? { reasonCode: blockerReasonCode ?? "NO_ELIGIBLE_CANDIDATE" } : null,
+  };
+}
 
 function attachOption(
   candidate: CandidateJourney | null,
@@ -55,6 +77,19 @@ export function planJourney(
     return status === "FEASIBLE" || status === "RISKY";
   });
   const recommendations = recommendJourneys(recommendableCandidates);
+  const fastestValue = recommendations.fastest?.goalCompletionAt ?? recommendations.fastest?.arriveAt ?? null;
+  const fastestWinners = fastestValue === null ? [] : recommendableCandidates
+    .filter((candidate) => (candidate.goalCompletionAt ?? candidate.arriveAt) === fastestValue)
+    .sort(compareFastest);
+  const cheapestValue = recommendations.cheapest?.totalCost ?? null;
+  const cheapestWinners = cheapestValue === null ? [] : recommendableCandidates
+    .filter((candidate) => (candidate.costCoverage ?? "COMPLETE") === "COMPLETE" && candidate.totalCost === cheapestValue)
+    .sort(compareCheapest);
+  const balancedRanked = rankBalancedJourneys(recommendableCandidates);
+  const balancedScore = balancedRanked[0]?.score ?? null;
+  const balancedWinners = balancedScore === null ? [] : balancedRanked
+    .filter((entry) => entry.score === balancedScore)
+    .map((entry) => entry.candidate);
   const selectionReasonCodes = recommendableCandidates.length > 0 && recommendations.cheapest === null
     ? ["NO_COMPLETE_FARE_CANDIDATE" as const]
     : [];
@@ -69,5 +104,10 @@ export function planJourney(
     timetableMode: context.timetableMode,
     ...(request.goal ? { goalId: request.goal.id, goalDeadline: request.goal.deadlineAt } : {}),
     ...(selectionReasonCodes.length > 0 ? { selectionReasonCodes } : {}),
+    recommendationMetadata: {
+      fastest: recommendationMetadata(fastestWinners, recommendableCandidates.length, context),
+      balanced: recommendationMetadata(balancedWinners, recommendableCandidates.length, context),
+      cheapest: recommendationMetadata(cheapestWinners, recommendableCandidates.length, context, "NO_COMPLETE_FARE_CANDIDATE"),
+    },
   };
 }

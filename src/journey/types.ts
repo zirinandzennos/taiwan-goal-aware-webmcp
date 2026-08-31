@@ -473,6 +473,19 @@ export interface JourneyOption {
   scoreBreakdown?: JourneyScoreBreakdown;
 }
 
+export interface JourneyRecommendationMetadata {
+  status: "AVAILABLE" | "UNAVAILABLE";
+  winnerCandidateIds: string[];
+  selectedRepresentativeId: string | null;
+  unique: boolean;
+  proofStatus: "DETERMINISTIC_ENGINE_RESULT";
+  evidenceIds: string[];
+  dataMode: JourneyDataMode;
+  farePolicy: "COMPLETE_PUBLISHED_FARES_ONLY";
+  effectiveCandidateCount: number;
+  blocker: { reasonCode: string } | null;
+}
+
 export interface JourneyPlanResult {
   status: FeasibilityStatus;
   candidateCount: number;
@@ -484,6 +497,11 @@ export interface JourneyPlanResult {
   goalId?: string;
   goalDeadline?: string | null;
   selectionReasonCodes?: Array<"NO_COMPLETE_FARE_CANDIDATE">;
+  recommendationMetadata?: {
+    fastest: JourneyRecommendationMetadata;
+    balanced: JourneyRecommendationMetadata;
+    cheapest: JourneyRecommendationMetadata;
+  };
 }
 
 export interface JourneyCurrentState {

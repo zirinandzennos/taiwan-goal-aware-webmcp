@@ -19,7 +19,7 @@ function completeTotalCost(candidate: CandidateJourney): number {
   return candidate.totalCost;
 }
 
-function compareFastest(first: CandidateJourney, second: CandidateJourney): number {
+export function compareFastest(first: CandidateJourney, second: CandidateJourney): number {
   return timestamp(first.goalCompletionAt ?? first.arriveAt) - timestamp(second.goalCompletionAt ?? second.arriveAt)
     || ((first.totalCost ?? Number.POSITIVE_INFINITY) - (second.totalCost ?? Number.POSITIVE_INFINITY))
     || first.transferCount - second.transferCount
@@ -27,7 +27,7 @@ function compareFastest(first: CandidateJourney, second: CandidateJourney): numb
     || first.id.localeCompare(second.id);
 }
 
-function compareCheapest(first: CandidateJourney, second: CandidateJourney): number {
+export function compareCheapest(first: CandidateJourney, second: CandidateJourney): number {
   return completeTotalCost(first) - completeTotalCost(second)
     || timestamp(first.arriveAt) - timestamp(second.arriveAt)
     || first.transferCount - second.transferCount
@@ -43,14 +43,16 @@ function minMaxPenalty(candidates: readonly CandidateJourney[], metric: NumericM
   return (candidate) => (metric(candidate) - minimum) / (maximum - minimum);
 }
 
+export function calculateConnectionRiskPenalty(candidate: CandidateJourney): number {
+  const slack = candidate.minimumTransferSlackMinutes;
+  if (slack === null || slack >= 12) return 0;
+  if (slack >= 8) return 0.33;
+  if (slack >= 3) return 0.67;
+  return 1;
+}
+
 function riskPenalty(candidates: readonly CandidateJourney[]): NumericMetric {
-  return (candidate) => {
-    const slack = candidate.minimumTransferSlackMinutes;
-    if (slack === null || slack >= 12) return 0;
-    if (slack >= 8) return 0.33;
-    if (slack >= 3) return 0.67;
-    return 1;
-  };
+  return calculateConnectionRiskPenalty;
 }
 
 function completeCostPenalty(candidates: readonly CandidateJourney[]): NumericMetric {

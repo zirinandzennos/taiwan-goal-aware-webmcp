@@ -99,7 +99,23 @@ describe("Taiwan journey WebMCP tools", () => {
       dataMode: "SNAPSHOT",
       selectionReasonCodes: ["NO_COMPLETE_FARE_CANDIDATE"],
       journeys: { fastest: { costCoverage: "UNKNOWN" }, balanced: { costCoverage: "UNKNOWN" }, cheapest: null },
+      recommendations: {
+        fastest: {
+          status: "AVAILABLE",
+          winnerCandidateIds: expect.any(Array),
+          selectedRepresentativeId: expect.any(String),
+          unique: expect.any(Boolean),
+          proofStatus: "DETERMINISTIC_ENGINE_RESULT",
+          evidenceIds: ["tdx-thsr-20260831-20260906-20260830"],
+          dataMode: "SNAPSHOT",
+          effectiveCandidateCount: expect.any(Number),
+          blocker: null,
+        },
+        balanced: { status: "AVAILABLE", winnerCandidateIds: expect.any(Array), blocker: null },
+        cheapest: { status: "UNAVAILABLE", winnerCandidateIds: [], blocker: { reasonCode: "NO_COMPLETE_FARE_CANDIDATE" } },
+      },
     });
+    expect(output.recommendations.fastest.winnerCandidateIds).toContain(output.recommendations.fastest.selectedRepresentativeId);
   });
 
   it("keeps plan, replan, and negative intent fixtures distinct in metadata tests", () => {
