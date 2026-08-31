@@ -1,0 +1,205 @@
+{
+  "snapshotPeriod": {
+    "from": "2026-08-31",
+    "to": "2026-09-06",
+    "timezone": "Asia/Taipei"
+  },
+  "retrievedAt": "2026-08-31T02:35:36.409Z",
+  "sources": [
+    {
+      "provider": "TDX MaaS",
+      "endpoint": "https://tdx.transportdata.tw/api/maas/routing"
+    },
+    {
+      "provider": "TDX",
+      "apiFamily": "Rail",
+      "apiVersion": "v2",
+      "endpointName": "TrainDates",
+      "normalizedQuery": {
+        "serviceDate": "2026-08-31",
+        "systems": [
+          "THSR",
+          "TRA"
+        ]
+      },
+      "sourceAttribution": "Transportation Data eXchange (TDX), Ministry of Transportation and Communications, Taiwan"
+    },
+    {
+      "provider": "TDX",
+      "apiFamily": "Rail",
+      "apiVersion": "v2",
+      "endpointName": "DailyTimetable OD",
+      "normalizedQuery": {
+        "serviceDate": "2026-08-31",
+        "uniqueOdQueries": 4
+      },
+      "sourceAttribution": "Transportation Data eXchange (TDX), Ministry of Transportation and Communications, Taiwan"
+    },
+    {
+      "provider": "TDX",
+      "apiFamily": "Rail",
+      "apiVersion": "v2",
+      "endpointName": "ODFare",
+      "normalizedQuery": {
+        "uniqueOdQueries": 4
+      },
+      "sourceAttribution": "Transportation Data eXchange (TDX), Ministry of Transportation and Communications, Taiwan"
+    },
+    {
+      "provider": "TDX",
+      "apiFamily": "Bus",
+      "apiVersion": "v2",
+      "endpointName": "StopOfRoute/DailyStopTimeTable/Schedule",
+      "normalizedQuery": {
+        "city": "Taoyuan",
+        "routeName": "208A",
+        "serviceDate": "2026-08-31"
+      },
+      "sourceAttribution": "Transportation Data eXchange (TDX), Ministry of Transportation and Communications, Taiwan"
+    }
+  ],
+  "queries": [
+    {
+      "origin": "kaohsiung-main-station",
+      "destination": "xpark-entrance",
+      "depart": "2026-08-31T11:30:00",
+      "gc": 1,
+      "top": 10,
+      "transit": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "transferTimeMinutes": [
+        5,
+        60
+      ],
+      "firstMileTimeMinutes": 30,
+      "lastMileTimeMinutes": 30
+    },
+    {
+      "origin": "kaohsiung-main-station",
+      "destination": "xpark-entrance",
+      "depart": "2026-08-31T11:30:00",
+      "gc": 0.5,
+      "top": 10,
+      "transit": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "transferTimeMinutes": [
+        5,
+        60
+      ],
+      "firstMileTimeMinutes": 30,
+      "lastMileTimeMinutes": 30
+    },
+    {
+      "origin": "kaohsiung-main-station",
+      "destination": "xpark-entrance",
+      "depart": "2026-08-31T11:30:00",
+      "gc": 0,
+      "top": 10,
+      "transit": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "transferTimeMinutes": [
+        5,
+        60
+      ],
+      "firstMileTimeMinutes": 30,
+      "lastMileTimeMinutes": 30
+    }
+  ],
+  "normalizerVersion": "1.1.0",
+  "notice": "Official TDX MaaS scheduled routing snapshot. Not live data; fares and mode-level verification may be incomplete.",
+  "queryResults": [
+    {
+      "gc": 1,
+      "returnedRoutes": 10,
+      "normalizedRoutes": 10,
+      "rejectedRoutes": 0
+    },
+    {
+      "gc": 0.5,
+      "returnedRoutes": 10,
+      "normalizedRoutes": 10,
+      "rejectedRoutes": 0
+    },
+    {
+      "gc": 0,
+      "returnedRoutes": 10,
+      "normalizedRoutes": 10,
+      "rejectedRoutes": 0
+    }
+  ],
+  "knownGaps": [
+    "Four Taoyuan 208A legs lack a unique stop-level fixed-timetable match and have no validated fare.",
+    "The MaaS 12:15 Zuoying-to-Banqiao THSR leg lacks a unique Rail v2 match on the frozen service date.",
+    "No Kaohsiung city bus, intercity bus, or MRT leg appears in the frozen ten candidates."
+  ],
+  "formalRecommendationStatus": "UNKNOWN_MODE_VALIDATION",
+  "provisionalSelections": {
+    "fastestCandidateId": "journey:tdx-maas:07fb4bb5",
+    "balancedCandidateId": "journey:tdx-maas:ab19cfc6",
+    "cheapestCandidateId": null,
+    "label": "PROVISIONAL_AMONG_VALIDATED_CANDIDATES"
+  },
+  "maasRetrievedAt": "2026-08-31T01:43:31.927Z",
+  "provider": "TDX",
+  "apiFamilies": [
+    "MaaS",
+    "Rail v2",
+    "Bus v2"
+  ],
+  "candidateIdsCovered": [
+    "journey:tdx-maas:6196da5e",
+    "journey:tdx-maas:cbee5feb",
+    "journey:tdx-maas:07fb4bb5",
+    "journey:tdx-maas:ab19cfc6",
+    "journey:tdx-maas:1767bfb5",
+    "journey:tdx-maas:9bad5bc6",
+    "journey:tdx-maas:72cc6fbc",
+    "journey:tdx-maas:741ae287",
+    "journey:tdx-maas:94e37614",
+    "journey:tdx-maas:a8aed985"
+  ],
+  "validatorVersion": "1.0.0",
+  "artifacts": [
+    "places.json",
+    "goal-access.json",
+    "maas-candidates.json",
+    "candidate-service-inventory.json",
+    "mode-validation.json",
+    "fares.json",
+    "validation-summary.json"
+  ],
+  "dataDisclaimer": "Frozen official-data snapshot, not live operations. Bus stop times with TimeType=0 are estimated scheduled times and are not real-time ETA. UNKNOWN is not IMPOSSIBLE. Fare null means not proven, never zero.",
+  "formalRecommendations": {
+    "fastest": {
+      "available": false,
+      "candidateId": null,
+      "reasonCode": "UNRESOLVED_CANDIDATE_MAY_BE_FASTER"
+    },
+    "balanced": {
+      "available": false,
+      "candidateId": null,
+      "reasonCode": "INCOMPLETE_BALANCED_METRICS"
+    },
+    "cheapest": {
+      "available": false,
+      "candidateId": null,
+      "reasonCode": "INCOMPLETE_FARE_COVERAGE"
+    },
+    "formalRecommendationStatus": "UNKNOWN_MODE_VALIDATION"
+  }
+}

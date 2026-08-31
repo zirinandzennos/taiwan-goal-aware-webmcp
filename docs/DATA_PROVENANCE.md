@@ -40,3 +40,13 @@ The 2026-08-31 `ENTER_XPARK` evaluation uses Xpark's published Monday rule: Sund
 ## Current runtime
 
 The static `officialTimetableSnapshot.json`, manifest, goal reference, browser UI, WebMCP tools, and golden runner operate without credentials or live TDX calls. The primary browser context is `PROVIDER_NORMALIZED` and uses the indexed frozen snapshot. Synthetic timetables remain deterministic test fixtures only. The demonstrated Tainan 11:49 progress update is simulated; all selected THSR services and timestamps are discovered from the frozen official schedule.
+
+## Bounded MaaS corridor snapshot
+
+On 2026-08-31, the credential-gated importer queried official TDX MaaS `/routing` for the fixed Kaohsiung Main Station demo point to the Xpark entrance demo point, departing 2026-08-31 11:30 Asia/Taipei. It made three calls with `gc=1`, `0.5`, and `0`, each with `top=10`, and normalized 30 returned routes. Deterministic signature deduplication retained 10 candidates; connection validation rejected none.
+
+Public output is limited to normalized artifacts under `data/snapshots/2026-08-31_2026-09-06/`: the manifest, places, goal access, enriched canonical candidates, service inventory, mode evidence, fares, and validation summary. Raw responses, access tokens, Client ID, Client Secret, Authorization headers, and cookies are not written.
+
+`npm run journey:validate` does not call MaaS or add candidates. It deduplicates the 28 transit legs into seven validation keys, checks the service date through Rail v2 `TrainDates`, matches Rail v2 OD timetables, applies explicit adult full-fare policies to Rail v2 `ODFare`, and checks Taoyuan 208A through Bus v2 `StopOfRoute`, `DailyStopTimeTable`, and `Schedule`. The Rail policy is THSR adult full fare in a standard reserved seat and TRA adult local/fast-local full fare (`成普`). Bus fare stays `null` because it is not proven by the validated endpoints.
+
+The resulting fixed snapshot has 20 exact Rail schedule legs, four estimated stop-level Bus legs, and eight UNKNOWN timed legs. Four candidates are `VALIDATED_FEASIBLE`; six remain `UNKNOWN`. The unresolved MaaS 12:15 Zuoying-to-Banqiao identity and the ambiguous 208A stop-level time block formal Fastest. Incomplete Bus fares separately block formal Balanced and Cheapest. UNKNOWN is never converted to IMPOSSIBLE, and an unknown fare is never represented as zero. The snapshot remains an acquisition/evidence artifact, not the primary browser runtime, and it still contains no GIS geometry.

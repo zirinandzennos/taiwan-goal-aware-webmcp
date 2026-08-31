@@ -80,9 +80,9 @@ function selectedCandidateIds(output: Record<string, any>): string[] {
 }
 
 describe("Taiwan journey WebMCP tools", () => {
-  it("registers exactly the two stable read-only tools with narrow metadata", () => {
+  it("registers the journey-first tool plus the stable goal and replan tools", () => {
     const tools = registerTools();
-    expect([...tools.keys()]).toEqual(["check_taiwan_goal_feasibility", "replan_taiwan_journey"]);
+    expect([...tools.keys()]).toEqual(["plan_taiwan_goal_aware_journey", "check_taiwan_goal_feasibility", "replan_taiwan_journey"]);
     for (const tool of tools.values()) {
       expect(tool.inputSchema).toEqual({ type: "object", properties: {}, additionalProperties: false });
       expect(tool.annotations).toEqual({ readOnlyHint: true, untrustedContentHint: false });
@@ -90,6 +90,16 @@ describe("Taiwan journey WebMCP tools", () => {
     expect(tools.get("check_taiwan_goal_feasibility")?.description).toContain("currently selected on this page");
     expect(tools.get("check_taiwan_goal_feasibility")?.description).toContain("weather");
     expect(tools.get("replan_taiwan_journey")?.description).toContain("location or time has changed");
+  });
+
+  it("returns Journey-first output and withholds Cheapest for incomplete fares", async () => {
+    const output = await json(registerTools().get("plan_taiwan_goal_aware_journey")!);
+    expect(output).toMatchObject({
+      requestId: "req:ENTER_XPARK:1070:2026-08-31T11:30:00+08:00",
+      dataMode: "SNAPSHOT",
+      selectionReasonCodes: ["NO_COMPLETE_FARE_CANDIDATE"],
+      journeys: { fastest: { costCoverage: "UNKNOWN" }, balanced: { costCoverage: "UNKNOWN" }, cheapest: null },
+    });
   });
 
   it("keeps plan, replan, and negative intent fixtures distinct in metadata tests", () => {

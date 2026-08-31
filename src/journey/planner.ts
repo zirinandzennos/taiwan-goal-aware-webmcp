@@ -50,7 +50,14 @@ export function planJourney(
   const feasibilityByCandidateId = new Map(
     feasibility.candidateFeasibilities.map((result) => [result.candidateId, result]),
   );
-  const recommendations = recommendJourneys(candidates);
+  const recommendableCandidates = candidates.filter((candidate) => {
+    const status = feasibilityByCandidateId.get(candidate.id)?.status;
+    return status === "FEASIBLE" || status === "RISKY";
+  });
+  const recommendations = recommendJourneys(recommendableCandidates);
+  const selectionReasonCodes = recommendableCandidates.length > 0 && recommendations.cheapest === null
+    ? ["NO_COMPLETE_FARE_CANDIDATE" as const]
+    : [];
 
   return {
     status: feasibility.status,
@@ -61,5 +68,6 @@ export function planJourney(
     reasonCodes: feasibility.reasonCodes,
     timetableMode: context.timetableMode,
     ...(request.goal ? { goalId: request.goal.id, goalDeadline: request.goal.deadlineAt } : {}),
+    ...(selectionReasonCodes.length > 0 ? { selectionReasonCodes } : {}),
   };
 }

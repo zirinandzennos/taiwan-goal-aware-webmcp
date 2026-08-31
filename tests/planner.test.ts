@@ -93,7 +93,7 @@ describe("planJourney orchestration", () => {
     }
   });
 
-  it("retains ranked options with their different feasibility outcomes", () => {
+  it("ranks only executable options after feasibility validation", () => {
     const context = directContext([
       directService("fast-expensive", "2030-06-15T09:50:00+08:00", 1_000),
       directService("cheap-late", "2030-06-15T10:20:00+08:00", 100),
@@ -101,7 +101,7 @@ describe("planJourney orchestration", () => {
     const result = planJourney(directRequest("2030-06-15T10:15:00+08:00"), context);
     expect(result.status).toBe("FEASIBLE");
     expect(result.fastest).toMatchObject({ candidate: { id: "journey:fast-expensive" }, feasibility: { status: "FEASIBLE" } });
-    expect(result.cheapest).toMatchObject({ candidate: { id: "journey:cheap-late" }, feasibility: { status: "IMPOSSIBLE" } });
+    expect(result.cheapest).toMatchObject({ candidate: { id: "journey:fast-expensive" }, feasibility: { status: "FEASIBLE" } });
     expect(result.balanced).toMatchObject({ candidate: { id: "journey:fast-expensive" }, feasibility: { status: "FEASIBLE" } });
   });
 
@@ -134,12 +134,12 @@ describe("planJourney orchestration", () => {
     expect(optionServiceIds(longPlan.fastest)).toContain("later");
   });
 
-  it("keeps useful ranked options when a required deadline is unavailable", () => {
+  it("does not publish UNKNOWN candidates as formal recommendations", () => {
     const result = planJourney(requestAt("2030-06-15T07:00:00+08:00"), { ...syntheticContext, deadlineRequired: true, deadlineAvailability: "UNAVAILABLE" });
     expect(result.status).toBe("UNKNOWN");
-    expect(result.fastest?.feasibility).toMatchObject({ status: "UNKNOWN", reasonCodes: ["REQUIRED_DEADLINE_UNAVAILABLE"] });
-    expect(result.cheapest).not.toBeNull();
-    expect(result.balanced).not.toBeNull();
+    expect(result.fastest).toBeNull();
+    expect(result.cheapest).toBeNull();
+    expect(result.balanced).toBeNull();
   });
 
   it("distinguishes complete and unavailable empty networks", () => {

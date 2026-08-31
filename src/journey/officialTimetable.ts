@@ -45,9 +45,17 @@ export const officialJourneyNodes: readonly JourneyNode[] = runtime.nodes.map((n
   ...(node.longitude === null ? {} : { longitude: node.longitude }),
 }));
 
-export const officialScheduledServices: readonly OfficialScheduledService[] = runtime.services;
+export const officialScheduledServices: readonly OfficialScheduledService[] = runtime.services.map((service) => ({
+  ...service,
+  timingQuality: "SCHEDULED",
+  source: {
+    provider: manifestJson.provider,
+    retrievedAt: manifestJson.retrievedAt,
+    dataMode: "SNAPSHOT",
+  },
+}));
 
-const servicesById = new Map(runtime.services.map((service) => [service.id, service]));
+const servicesById = new Map(officialScheduledServices.map((service) => [service.id, service]));
 
 export function findOfficialService(serviceId: string): OfficialScheduledService | undefined {
   return servicesById.get(serviceId);
@@ -58,8 +66,8 @@ export function findOfficialNode(nodeId: string): JourneyNode | undefined {
 }
 
 export const officialJourneyPlanningContext: JourneyPlanningContext = {
-  timetable: runtime.services,
-  timetableStore: createIndexedTimetableStore(runtime.services),
+  timetable: officialScheduledServices,
+  timetableStore: createIndexedTimetableStore(officialScheduledServices),
   transferRules: runtime.transferRules,
   timetableMode: "PROVIDER_NORMALIZED",
   dataSnapshot: {
@@ -68,5 +76,6 @@ export const officialJourneyPlanningContext: JourneyPlanningContext = {
     periodEnd: runtime.metadata.periodEnd,
     sourceLabel: runtime.metadata.source,
     actualOperationsClaimed: false,
+    retrievedAt: manifestJson.retrievedAt,
   },
 };

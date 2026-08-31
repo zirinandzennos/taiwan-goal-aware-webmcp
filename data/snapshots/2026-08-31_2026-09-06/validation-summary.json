@@ -1,0 +1,432 @@
+{
+  "schemaVersion": "1.0.0",
+  "retrievedAt": "2026-08-31T02:35:36.409Z",
+  "totals": {
+    "candidateCount": 10,
+    "transitLegCount": 28,
+    "deduplicatedValidationKeys": 7,
+    "exactScheduleVerifiedLegs": 20,
+    "estimatedOnlyLegs": 4,
+    "unknownLegs": 8,
+    "fareCompleteCandidates": 6,
+    "fareIncompleteCandidates": 4,
+    "validatedFeasibleCandidates": 4,
+    "validatedRiskyCandidates": 0,
+    "validatedImpossibleCandidates": 0,
+    "unknownCandidates": 6
+  },
+  "candidateResolutions": [
+    {
+      "candidateId": "journey:tdx-maas:6196da5e",
+      "resolution": "UNKNOWN",
+      "reasonCodes": [
+        "RAIL_EXACT_SCHEDULE_VERIFIED",
+        "INSUFFICIENT_UNIQUE_SERVICE_IDENTITY",
+        "CONNECTIONS_VALID"
+      ],
+      "timedLegsComplete": false,
+      "fareComplete": true,
+      "connection": {
+        "status": "FEASIBLE",
+        "minimumConnectionSlackSec": 360,
+        "transferSlacksSec": [
+          1500,
+          360
+        ],
+        "diagnostics": [
+          {
+            "previousRideStepId": "maas:4:1:ride",
+            "nextRideStepId": "maas:4:4:ride",
+            "requiredReadyAt": "2026-08-31T11:50:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T12:15:00+08:00",
+            "connectionSlackSec": 1500,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          },
+          {
+            "previousRideStepId": "maas:4:4:ride",
+            "nextRideStepId": "maas:4:6:ride",
+            "requiredReadyAt": "2026-08-31T13:49:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T13:55:00+08:00",
+            "connectionSlackSec": 360,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          }
+        ],
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      }
+    },
+    {
+      "candidateId": "journey:tdx-maas:cbee5feb",
+      "resolution": "UNKNOWN",
+      "reasonCodes": [
+        "RAIL_EXACT_SCHEDULE_VERIFIED",
+        "INSUFFICIENT_UNIQUE_SERVICE_IDENTITY",
+        "CONNECTIONS_VALID"
+      ],
+      "timedLegsComplete": false,
+      "fareComplete": true,
+      "connection": {
+        "status": "FEASIBLE",
+        "minimumConnectionSlackSec": 360,
+        "transferSlacksSec": [
+          780,
+          360
+        ],
+        "diagnostics": [
+          {
+            "previousRideStepId": "maas:5:1:ride",
+            "nextRideStepId": "maas:5:4:ride",
+            "requiredReadyAt": "2026-08-31T12:02:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T12:15:00+08:00",
+            "connectionSlackSec": 780,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          },
+          {
+            "previousRideStepId": "maas:5:4:ride",
+            "nextRideStepId": "maas:5:6:ride",
+            "requiredReadyAt": "2026-08-31T13:49:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T13:55:00+08:00",
+            "connectionSlackSec": 360,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          }
+        ],
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      }
+    },
+    {
+      "candidateId": "journey:tdx-maas:07fb4bb5",
+      "resolution": "VALIDATED_FEASIBLE",
+      "reasonCodes": [
+        "CONNECTIONS_VALID"
+      ],
+      "timedLegsComplete": true,
+      "fareComplete": true,
+      "connection": {
+        "status": "FEASIBLE",
+        "minimumConnectionSlackSec": 1980,
+        "transferSlacksSec": [
+          1980
+        ],
+        "diagnostics": [
+          {
+            "previousRideStepId": "maas:1:1:ride",
+            "nextRideStepId": "maas:1:4:ride",
+            "requiredReadyAt": "2026-08-31T12:02:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T12:35:00+08:00",
+            "connectionSlackSec": 1980,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          }
+        ],
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      }
+    },
+    {
+      "candidateId": "journey:tdx-maas:ab19cfc6",
+      "resolution": "VALIDATED_FEASIBLE",
+      "reasonCodes": [
+        "CONNECTIONS_VALID"
+      ],
+      "timedLegsComplete": true,
+      "fareComplete": true,
+      "connection": {
+        "status": "FEASIBLE",
+        "minimumConnectionSlackSec": 2700,
+        "transferSlacksSec": [
+          2700
+        ],
+        "diagnostics": [
+          {
+            "previousRideStepId": "maas:0:1:ride",
+            "nextRideStepId": "maas:0:4:ride",
+            "requiredReadyAt": "2026-08-31T11:50:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T12:35:00+08:00",
+            "connectionSlackSec": 2700,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          }
+        ],
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      }
+    },
+    {
+      "candidateId": "journey:tdx-maas:1767bfb5",
+      "resolution": "VALIDATED_FEASIBLE",
+      "reasonCodes": [
+        "CONNECTIONS_VALID"
+      ],
+      "timedLegsComplete": true,
+      "fareComplete": true,
+      "connection": {
+        "status": "FEASIBLE",
+        "minimumConnectionSlackSec": 2100,
+        "transferSlacksSec": [
+          2100
+        ],
+        "diagnostics": [
+          {
+            "previousRideStepId": "maas:2:1:ride",
+            "nextRideStepId": "maas:2:4:ride",
+            "requiredReadyAt": "2026-08-31T11:50:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T12:25:00+08:00",
+            "connectionSlackSec": 2100,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          }
+        ],
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      }
+    },
+    {
+      "candidateId": "journey:tdx-maas:9bad5bc6",
+      "resolution": "VALIDATED_FEASIBLE",
+      "reasonCodes": [
+        "CONNECTIONS_VALID"
+      ],
+      "timedLegsComplete": true,
+      "fareComplete": true,
+      "connection": {
+        "status": "FEASIBLE",
+        "minimumConnectionSlackSec": 1380,
+        "transferSlacksSec": [
+          1380
+        ],
+        "diagnostics": [
+          {
+            "previousRideStepId": "maas:3:1:ride",
+            "nextRideStepId": "maas:3:4:ride",
+            "requiredReadyAt": "2026-08-31T12:02:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T12:25:00+08:00",
+            "connectionSlackSec": 1380,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          }
+        ],
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      }
+    },
+    {
+      "candidateId": "journey:tdx-maas:72cc6fbc",
+      "resolution": "UNKNOWN",
+      "reasonCodes": [
+        "RAIL_EXACT_SCHEDULE_VERIFIED",
+        "INSUFFICIENT_UNIQUE_SERVICE_IDENTITY",
+        "BUS_STOP_LEVEL_TIMING_AMBIGUOUS",
+        "CONNECTIONS_VALID"
+      ],
+      "timedLegsComplete": false,
+      "fareComplete": false,
+      "connection": {
+        "status": "FEASIBLE",
+        "minimumConnectionSlackSec": 360,
+        "transferSlacksSec": [
+          1500,
+          360,
+          360
+        ],
+        "diagnostics": [
+          {
+            "previousRideStepId": "maas:8:1:ride",
+            "nextRideStepId": "maas:8:4:ride",
+            "requiredReadyAt": "2026-08-31T11:50:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T12:15:00+08:00",
+            "connectionSlackSec": 1500,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          },
+          {
+            "previousRideStepId": "maas:8:4:ride",
+            "nextRideStepId": "maas:8:6:ride",
+            "requiredReadyAt": "2026-08-31T13:49:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T13:55:00+08:00",
+            "connectionSlackSec": 360,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          },
+          {
+            "previousRideStepId": "maas:8:6:ride",
+            "nextRideStepId": "maas:8:9:ride",
+            "requiredReadyAt": "2026-08-31T14:13:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T14:19:00+08:00",
+            "connectionSlackSec": 360,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          }
+        ],
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      }
+    },
+    {
+      "candidateId": "journey:tdx-maas:741ae287",
+      "resolution": "UNKNOWN",
+      "reasonCodes": [
+        "RAIL_EXACT_SCHEDULE_VERIFIED",
+        "INSUFFICIENT_UNIQUE_SERVICE_IDENTITY",
+        "BUS_STOP_LEVEL_TIMING_AMBIGUOUS",
+        "CONNECTIONS_VALID"
+      ],
+      "timedLegsComplete": false,
+      "fareComplete": false,
+      "connection": {
+        "status": "FEASIBLE",
+        "minimumConnectionSlackSec": 360,
+        "transferSlacksSec": [
+          780,
+          360,
+          360
+        ],
+        "diagnostics": [
+          {
+            "previousRideStepId": "maas:9:1:ride",
+            "nextRideStepId": "maas:9:4:ride",
+            "requiredReadyAt": "2026-08-31T12:02:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T12:15:00+08:00",
+            "connectionSlackSec": 780,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          },
+          {
+            "previousRideStepId": "maas:9:4:ride",
+            "nextRideStepId": "maas:9:6:ride",
+            "requiredReadyAt": "2026-08-31T13:49:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T13:55:00+08:00",
+            "connectionSlackSec": 360,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          },
+          {
+            "previousRideStepId": "maas:9:6:ride",
+            "nextRideStepId": "maas:9:9:ride",
+            "requiredReadyAt": "2026-08-31T14:13:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T14:19:00+08:00",
+            "connectionSlackSec": 360,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          }
+        ],
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      }
+    },
+    {
+      "candidateId": "journey:tdx-maas:94e37614",
+      "resolution": "UNKNOWN",
+      "reasonCodes": [
+        "RAIL_EXACT_SCHEDULE_VERIFIED",
+        "BUS_STOP_LEVEL_TIMING_AMBIGUOUS",
+        "CONNECTIONS_VALID"
+      ],
+      "timedLegsComplete": false,
+      "fareComplete": false,
+      "connection": {
+        "status": "FEASIBLE",
+        "minimumConnectionSlackSec": 300,
+        "transferSlacksSec": [
+          2700,
+          300
+        ],
+        "diagnostics": [
+          {
+            "previousRideStepId": "maas:6:1:ride",
+            "nextRideStepId": "maas:6:4:ride",
+            "requiredReadyAt": "2026-08-31T11:50:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T12:35:00+08:00",
+            "connectionSlackSec": 2700,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          },
+          {
+            "previousRideStepId": "maas:6:4:ride",
+            "nextRideStepId": "maas:6:7:ride",
+            "requiredReadyAt": "2026-08-31T14:14:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T14:19:00+08:00",
+            "connectionSlackSec": 300,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          }
+        ],
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      }
+    },
+    {
+      "candidateId": "journey:tdx-maas:a8aed985",
+      "resolution": "UNKNOWN",
+      "reasonCodes": [
+        "RAIL_EXACT_SCHEDULE_VERIFIED",
+        "BUS_STOP_LEVEL_TIMING_AMBIGUOUS",
+        "CONNECTIONS_VALID"
+      ],
+      "timedLegsComplete": false,
+      "fareComplete": false,
+      "connection": {
+        "status": "FEASIBLE",
+        "minimumConnectionSlackSec": 300,
+        "transferSlacksSec": [
+          1980,
+          300
+        ],
+        "diagnostics": [
+          {
+            "previousRideStepId": "maas:7:1:ride",
+            "nextRideStepId": "maas:7:4:ride",
+            "requiredReadyAt": "2026-08-31T12:02:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T12:35:00+08:00",
+            "connectionSlackSec": 1980,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          },
+          {
+            "previousRideStepId": "maas:7:4:ride",
+            "nextRideStepId": "maas:7:7:ride",
+            "requiredReadyAt": "2026-08-31T14:14:00.000+08:00",
+            "nextDepartureAt": "2026-08-31T14:19:00+08:00",
+            "connectionSlackSec": 300,
+            "appliedTransferBufferSec": 180,
+            "transferBufferApplicationCount": 1
+          }
+        ],
+        "reasonCodes": [
+          "CONNECTIONS_VALID"
+        ]
+      }
+    }
+  ],
+  "formalRecommendations": {
+    "fastest": {
+      "available": false,
+      "candidateId": null,
+      "reasonCode": "UNRESOLVED_CANDIDATE_MAY_BE_FASTER"
+    },
+    "balanced": {
+      "available": false,
+      "candidateId": null,
+      "reasonCode": "INCOMPLETE_BALANCED_METRICS"
+    },
+    "cheapest": {
+      "available": false,
+      "candidateId": null,
+      "reasonCode": "INCOMPLETE_FARE_COVERAGE"
+    },
+    "formalRecommendationStatus": "UNKNOWN_MODE_VALIDATION"
+  }
+}

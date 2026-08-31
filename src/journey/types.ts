@@ -153,6 +153,116 @@ export interface ScheduledService {
   serviceName?: string;
   /** False when the frozen schedule contains no licensed fare dataset. */
   fareDataAvailable?: boolean;
+  source?: {
+    provider: string;
+    retrievedAt: string;
+    dataMode: JourneyDataMode;
+  };
+  timingQuality?: JourneyTimingQuality;
+}
+
+export type CostCoverage = "COMPLETE" | "PARTIAL" | "UNKNOWN";
+export type JourneyDataMode = "LIVE" | "SNAPSHOT" | "FIXTURE";
+export type JourneyTimingQuality = "SCHEDULED" | "ESTIMATED" | "INFERRED_FREQUENCY";
+
+export type ModeValidationStatus = "VERIFIED" | "MISMATCH" | "UNKNOWN";
+export type ModeValidationMatchedBy =
+  | "TRAIN_NUMBER"
+  | "TRAIN_NUMBER_AND_OD"
+  | "TRIP_ID"
+  | "ROUTE_DIRECTION_STOPS"
+  | "UNIQUE_TIME_WINDOW"
+  | "NONE";
+export type ModeValidationDataQuality =
+  | "EXACT_SCHEDULE"
+  | "STOP_LEVEL_TIMETABLE"
+  | "ORIGIN_ONLY_SCHEDULE"
+  | "FREQUENCY_ESTIMATE"
+  | "ROUTE_ONLY"
+  | "MISSING";
+
+export interface ModeValidationEvidence {
+  validationStatus: ModeValidationStatus;
+  provider: "TDX";
+  serviceDate: string;
+  endpointName: string;
+  normalizedQuery: Record<string, string | number | boolean | null>;
+  retrievedAt: string;
+  timezone: "Asia/Taipei";
+  matchedBy: ModeValidationMatchedBy;
+  authoritativeDeparture: string | null;
+  authoritativeArrival: string | null;
+  originalMaasDeparture: string;
+  originalMaasArrival: string;
+  departureDeltaSec: number | null;
+  arrivalDeltaSec: number | null;
+  dataQuality: ModeValidationDataQuality;
+  reasonCode: string;
+  fareTwd: number | null;
+  fareCoverage: CostCoverage;
+  ticketType: string | null;
+  fareClass: string | null;
+  cabinClass: string | null;
+  provenance: {
+    provider: "TDX";
+    apiFamily: "Rail" | "Bus";
+    apiVersion: "v2";
+    sourceUrl: string;
+  };
+}
+
+export interface JourneyPlaceRef {
+  id: string;
+  name: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface JourneyLineString {
+  type: "LineString";
+  coordinates: Array<[number, number]>;
+}
+
+export type JourneyStepType =
+  | "WALK"
+  | "WAIT"
+  | "BOARD"
+  | "RIDE"
+  | "ALIGHT"
+  | "TRANSFER_WALK"
+  | "GOAL_ACCESS"
+  | "GOAL_COMPLETION";
+
+export interface JourneyStep {
+  id: string;
+  type: JourneyStepType;
+  from: JourneyPlaceRef;
+  to: JourneyPlaceRef;
+  plannedStart: string;
+  plannedEnd: string;
+  durationSec: number;
+  service?: {
+    mode: "BUS" | "MRT" | "TRA" | "THSR";
+    routeId?: string;
+    tripId?: string;
+    trainNo?: string;
+    operator?: string;
+    jurisdiction?: "Kaohsiung" | "Taoyuan" | "InterCity" | "UNKNOWN";
+    routeUid?: string;
+    subRouteUid?: string;
+    direction?: number;
+    boardingStopId?: string;
+    alightingStopId?: string;
+  };
+  validationEvidence?: ModeValidationEvidence;
+  costTwd: number | null;
+  timingQuality: JourneyTimingQuality;
+  geometry?: JourneyLineString;
+  source: {
+    provider: string;
+    retrievedAt: string;
+    dataMode: JourneyDataMode;
+  };
 }
 
 export interface TimetableDepartureOptions {
@@ -195,7 +305,7 @@ export interface TravelLeg {
   /** The source scheduled service used to build this leg. */
   serviceId: string;
   walkingMinutes?: number;
-  estimatedCost: number;
+  estimatedCost: number | null;
 }
 
 export interface ActivityLeg {
@@ -227,11 +337,21 @@ export interface JourneyCandidate {
   minimumTransferSlackMinutes: number | null;
   /** Feasible transfers with fewer than five minutes of slack. */
   tightTransferCount: number;
-  totalCost: number;
+  totalCost: number | null;
   walkingMinutes: number;
   transferCount: number;
   /** Kept for the earlier result contract; candidate generation sets it to totalCost. */
-  estimatedCost: number;
+  estimatedCost: number | null;
+  /** Fare values may be summed only across known sections. */
+  costCoverage?: CostCoverage;
+  /** Goal access/completion time used by Fastest when it differs from arrivalAt. */
+  goalCompletionAt?: string;
+  /** Detailed provider-neutral timeline. Legacy fixtures may omit it. */
+  steps?: JourneyStep[];
+  modeValidation?: {
+    status: "VERIFIED" | "PARTIAL" | "UNVERIFIED";
+    reasonCodes: string[];
+  };
   connectionRiskScore: number;
   /** Future ranking output; this contract does not calculate it. */
   policyScore?: number;
@@ -246,11 +366,13 @@ export interface JourneyScoreBreakdown {
   transferPenalty: number;
   walkingPenalty: number;
   riskPenalty: number;
+  waitingPenalty: number;
   weightedDuration: number;
   weightedCost: number;
   weightedTransfers: number;
   weightedWalking: number;
   weightedRisk: number;
+  weightedWaiting: number;
   totalScore: number;
 }
 
@@ -326,6 +448,7 @@ export interface JourneyPlanningContext extends JourneyFeasibilityContext {
     periodEnd: string;
     sourceLabel: string;
     actualOperationsClaimed: boolean;
+    retrievedAt?: string;
   };
 }
 
@@ -347,6 +470,7 @@ export interface JourneyPlanResult {
   timetableMode: JourneyTimetableMode;
   goalId?: string;
   goalDeadline?: string | null;
+  selectionReasonCodes?: Array<"NO_COMPLETE_FARE_CANDIDATE">;
 }
 
 export interface JourneyCurrentState {

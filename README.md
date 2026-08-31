@@ -32,8 +32,9 @@ The public web app holds the current journey state and uses the frozen official 
 
 The user configures the journey on the webpage. An agent does not need the user to repeat the origin, destination, departure time, constraints, preferences, or current journey state.
 
-The webpage exposes two structured, read-only Journey capabilities:
+The webpage exposes three structured, read-only Journey capabilities:
 
+- `plan_taiwan_goal_aware_journey`
 - `check_taiwan_goal_feasibility`
 - `replan_taiwan_journey`
 
@@ -56,9 +57,9 @@ The next departure must be at or after ready time. Different transfer locations 
 
 ## Ranking
 
-- **Fastest**: earliest final arrival.
-- **Cheapest**: lowest total cost.
-- **Balanced**: a deterministic weighted trade-off across duration, cost, transfers, walking, and transfer risk.
+- **Fastest**: earliest goal-completion time, not merely arrival at a rail station.
+- **Cheapest**: lowest total cost only among candidates whose `costCoverage` is `COMPLETE`; otherwise it is `null`.
+- **Balanced**: a deterministic 35/20/15/10/10/10 trade-off across duration, complete known cost, walking, transfers, waiting, and transfer risk.
 
 Balanced scoring uses candidate-set-relative min-max normalization and hand-authored Challenge policy weights. It is not AI or LLM scoring.
 
@@ -91,7 +92,7 @@ This ensures previously completed or missed services are not treated as still av
 
 ## WebMCP tools
 
-`check_taiwan_goal_feasibility` reads the selected goal and live journey configuration, then returns a compact status, arrival, deadline, safety margin, recommended executable journey, and data-snapshot metadata. `replan_taiwan_journey` reads the original goal plus current node and time, then recalculates the remaining journey. Both tools are read-only and accept no duplicated itinerary input.
+`plan_taiwan_goal_aware_journey` is the Journey-first contract: it returns Fastest, Balanced, and Cheapest from live page state, with Cheapest withheld when fare coverage is incomplete. `check_taiwan_goal_feasibility` retains the compact goal-deadline answer, and `replan_taiwan_journey` recalculates the remaining journey. All tools are read-only and accept no duplicated itinerary input.
 
 ## Real and simulated data
 
@@ -105,6 +106,10 @@ The repository now includes a credential-gated TDX pipeline under `scripts/impor
 2. normalize dated service runs and full offset timestamps;
 3. validate them in an indexed SQLite snapshot database; and
 4. export a static runtime JSON file plus SHA-256 manifest.
+
+It also includes a bounded Kaohsiung Main Station → Xpark corridor acquisition path. `npm run journey:snapshot` performs three MaaS queries (`gc=1`, `0.5`, `0`; `top=10`), normalizes provider sections into canonical steps, validates every connection, deduplicates candidates, and writes only normalized public artifacts under `data/snapshots/2026-08-31_2026-09-06/`. This MaaS snapshot is not yet the primary browser runtime and does not claim complete fares, mode-specific timetable verification, or route geometry.
+
+`npm run journey:validate` closes mode-level evidence for those same frozen ten candidates without calling MaaS. It uses only official TDX Rail v2 and Bus v2 scheduled data, writes normalized evidence and fare-policy artifacts, recomputes downstream connections with the transfer buffer applied once, and keeps unresolved service identity, ambiguous stop timing, and missing Bus fare as UNKNOWN/null. Formal Fastest, Balanced, and Cheapest are promoted independently; the current snapshot honestly leaves all three blocked.
 
 Set `TDX_CLIENT_ID` and `TDX_CLIENT_SECRET` only in the Git-ignored local `.env` before running `npm run timetable:fetch`. No credentials, raw provider responses, SQLite databases, or secrets are committed. The fetch command fails closed when credentials are absent.
 
@@ -128,7 +133,7 @@ npm test
 npm run build
 ```
 
-Current local status: 115 deterministic tests pass. The suite covers import normalization, SQLite schema/index validation, frozen real-data lookup, browser runtime loading, binary-search departure lookup, transfers, candidates, goal feasibility, delay replanning, shared page state, and human/WebMCP domain parity.
+Current local status: 156 deterministic tests pass. The suite covers import normalization, SQLite schema/index validation, frozen real-data lookup, browser runtime loading, binary-search departure lookup, canonical step/connection validation, mode-level Rail/Bus evidence, fare-policy and formal-recommendation gates, TDX token caching, MaaS normalization, transfers, candidates, goal feasibility, delay replanning, shared page state, and human/WebMCP domain parity.
 
 ## Challenge scope
 
@@ -142,7 +147,8 @@ See [Challenge scope](docs/CHALLENGE_SCOPE.md) for the explicit boundary.
 
 Post-Challenge directions only:
 
-- Additional licensed transport providers beyond the frozen 2026-08-31..2026-09-06 THSR snapshot
+- Resolve the remaining Rail identity, Bus stop-level timing, and Bus fare UNKNOWNs when stronger official evidence becomes available
+- TDX GIS route geometry and timeline-map synchronization
 - Real-time updates
 - Remote MCP
 - GPS-aware current state

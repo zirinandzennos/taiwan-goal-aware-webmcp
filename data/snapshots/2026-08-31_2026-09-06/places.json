@@ -1,0 +1,14 @@
+{
+  "origin": {
+    "id": "kaohsiung-main-station",
+    "name": "Kaohsiung Main Station demo point",
+    "lat": 22.6397,
+    "lng": 120.3027
+  },
+  "destination": {
+    "id": "xpark-entrance",
+    "name": "Xpark entrance demo point",
+    "lat": 25.0177,
+    "lng": 121.2148
+  }
+}

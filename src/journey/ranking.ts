@@ -1,4 +1,4 @@
-import { POLICY_WEIGHTS } from "./policies";
+import { POLICY_WEIGHTS } from "./policies.ts";
 import type {
   CandidateJourney,
   JourneyRecommendations,
@@ -12,16 +12,23 @@ function timestamp(value: string): number {
   return Date.parse(value);
 }
 
+function completeTotalCost(candidate: CandidateJourney): number {
+  if ((candidate.costCoverage ?? "COMPLETE") !== "COMPLETE" || candidate.totalCost === null) {
+    throw new Error(`Candidate ${candidate.id} does not have a complete fare`);
+  }
+  return candidate.totalCost;
+}
+
 function compareFastest(first: CandidateJourney, second: CandidateJourney): number {
-  return timestamp(first.arriveAt) - timestamp(second.arriveAt)
-    || first.totalCost - second.totalCost
+  return timestamp(first.goalCompletionAt ?? first.arriveAt) - timestamp(second.goalCompletionAt ?? second.arriveAt)
+    || ((first.totalCost ?? Number.POSITIVE_INFINITY) - (second.totalCost ?? Number.POSITIVE_INFINITY))
     || first.transferCount - second.transferCount
     || first.totalWalkingMinutes - second.totalWalkingMinutes
     || first.id.localeCompare(second.id);
 }
 
 function compareCheapest(first: CandidateJourney, second: CandidateJourney): number {
-  return first.totalCost - second.totalCost
+  return completeTotalCost(first) - completeTotalCost(second)
     || timestamp(first.arriveAt) - timestamp(second.arriveAt)
     || first.transferCount - second.transferCount
     || first.totalWalkingMinutes - second.totalWalkingMinutes
@@ -37,18 +44,20 @@ function minMaxPenalty(candidates: readonly CandidateJourney[], metric: NumericM
 }
 
 function riskPenalty(candidates: readonly CandidateJourney[]): NumericMetric {
-  const slacks = candidates
-    .map((candidate) => candidate.minimumTransferSlackMinutes)
-    .filter((slack): slack is number => slack !== null);
-  if (slacks.length === 0) return () => 0;
-  const minimum = Math.min(...slacks);
-  const maximum = Math.max(...slacks);
-  if (minimum === maximum) return () => 0;
-
   return (candidate) => {
-    if (candidate.minimumTransferSlackMinutes === null) return 0;
-    return (maximum - candidate.minimumTransferSlackMinutes) / (maximum - minimum);
+    const slack = candidate.minimumTransferSlackMinutes;
+    if (slack === null || slack >= 12) return 0;
+    if (slack >= 8) return 0.33;
+    if (slack >= 3) return 0.67;
+    return 1;
   };
+}
+
+function completeCostPenalty(candidates: readonly CandidateJourney[]): NumericMetric {
+  const complete = candidates.filter((candidate) => (candidate.costCoverage ?? "COMPLETE") === "COMPLETE");
+  if (complete.length === 0) return () => 0;
+  const knownPenalty = minMaxPenalty(complete, completeTotalCost);
+  return (candidate) => (candidate.costCoverage ?? "COMPLETE") === "COMPLETE" ? knownPenalty(candidate) : 1;
 }
 
 function scoreCandidate(
@@ -59,6 +68,7 @@ function scoreCandidate(
     transfers: NumericMetric;
     walking: NumericMetric;
     risk: NumericMetric;
+    waiting: NumericMetric;
   },
 ): JourneyScoreBreakdown {
   const weights = POLICY_WEIGHTS.BALANCED;
@@ -67,11 +77,13 @@ function scoreCandidate(
   const transferPenalty = penalties.transfers(candidate);
   const walkingPenalty = penalties.walking(candidate);
   const riskPenaltyValue = penalties.risk(candidate);
+  const waitingPenalty = penalties.waiting(candidate);
   const weightedDuration = durationPenalty * weights.travelTime;
   const weightedCost = costPenalty * weights.monetaryCost;
   const weightedTransfers = transferPenalty * weights.transfers;
   const weightedWalking = walkingPenalty * weights.walking;
   const weightedRisk = riskPenaltyValue * weights.connectionRisk;
+  const weightedWaiting = waitingPenalty * weights.waiting;
 
   return {
     durationPenalty,
@@ -79,12 +91,14 @@ function scoreCandidate(
     transferPenalty,
     walkingPenalty,
     riskPenalty: riskPenaltyValue,
+    waitingPenalty,
     weightedDuration,
     weightedCost,
     weightedTransfers,
     weightedWalking,
     weightedRisk,
-    totalScore: weightedDuration + weightedCost + weightedTransfers + weightedWalking + weightedRisk,
+    weightedWaiting,
+    totalScore: weightedDuration + weightedCost + weightedTransfers + weightedWalking + weightedRisk + weightedWaiting,
   };
 }
 
@@ -95,7 +109,9 @@ export function rankFastest(candidates: readonly CandidateJourney[]): CandidateJ
 
 /** Selects the lowest total cost with deterministic, non-insertion-order ties. */
 export function rankCheapest(candidates: readonly CandidateJourney[]): CandidateJourney | null {
-  return [...candidates].sort(compareCheapest)[0] ?? null;
+  return candidates
+    .filter((candidate) => (candidate.costCoverage ?? "COMPLETE") === "COMPLETE")
+    .sort(compareCheapest)[0] ?? null;
 }
 
 /**
@@ -107,10 +123,11 @@ export function rankBalancedJourneys(candidates: readonly CandidateJourney[]): R
   if (candidates.length === 0) return [];
   const penalties = {
     duration: minMaxPenalty(candidates, (candidate) => candidate.totalDurationMinutes),
-    cost: minMaxPenalty(candidates, (candidate) => candidate.totalCost),
+    cost: completeCostPenalty(candidates),
     transfers: minMaxPenalty(candidates, (candidate) => candidate.transferCount),
     walking: minMaxPenalty(candidates, (candidate) => candidate.totalWalkingMinutes),
     risk: riskPenalty(candidates),
+    waiting: minMaxPenalty(candidates, (candidate) => candidate.totalWaitingMinutes),
   };
 
   return candidates

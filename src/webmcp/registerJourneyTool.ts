@@ -75,6 +75,9 @@ function serializeOption(option: JourneyOption | null): Record<string, unknown> 
     arrivalAt: candidate.arriveAt,
     durationMinutes: candidate.totalDurationMinutes,
     totalCost: candidate.totalCost,
+    costCoverage: candidate.costCoverage ?? "COMPLETE",
+    goalCompletionAt: candidate.goalCompletionAt ?? feasibility.goalReadyAt ?? candidate.arriveAt,
+    modeValidation: candidate.modeValidation ?? null,
     transferCount: candidate.transferCount,
     totalWalkingMinutes: candidate.totalWalkingMinutes,
     minimumTransferSlackMinutes: candidate.minimumTransferSlackMinutes,
@@ -90,6 +93,7 @@ function serializeOption(option: JourneyOption | null): Record<string, unknown> 
       departureAt: leg.departAt,
       arrivalAt: leg.arriveAt,
     })),
+    ...(candidate.steps === undefined ? {} : { steps: candidate.steps }),
     ...(option.score === undefined ? {} : { score: option.score }),
     ...(option.scoreBreakdown === undefined ? {} : { scoreBreakdown: option.scoreBreakdown }),
   };
@@ -118,6 +122,7 @@ function serializeGoalCheck(plan: JourneyPlanResult): Record<string, unknown> {
     goalReadyAt: feasibility?.goalReadyAt ?? null,
     safetyMarginMinutes: feasibility?.safetyMarginMinutes ?? feasibility?.deadlineMarginMinutes ?? null,
     reasonCodes: plan.reasonCodes,
+    selectionReasonCodes: plan.selectionReasonCodes ?? [],
     recommendedJourney: serializeOption(recommended),
     snapshot: officialJourneyPlanningContext.dataSnapshot ?? null,
   };
@@ -131,9 +136,28 @@ function serializePlan(plan: JourneyPlanResult): Record<string, unknown> {
     timetableMode: plan.timetableMode,
     candidateCount: plan.candidateCount,
     reasonCodes: plan.reasonCodes,
+    selectionReasonCodes: plan.selectionReasonCodes ?? [],
     fastest: serializeOption(plan.fastest),
     cheapest: serializeOption(plan.cheapest),
     balanced: serializeOption(plan.balanced),
+  };
+}
+
+function serializeGoalAwareJourneyPlan(plan: JourneyPlanResult): Record<string, unknown> {
+  const pageState = getCurrentJourneyPageState();
+  return {
+    requestId: `req:${pageState.goalId}:${pageState.originId}:${pageState.departAt}`,
+    generatedAt: officialJourneyPlanningContext.dataSnapshot?.retrievedAt ?? null,
+    dataMode: "SNAPSHOT",
+    status: plan.status,
+    candidateCount: plan.candidateCount,
+    selectionReasonCodes: plan.selectionReasonCodes ?? [],
+    journeys: {
+      fastest: serializeOption(plan.fastest),
+      balanced: serializeOption(plan.balanced),
+      cheapest: serializeOption(plan.cheapest),
+    },
+    snapshot: officialJourneyPlanningContext.dataSnapshot ?? null,
   };
 }
 
@@ -160,6 +184,21 @@ function serializeReplan(replan: JourneyReplanResult): Record<string, unknown> {
 /** Registers the goal-first and replan read-only WebMCP entry points once per page lifecycle. */
 export function registerJourneyTool(): boolean {
   if (!document.modelContext) return false;
+
+  document.modelContext.registerTool({
+    name: "plan_taiwan_goal_aware_journey",
+    title: "Plan goal-aware Taiwan journey",
+    description: "Use this read-only tool to compare complete Fastest, Balanced, and Cheapest journey recommendations for the origin, destination, goal, departure time, allowed modes, walking limit, and preferences currently selected on this page. It uses the deterministic Journey Engine; it never asks an LLM to invent a route or timetable. Cheapest is null unless complete fare coverage exists.",
+    inputSchema: EMPTY_INPUT_SCHEMA,
+    annotations: { readOnlyHint: true, untrustedContentHint: false },
+    execute: async (_input, { signal } = {}) => {
+      abortIfNeeded(signal);
+      const request = toJourneyRequest(getCurrentJourneyPageState());
+      if (isIncompleteState(request)) return incompleteStateResult("PAGE_JOURNEY_STATE_INCOMPLETE", request.missingFields);
+      abortIfNeeded(signal);
+      return textResult(serializeGoalAwareJourneyPlan(planJourney(request, officialJourneyPlanningContext)));
+    },
+  });
 
   document.modelContext.registerTool({
     name: "check_taiwan_goal_feasibility",

@@ -21,11 +21,13 @@
 - `FEASIBLE`, `RISKY`, `IMPOSSIBLE`, and `UNKNOWN` feasibility model
 - `planJourney()` orchestration and deterministic `replanJourney()`
 - Goal-aware hard-deadline integration with action and safety buffers
-- Two read-only WebMCP Site Tools, led by `check_taiwan_goal_feasibility`
+- Three read-only WebMCP Site Tools, led by Journey-first `plan_taiwan_goal_aware_journey`, with `check_taiwan_goal_feasibility` and `replan_taiwan_journey`
 - Shared live page state for the human UI and WebMCP adapter
 - Simplified goal-first UI, deterministic tests, and submission documentation
 
 This document intentionally does not attribute the pre-existing concept or research to the Challenge period.
+
+Post-submission additive work includes the server-only token cache, bounded TDX MaaS corridor importer, canonical step timeline, explicit connection validator, fare-coverage gate, and normalized MaaS snapshot. These additions do not rewrite or replace the verified THSR Journey Engine/runtime.
 
 ## Official snapshot boundary
 

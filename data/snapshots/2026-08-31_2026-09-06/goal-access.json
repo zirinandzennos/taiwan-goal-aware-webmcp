@@ -1,0 +1,6 @@
+{
+  "goalId": "ENTER_XPARK",
+  "destinationId": "xpark-entrance",
+  "entranceCoordinateIncludedInRouting": true,
+  "additionalCompletionBufferSec": 0
+}

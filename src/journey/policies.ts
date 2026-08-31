@@ -17,15 +17,16 @@ export interface PolicyWeights {
   monetaryCost: number;
   walking: number;
   transfers: number;
+  waiting: number;
   connectionRisk: number;
   comfort: number;
   leisureOpportunity: number;
 }
 
 export const POLICY_WEIGHTS: Readonly<Record<JourneyPolicyPreset, PolicyWeights>> = {
-  FASTEST: { travelTime: 45, monetaryCost: 5, walking: 5, transfers: 10, connectionRisk: 15, comfort: 10, leisureOpportunity: 10 },
-  BALANCED: { travelTime: 25, monetaryCost: 15, walking: 10, transfers: 10, connectionRisk: 15, comfort: 15, leisureOpportunity: 10 },
-  CHEAPEST: { travelTime: 10, monetaryCost: 40, walking: 15, transfers: 10, connectionRisk: 10, comfort: 5, leisureOpportunity: 10 },
-  LEISURE: { travelTime: 10, monetaryCost: 10, walking: 10, transfers: 5, connectionRisk: 10, comfort: 20, leisureOpportunity: 35 },
-  DEADLINE_CRITICAL: { travelTime: 30, monetaryCost: 5, walking: 5, transfers: 15, connectionRisk: 35, comfort: 10, leisureOpportunity: 0 },
+  FASTEST: { travelTime: 45, monetaryCost: 5, walking: 5, transfers: 10, waiting: 5, connectionRisk: 15, comfort: 5, leisureOpportunity: 10 },
+  BALANCED: { travelTime: 35, monetaryCost: 20, walking: 15, transfers: 10, waiting: 10, connectionRisk: 10, comfort: 0, leisureOpportunity: 0 },
+  CHEAPEST: { travelTime: 10, monetaryCost: 40, walking: 15, transfers: 10, waiting: 5, connectionRisk: 10, comfort: 0, leisureOpportunity: 10 },
+  LEISURE: { travelTime: 10, monetaryCost: 10, walking: 10, transfers: 5, waiting: 5, connectionRisk: 10, comfort: 15, leisureOpportunity: 35 },
+  DEADLINE_CRITICAL: { travelTime: 30, monetaryCost: 5, walking: 5, transfers: 15, waiting: 5, connectionRisk: 35, comfort: 5, leisureOpportunity: 0 },
 };

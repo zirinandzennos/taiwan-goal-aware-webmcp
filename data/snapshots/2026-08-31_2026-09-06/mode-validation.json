@@ -1,0 +1,372 @@
+{
+  "schemaVersion": "1.0.0",
+  "retrievedAt": "2026-08-31T02:35:36.409Z",
+  "timezone": "Asia/Taipei",
+  "deduplicatedValidationKeyCount": 7,
+  "validations": [
+    {
+      "validationKey": "TRA|2026-08-31|潮州-豐原|2026-08-31T11:47:00+08:00|2026-08-31T11:55:00+08:00|4400|4340",
+      "candidateIds": [
+        "journey:tdx-maas:6196da5e",
+        "journey:tdx-maas:ab19cfc6",
+        "journey:tdx-maas:1767bfb5",
+        "journey:tdx-maas:72cc6fbc",
+        "journey:tdx-maas:94e37614"
+      ],
+      "rideStepIds": [
+        "maas:4:1:ride",
+        "maas:0:1:ride",
+        "maas:2:1:ride",
+        "maas:8:1:ride",
+        "maas:6:1:ride"
+      ],
+      "evidence": {
+        "provider": "TDX",
+        "serviceDate": "2026-08-31",
+        "endpointName": "TRA_DAILY_TIMETABLE_OD",
+        "retrievedAt": "2026-08-31T02:35:36.409Z",
+        "timezone": "Asia/Taipei",
+        "originalMaasDeparture": "2026-08-31T11:47:00+08:00",
+        "originalMaasArrival": "2026-08-31T11:55:00+08:00",
+        "provenance": {
+          "provider": "TDX",
+          "apiFamily": "Rail",
+          "apiVersion": "v2",
+          "sourceUrl": "https://tdx.transportdata.tw/api/basic/v2/Rail/TRA/DailyTimetable/OD/4400/to/4340/2026-08-31"
+        },
+        "validationStatus": "VERIFIED",
+        "normalizedQuery": {
+          "mode": "TRA",
+          "serviceDate": "2026-08-31",
+          "trainNo": null,
+          "serviceRouteName": "潮州-豐原",
+          "originStationId": "4400",
+          "destinationStationId": "4340",
+          "matchedTrainNo": "3010"
+        },
+        "matchedBy": "UNIQUE_TIME_WINDOW",
+        "authoritativeDeparture": "2026-08-31T11:39:00+08:00",
+        "authoritativeArrival": "2026-08-31T11:46:00+08:00",
+        "departureDeltaSec": -480,
+        "arrivalDeltaSec": -540,
+        "dataQuality": "EXACT_SCHEDULE",
+        "reasonCode": "RAIL_EXACT_SCHEDULE_VERIFIED",
+        "fareTwd": 11,
+        "fareCoverage": "COMPLETE",
+        "ticketType": "FULL_FARE",
+        "fareClass": "LOCAL",
+        "cabinClass": "STANDARD"
+      }
+    },
+    {
+      "validationKey": "THSR|2026-08-31|左營-南港|2026-08-31T12:15:00+08:00|2026-08-31T13:46:00+08:00|1070|1010",
+      "candidateIds": [
+        "journey:tdx-maas:6196da5e",
+        "journey:tdx-maas:cbee5feb",
+        "journey:tdx-maas:72cc6fbc",
+        "journey:tdx-maas:741ae287"
+      ],
+      "rideStepIds": [
+        "maas:4:4:ride",
+        "maas:5:4:ride",
+        "maas:8:4:ride",
+        "maas:9:4:ride"
+      ],
+      "evidence": {
+        "provider": "TDX",
+        "serviceDate": "2026-08-31",
+        "endpointName": "THSR_DAILY_TIMETABLE_OD",
+        "retrievedAt": "2026-08-31T02:35:36.409Z",
+        "timezone": "Asia/Taipei",
+        "originalMaasDeparture": "2026-08-31T12:15:00+08:00",
+        "originalMaasArrival": "2026-08-31T13:46:00+08:00",
+        "provenance": {
+          "provider": "TDX",
+          "apiFamily": "Rail",
+          "apiVersion": "v2",
+          "sourceUrl": "https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/OD/1070/to/1010/2026-08-31"
+        },
+        "validationStatus": "UNKNOWN",
+        "normalizedQuery": {
+          "mode": "THSR",
+          "serviceDate": "2026-08-31",
+          "trainNo": null,
+          "serviceRouteName": "左營-南港",
+          "originStationId": "1070",
+          "destinationStationId": "1010"
+        },
+        "matchedBy": "NONE",
+        "authoritativeDeparture": null,
+        "authoritativeArrival": null,
+        "departureDeltaSec": null,
+        "arrivalDeltaSec": null,
+        "dataQuality": "MISSING",
+        "reasonCode": "INSUFFICIENT_UNIQUE_SERVICE_IDENTITY",
+        "fareTwd": 1460,
+        "fareCoverage": "COMPLETE",
+        "ticketType": "FULL_FARE",
+        "fareClass": "ADULT",
+        "cabinClass": "STANDARD_RESERVED"
+      }
+    },
+    {
+      "validationKey": "THSR|2026-08-31|南港-左營|2026-08-31T13:55:00+08:00|2026-08-31T14:07:00+08:00|1010|1020",
+      "candidateIds": [
+        "journey:tdx-maas:6196da5e",
+        "journey:tdx-maas:cbee5feb",
+        "journey:tdx-maas:72cc6fbc",
+        "journey:tdx-maas:741ae287"
+      ],
+      "rideStepIds": [
+        "maas:4:6:ride",
+        "maas:5:6:ride",
+        "maas:8:6:ride",
+        "maas:9:6:ride"
+      ],
+      "evidence": {
+        "provider": "TDX",
+        "serviceDate": "2026-08-31",
+        "endpointName": "THSR_DAILY_TIMETABLE_OD",
+        "retrievedAt": "2026-08-31T02:35:36.409Z",
+        "timezone": "Asia/Taipei",
+        "originalMaasDeparture": "2026-08-31T13:55:00+08:00",
+        "originalMaasArrival": "2026-08-31T14:07:00+08:00",
+        "provenance": {
+          "provider": "TDX",
+          "apiFamily": "Rail",
+          "apiVersion": "v2",
+          "sourceUrl": "https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/OD/1010/to/1020/2026-08-31"
+        },
+        "validationStatus": "VERIFIED",
+        "normalizedQuery": {
+          "mode": "THSR",
+          "serviceDate": "2026-08-31",
+          "trainNo": null,
+          "serviceRouteName": "南港-左營",
+          "originStationId": "1010",
+          "destinationStationId": "1020",
+          "matchedTrainNo": "0645"
+        },
+        "matchedBy": "UNIQUE_TIME_WINDOW",
+        "authoritativeDeparture": "2026-08-31T13:55:00+08:00",
+        "authoritativeArrival": "2026-08-31T14:08:00+08:00",
+        "departureDeltaSec": 0,
+        "arrivalDeltaSec": 60,
+        "dataQuality": "EXACT_SCHEDULE",
+        "reasonCode": "RAIL_EXACT_SCHEDULE_VERIFIED",
+        "fareTwd": 130,
+        "fareCoverage": "COMPLETE",
+        "ticketType": "FULL_FARE",
+        "fareClass": "ADULT",
+        "cabinClass": "STANDARD_RESERVED"
+      }
+    },
+    {
+      "validationKey": "TRA|2026-08-31|潮州-后里|2026-08-31T11:36:00+08:00|2026-08-31T11:52:00+08:00|4400|4340",
+      "candidateIds": [
+        "journey:tdx-maas:cbee5feb",
+        "journey:tdx-maas:07fb4bb5",
+        "journey:tdx-maas:9bad5bc6",
+        "journey:tdx-maas:741ae287",
+        "journey:tdx-maas:a8aed985"
+      ],
+      "rideStepIds": [
+        "maas:5:1:ride",
+        "maas:1:1:ride",
+        "maas:3:1:ride",
+        "maas:9:1:ride",
+        "maas:7:1:ride"
+      ],
+      "evidence": {
+        "provider": "TDX",
+        "serviceDate": "2026-08-31",
+        "endpointName": "TRA_DAILY_TIMETABLE_OD",
+        "retrievedAt": "2026-08-31T02:35:36.409Z",
+        "timezone": "Asia/Taipei",
+        "originalMaasDeparture": "2026-08-31T11:36:00+08:00",
+        "originalMaasArrival": "2026-08-31T11:52:00+08:00",
+        "provenance": {
+          "provider": "TDX",
+          "apiFamily": "Rail",
+          "apiVersion": "v2",
+          "sourceUrl": "https://tdx.transportdata.tw/api/basic/v2/Rail/TRA/DailyTimetable/OD/4400/to/4340/2026-08-31"
+        },
+        "validationStatus": "VERIFIED",
+        "normalizedQuery": {
+          "mode": "TRA",
+          "serviceDate": "2026-08-31",
+          "trainNo": null,
+          "serviceRouteName": "潮州-后里",
+          "originStationId": "4400",
+          "destinationStationId": "4340",
+          "matchedTrainNo": "3188"
+        },
+        "matchedBy": "UNIQUE_TIME_WINDOW",
+        "authoritativeDeparture": "2026-08-31T11:32:00+08:00",
+        "authoritativeArrival": "2026-08-31T11:58:00+08:00",
+        "departureDeltaSec": -240,
+        "arrivalDeltaSec": 360,
+        "dataQuality": "EXACT_SCHEDULE",
+        "reasonCode": "RAIL_EXACT_SCHEDULE_VERIFIED",
+        "fareTwd": 11,
+        "fareCoverage": "COMPLETE",
+        "ticketType": "FULL_FARE",
+        "fareClass": "LOCAL",
+        "cabinClass": "STANDARD"
+      }
+    },
+    {
+      "validationKey": "THSR|2026-08-31|左營-南港|2026-08-31T12:35:00+08:00|2026-08-31T14:09:00+08:00|1070|1020",
+      "candidateIds": [
+        "journey:tdx-maas:07fb4bb5",
+        "journey:tdx-maas:ab19cfc6",
+        "journey:tdx-maas:94e37614",
+        "journey:tdx-maas:a8aed985"
+      ],
+      "rideStepIds": [
+        "maas:1:4:ride",
+        "maas:0:4:ride",
+        "maas:6:4:ride",
+        "maas:7:4:ride"
+      ],
+      "evidence": {
+        "provider": "TDX",
+        "serviceDate": "2026-08-31",
+        "endpointName": "THSR_DAILY_TIMETABLE_OD",
+        "retrievedAt": "2026-08-31T02:35:36.409Z",
+        "timezone": "Asia/Taipei",
+        "originalMaasDeparture": "2026-08-31T12:35:00+08:00",
+        "originalMaasArrival": "2026-08-31T14:09:00+08:00",
+        "provenance": {
+          "provider": "TDX",
+          "apiFamily": "Rail",
+          "apiVersion": "v2",
+          "sourceUrl": "https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/OD/1070/to/1020/2026-08-31"
+        },
+        "validationStatus": "VERIFIED",
+        "normalizedQuery": {
+          "mode": "THSR",
+          "serviceDate": "2026-08-31",
+          "trainNo": null,
+          "serviceRouteName": "左營-南港",
+          "originStationId": "1070",
+          "destinationStationId": "1020",
+          "matchedTrainNo": "0640"
+        },
+        "matchedBy": "UNIQUE_TIME_WINDOW",
+        "authoritativeDeparture": "2026-08-31T12:35:00+08:00",
+        "authoritativeArrival": "2026-08-31T14:09:00+08:00",
+        "departureDeltaSec": 0,
+        "arrivalDeltaSec": 0,
+        "dataQuality": "EXACT_SCHEDULE",
+        "reasonCode": "RAIL_EXACT_SCHEDULE_VERIFIED",
+        "fareTwd": 1330,
+        "fareCoverage": "COMPLETE",
+        "ticketType": "FULL_FARE",
+        "fareClass": "ADULT",
+        "cabinClass": "STANDARD_RESERVED"
+      }
+    },
+    {
+      "validationKey": "THSR|2026-08-31|左營-南港|2026-08-31T12:25:00+08:00|2026-08-31T14:18:00+08:00|1070|1020",
+      "candidateIds": [
+        "journey:tdx-maas:1767bfb5",
+        "journey:tdx-maas:9bad5bc6"
+      ],
+      "rideStepIds": [
+        "maas:2:4:ride",
+        "maas:3:4:ride"
+      ],
+      "evidence": {
+        "provider": "TDX",
+        "serviceDate": "2026-08-31",
+        "endpointName": "THSR_DAILY_TIMETABLE_OD",
+        "retrievedAt": "2026-08-31T02:35:36.409Z",
+        "timezone": "Asia/Taipei",
+        "originalMaasDeparture": "2026-08-31T12:25:00+08:00",
+        "originalMaasArrival": "2026-08-31T14:18:00+08:00",
+        "provenance": {
+          "provider": "TDX",
+          "apiFamily": "Rail",
+          "apiVersion": "v2",
+          "sourceUrl": "https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/OD/1070/to/1020/2026-08-31"
+        },
+        "validationStatus": "VERIFIED",
+        "normalizedQuery": {
+          "mode": "THSR",
+          "serviceDate": "2026-08-31",
+          "trainNo": null,
+          "serviceRouteName": "左營-南港",
+          "originStationId": "1070",
+          "destinationStationId": "1020",
+          "matchedTrainNo": "0826"
+        },
+        "matchedBy": "UNIQUE_TIME_WINDOW",
+        "authoritativeDeparture": "2026-08-31T12:25:00+08:00",
+        "authoritativeArrival": "2026-08-31T14:18:00+08:00",
+        "departureDeltaSec": 0,
+        "arrivalDeltaSec": 0,
+        "dataQuality": "EXACT_SCHEDULE",
+        "reasonCode": "RAIL_EXACT_SCHEDULE_VERIFIED",
+        "fareTwd": 1330,
+        "fareCoverage": "COMPLETE",
+        "ticketType": "FULL_FARE",
+        "fareClass": "ADULT",
+        "cabinClass": "STANDARD_RESERVED"
+      }
+    },
+    {
+      "validationKey": "Taoyuan|208A|?|?|高鐵桃園站|福德宮|2026-08-31|2026-08-31T14:19:00+08:00",
+      "candidateIds": [
+        "journey:tdx-maas:72cc6fbc",
+        "journey:tdx-maas:741ae287",
+        "journey:tdx-maas:94e37614",
+        "journey:tdx-maas:a8aed985"
+      ],
+      "rideStepIds": [
+        "maas:8:9:ride",
+        "maas:9:9:ride",
+        "maas:6:7:ride",
+        "maas:7:7:ride"
+      ],
+      "evidence": {
+        "provider": "TDX",
+        "serviceDate": "2026-08-31",
+        "endpointName": "BUS_V2_DAILY_STOP_TIMETABLE",
+        "retrievedAt": "2026-08-31T02:35:36.409Z",
+        "timezone": "Asia/Taipei",
+        "originalMaasDeparture": "2026-08-31T14:19:00+08:00",
+        "originalMaasArrival": "2026-08-31T14:24:30+08:00",
+        "provenance": {
+          "provider": "TDX",
+          "apiFamily": "Bus",
+          "apiVersion": "v2",
+          "sourceUrl": "https://tdx.transportdata.tw/api/basic/v2/Bus/DailyStopTimeTable/City/Taoyuan/208A"
+        },
+        "validationStatus": "UNKNOWN",
+        "normalizedQuery": {
+          "jurisdiction": "Taoyuan",
+          "routeName": "208A",
+          "routeUid": null,
+          "subRouteUid": null,
+          "direction": null,
+          "boardingStopUid": null,
+          "alightingStopUid": null,
+          "serviceDate": "2026-08-31"
+        },
+        "matchedBy": "NONE",
+        "authoritativeDeparture": null,
+        "authoritativeArrival": null,
+        "departureDeltaSec": null,
+        "arrivalDeltaSec": null,
+        "dataQuality": "STOP_LEVEL_TIMETABLE",
+        "reasonCode": "BUS_STOP_LEVEL_TIMING_AMBIGUOUS",
+        "fareTwd": null,
+        "fareCoverage": "UNKNOWN",
+        "ticketType": null,
+        "fareClass": null,
+        "cabinClass": null
+      }
+    }
+  ]
+}

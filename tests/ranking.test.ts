@@ -117,4 +117,18 @@ describe("deterministic candidate ranking", () => {
   it("returns structured null recommendations for an empty candidate set", () => {
     expect(recommendJourneys([])).toEqual({ fastest: null, cheapest: null, balanced: null });
   });
+
+  it("does not claim Cheapest when every candidate has incomplete fare coverage", () => {
+    const unknownFare = candidate({ id: "unknown-fare", totalCost: 0, costCoverage: "UNKNOWN" });
+    const partialFare = candidate({ id: "partial-fare", totalCost: 40, costCoverage: "PARTIAL" });
+    expect(rankCheapest([unknownFare, partialFare])).toBeNull();
+  });
+
+  it("does not reward an unknown zero fare in Balanced scoring", () => {
+    const known = candidate({ id: "known", totalCost: 100, costCoverage: "COMPLETE" });
+    const unknown = candidate({ id: "unknown", totalCost: 0, costCoverage: "UNKNOWN" });
+    const ranked = rankBalancedJourneys([known, unknown]);
+    expect(ranked.find((entry) => entry.candidate.id === "unknown")?.scoreBreakdown.costPenalty).toBe(1);
+    expect(ranked.find((entry) => entry.candidate.id === "known")?.scoreBreakdown.costPenalty).toBe(0);
+  });
 });

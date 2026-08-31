@@ -7,6 +7,7 @@ import { TIGHT_TRANSFER_SLACK_MINUTES } from "./policies";
 import type {
   CandidateJourney,
   JourneyRequest,
+  JourneyStep,
   ScheduledService,
   TimetableStore,
   TransferRule,
@@ -25,6 +26,70 @@ interface SearchState {
   tightTransferCount: number;
   visitedNodeIds: ReadonlySet<string>;
   usedServiceIds: ReadonlySet<string>;
+  connections: SearchConnection[];
+}
+
+interface SearchConnection {
+  rule: TransferRule;
+  earliestReadyAt: string;
+}
+
+function addMinutes(value: string, minutes: number): string {
+  return new Date(Date.parse(value) + minutes * 60_000).toISOString();
+}
+
+function place(nodeId: string) {
+  return { id: nodeId, name: nodeId };
+}
+
+function supportedTransitMode(mode: ScheduledService["mode"]): "BUS" | "MRT" | "TRA" | "THSR" | null {
+  return mode === "BUS" || mode === "MRT" || mode === "TRA" || mode === "THSR" ? mode : null;
+}
+
+function buildSteps(request: JourneyRequest, state: SearchState): JourneyStep[] {
+  const steps: JourneyStep[] = [];
+  state.services.forEach((service, index) => {
+    const source = service.source ?? {
+      provider: "Canonical timetable fixture",
+      retrievedAt: request.departAt,
+      dataMode: "FIXTURE" as const,
+    };
+    const from = place(service.fromNodeId);
+    const to = place(service.toNodeId);
+    const mode = supportedTransitMode(service.mode);
+    const serviceRef = mode ? {
+      mode,
+      ...(service.routeId ? { routeId: service.routeId } : {}),
+      tripId: service.id,
+      ...(service.serviceName ? { trainNo: service.serviceName } : {}),
+    } : undefined;
+    const common = { timingQuality: service.timingQuality ?? "SCHEDULED" as const, source };
+    steps.push({ id: `${service.id}:board`, type: "BOARD", from, to: from, plannedStart: service.departureAt, plannedEnd: service.departureAt, durationSec: 0, ...(serviceRef ? { service: serviceRef } : {}), costTwd: 0, ...common });
+    steps.push({ id: `${service.id}:ride`, type: "RIDE", from, to, plannedStart: service.departureAt, plannedEnd: service.arrivalAt, durationSec: Math.round((Date.parse(service.arrivalAt) - Date.parse(service.departureAt)) / 1000), ...(serviceRef ? { service: serviceRef } : {}), costTwd: service.fareDataAvailable === false ? null : service.cost, ...common });
+    steps.push({ id: `${service.id}:alight`, type: "ALIGHT", from: to, to, plannedStart: service.arrivalAt, plannedEnd: service.arrivalAt, durationSec: 0, ...(serviceRef ? { service: serviceRef } : {}), costTwd: 0, ...common });
+
+    const next = state.services[index + 1];
+    const connection = state.connections[index];
+    if (!next || !connection) return;
+    const walkEnd = addMinutes(service.arrivalAt, connection.rule.walkingMinutes);
+    if (connection.rule.walkingMinutes > 0) {
+      steps.push({ id: `${service.id}:transfer-walk`, type: "TRANSFER_WALK", from: to, to: place(next.fromNodeId), plannedStart: service.arrivalAt, plannedEnd: walkEnd, durationSec: connection.rule.walkingMinutes * 60, costTwd: 0, timingQuality: "ESTIMATED", source });
+    }
+    if (Date.parse(next.departureAt) > Date.parse(connection.earliestReadyAt)) {
+      steps.push({ id: `${service.id}:wait`, type: "WAIT", from: place(next.fromNodeId), to: place(next.fromNodeId), plannedStart: connection.earliestReadyAt, plannedEnd: next.departureAt, durationSec: Math.round((Date.parse(next.departureAt) - Date.parse(connection.earliestReadyAt)) / 1000), costTwd: 0, ...common });
+    }
+  });
+
+  const lastService = state.services.at(-1)!;
+  const goalAccessMinutes = Math.max(0, request.goal?.goalActionBufferMinutes ?? 0);
+  const goalAccessEnd = addMinutes(lastService.arrivalAt, goalAccessMinutes);
+  const destination = place(request.destinationId);
+  const source = lastService.source ?? { provider: "Canonical timetable fixture", retrievedAt: request.departAt, dataMode: "FIXTURE" as const };
+  if (goalAccessMinutes > 0) {
+    steps.push({ id: `${lastService.id}:goal-access`, type: "GOAL_ACCESS", from: destination, to: destination, plannedStart: lastService.arrivalAt, plannedEnd: goalAccessEnd, durationSec: goalAccessMinutes * 60, costTwd: 0, timingQuality: "ESTIMATED", source });
+  }
+  steps.push({ id: `${lastService.id}:goal-completion`, type: "GOAL_COMPLETION", from: destination, to: destination, plannedStart: goalAccessEnd, plannedEnd: goalAccessEnd, durationSec: 0, costTwd: 0, timingQuality: "ESTIMATED", source });
+  return steps;
 }
 
 function serviceToLeg(service: ScheduledService): TravelLeg {
@@ -44,9 +109,15 @@ function serviceToLeg(service: ScheduledService): TravelLeg {
 function buildCandidate(request: JourneyRequest, state: SearchState): CandidateJourney {
   const firstService = state.services[0];
   const lastService = state.services[state.services.length - 1];
-  const totalDurationMinutes = Math.round((Date.parse(lastService.arrivalAt) - Date.parse(firstService.departureAt)) / 60_000);
+  const totalDurationMinutes = Math.round((Date.parse(lastService.arrivalAt) - Date.parse(firstService.departureAt)) / 60_000)
+    + Math.max(0, request.goal?.goalActionBufferMinutes ?? 0);
   const totalCost = state.services.reduce((sum, service) => sum + service.cost, 0);
+  const knownFareCount = state.services.filter((service) => service.fareDataAvailable !== false).length;
+  const costCoverage = knownFareCount === state.services.length
+    ? "COMPLETE" as const
+    : knownFareCount === 0 ? "UNKNOWN" as const : "PARTIAL" as const;
 
+  const steps = buildSteps(request, state);
   return {
     id: `journey:${state.services.map((service) => service.id).join(">")}`,
     originId: request.originId,
@@ -64,6 +135,10 @@ function buildCandidate(request: JourneyRequest, state: SearchState): CandidateJ
     walkingMinutes: state.walkingMinutes,
     transferCount: state.services.length - 1,
     estimatedCost: totalCost,
+    costCoverage,
+    goalCompletionAt: steps.at(-1)?.plannedEnd ?? lastService.arrivalAt,
+    steps,
+    modeValidation: { status: "VERIFIED", reasonCodes: ["SCHEDULED_SERVICE_CHAIN_VALIDATED"] },
     connectionRiskScore: 0,
   };
 }
@@ -127,6 +202,7 @@ export function generateCandidateJourneys(
           tightTransferCount: state.tightTransferCount + (additionalWaitingMinutes < TIGHT_TRANSFER_SLACK_MINUTES ? 1 : 0),
           visitedNodeIds: new Set([...state.visitedNodeIds, nextService.toNodeId]),
           usedServiceIds: new Set([...state.usedServiceIds, nextService.id]),
+          connections: [...state.connections, { rule: transferRule, earliestReadyAt: transfer.earliestReadyAt }],
         });
       }
     }
@@ -143,6 +219,7 @@ export function generateCandidateJourneys(
       tightTransferCount: 0,
       visitedNodeIds: new Set([request.originId, firstService.toNodeId]),
       usedServiceIds: new Set([firstService.id]),
+      connections: [],
     });
   }
 

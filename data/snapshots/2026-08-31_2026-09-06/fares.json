@@ -1,0 +1,143 @@
+{
+  "schemaVersion": "1.0.0",
+  "retrievedAt": "2026-08-31T02:35:36.409Z",
+  "timezone": "Asia/Taipei",
+  "policies": {
+    "THSR": {
+      "passengerType": "ADULT",
+      "ticketType": "FULL_FARE",
+      "fareClass": "ADULT",
+      "cabinClass": "STANDARD_RESERVED",
+      "numericCodes": {
+        "TicketType": 1,
+        "FareClass": 1,
+        "CabinClass": 1
+      }
+    },
+    "TRA": {
+      "passengerType": "ADULT",
+      "ticketType": "FULL_FARE",
+      "fareClass": "LOCAL",
+      "cabinClass": "STANDARD",
+      "providerTicketType": "成普",
+      "applicableTrainTypes": [
+        "區間",
+        "區間快"
+      ]
+    },
+    "BUS": {
+      "status": "UNKNOWN",
+      "reasonCode": "BUS_FARE_DATA_NOT_INCLUDED_IN_VALIDATED_ENDPOINTS"
+    }
+  },
+  "services": [
+    {
+      "validationKey": "TRA|2026-08-31|潮州-豐原|2026-08-31T11:47:00+08:00|2026-08-31T11:55:00+08:00|4400|4340",
+      "fareTwd": 11,
+      "fareCoverage": "COMPLETE",
+      "ticketType": "FULL_FARE",
+      "fareClass": "LOCAL",
+      "cabinClass": "STANDARD"
+    },
+    {
+      "validationKey": "THSR|2026-08-31|左營-南港|2026-08-31T12:15:00+08:00|2026-08-31T13:46:00+08:00|1070|1010",
+      "fareTwd": 1460,
+      "fareCoverage": "COMPLETE",
+      "ticketType": "FULL_FARE",
+      "fareClass": "ADULT",
+      "cabinClass": "STANDARD_RESERVED"
+    },
+    {
+      "validationKey": "THSR|2026-08-31|南港-左營|2026-08-31T13:55:00+08:00|2026-08-31T14:07:00+08:00|1010|1020",
+      "fareTwd": 130,
+      "fareCoverage": "COMPLETE",
+      "ticketType": "FULL_FARE",
+      "fareClass": "ADULT",
+      "cabinClass": "STANDARD_RESERVED"
+    },
+    {
+      "validationKey": "TRA|2026-08-31|潮州-后里|2026-08-31T11:36:00+08:00|2026-08-31T11:52:00+08:00|4400|4340",
+      "fareTwd": 11,
+      "fareCoverage": "COMPLETE",
+      "ticketType": "FULL_FARE",
+      "fareClass": "LOCAL",
+      "cabinClass": "STANDARD"
+    },
+    {
+      "validationKey": "THSR|2026-08-31|左營-南港|2026-08-31T12:35:00+08:00|2026-08-31T14:09:00+08:00|1070|1020",
+      "fareTwd": 1330,
+      "fareCoverage": "COMPLETE",
+      "ticketType": "FULL_FARE",
+      "fareClass": "ADULT",
+      "cabinClass": "STANDARD_RESERVED"
+    },
+    {
+      "validationKey": "THSR|2026-08-31|左營-南港|2026-08-31T12:25:00+08:00|2026-08-31T14:18:00+08:00|1070|1020",
+      "fareTwd": 1330,
+      "fareCoverage": "COMPLETE",
+      "ticketType": "FULL_FARE",
+      "fareClass": "ADULT",
+      "cabinClass": "STANDARD_RESERVED"
+    },
+    {
+      "validationKey": "Taoyuan|208A|?|?|高鐵桃園站|福德宮|2026-08-31|2026-08-31T14:19:00+08:00",
+      "fareTwd": null,
+      "fareCoverage": "UNKNOWN",
+      "ticketType": null,
+      "fareClass": null,
+      "cabinClass": null
+    }
+  ],
+  "candidates": [
+    {
+      "candidateId": "journey:tdx-maas:6196da5e",
+      "totalJourneyCostTwd": 1601,
+      "fareCoverage": "COMPLETE"
+    },
+    {
+      "candidateId": "journey:tdx-maas:cbee5feb",
+      "totalJourneyCostTwd": 1601,
+      "fareCoverage": "COMPLETE"
+    },
+    {
+      "candidateId": "journey:tdx-maas:07fb4bb5",
+      "totalJourneyCostTwd": 1341,
+      "fareCoverage": "COMPLETE"
+    },
+    {
+      "candidateId": "journey:tdx-maas:ab19cfc6",
+      "totalJourneyCostTwd": 1341,
+      "fareCoverage": "COMPLETE"
+    },
+    {
+      "candidateId": "journey:tdx-maas:1767bfb5",
+      "totalJourneyCostTwd": 1341,
+      "fareCoverage": "COMPLETE"
+    },
+    {
+      "candidateId": "journey:tdx-maas:9bad5bc6",
+      "totalJourneyCostTwd": 1341,
+      "fareCoverage": "COMPLETE"
+    },
+    {
+      "candidateId": "journey:tdx-maas:72cc6fbc",
+      "totalJourneyCostTwd": null,
+      "fareCoverage": "PARTIAL"
+    },
+    {
+      "candidateId": "journey:tdx-maas:741ae287",
+      "totalJourneyCostTwd": null,
+      "fareCoverage": "PARTIAL"
+    },
+    {
+      "candidateId": "journey:tdx-maas:94e37614",
+      "totalJourneyCostTwd": null,
+      "fareCoverage": "PARTIAL"
+    },
+    {
+      "candidateId": "journey:tdx-maas:a8aed985",
+      "totalJourneyCostTwd": null,
+      "fareCoverage": "PARTIAL"
+    }
+  ]
+}

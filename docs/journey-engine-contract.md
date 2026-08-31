@@ -42,7 +42,13 @@ When information is unavailable, use `UNKNOWN` with source `UNKNOWN`. The contra
 
 ## Constraints and preferences
 
-`JourneyConstraints` are hard limits: a candidate violating one must be removed before ranking. `PolicyWeights` are ranking preferences. The current deterministic Balanced selector uses the measurable time, cost, transfer, walking, and connection-risk weights with candidate-set-relative min-max normalization. The weights are hand-authored Challenge values, not a trained model. A future learned ranker may replace them without changing request or candidate contracts.
+`JourneyConstraints` are hard limits: a candidate violating one must be removed before ranking. `PolicyWeights` are ranking preferences. The current deterministic Balanced selector uses fixed 35/20/15/10/10/10 weights for goal-completion duration, complete known cost, walking, transfers, waiting, and connection risk. Numeric metrics use candidate-set-relative min-max normalization. The weights are hand-authored Challenge values, not a trained model. A future learned ranker may replace them without changing request or candidate contracts.
+
+`JourneyStep` is the common timeline vocabulary for scheduled and MaaS candidates: `WALK`, `WAIT`, `BOARD`, `RIDE`, `ALIGHT`, `TRANSFER_WALK`, `GOAL_ACCESS`, and `GOAL_COMPLETION`. Every normalized MaaS step carries explicit times, fare knowledge, timing quality, and source provenance. Geometry is optional and must not be fabricated when the provider response omits it.
+
+Formal recommendations have separate completeness gates. Fastest requires all time-relevant candidates to be resolved so that no UNKNOWN candidate may still finish earlier. Balanced additionally requires comparable complete fare, walking, waiting, transfer, slack, and risk metrics. Cheapest requires complete journey cost for every effective candidate. A candidate with `PARTIAL` or `UNKNOWN` fare coverage cannot win formal Balanced or Cheapest. UNKNOWN candidates may be omitted from provisional cards, but they remain in the global proof and are never treated as IMPOSSIBLE.
+
+Each transit `RIDE` may carry mode-validation evidence with the official endpoint/query, retrieval time, match method, authoritative and original MaaS times, deltas, evidence quality, reason, fare policy result, and provenance. Applying authoritative times rebuilds WAIT, BOARD, ALIGHT, transfer walking, goal access, and goal completion. Connection diagnostics expose `requiredReadyAt`, `nextDepartureAt`, slack, and an explicit three-minute buffer application count of exactly one.
 
 Future ranking modifiers are intentionally documented rather than implemented:
 
