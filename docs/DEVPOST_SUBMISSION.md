@@ -10,19 +10,19 @@ Trip planning becomes fragile when a traveler has to combine multiple services a
 
 ## What it does
 
-Taiwan Goal-aware Journey is a public WebMCP demo that checks whether a selected real-world goal can still be accomplished. The primary scenario uses a frozen official TDX THSR scheduled timetable for 2026-08-31: Zuoying to Taoyuan for Xpark's published final-admission rule. It creates executable candidates, evaluates goal feasibility, and replans the remaining journey from a new current node and time.
+Taiwan Goal-aware Journey is a public Journey-first WebMCP demo that compares three complete, evidence-backed journeys from Kaohsiung Main Station to Xpark. The fixed 2026-08-31 official-data snapshot contains ten candidates with terminal resolutions: four feasible and six impossible. The product exposes formal Fastest, Balanced, and Cheapest winner sets, full ordered steps through goal completion, explicit selection, progress, and fail-closed replanning.
 
 ## How we built it
 
-The app is a TypeScript/Vite web application. A credential-gated importer verifies TDX supply dates, normalizes daily THSR timetables, validates an indexed SQLite snapshot, and exports static runtime data plus a SHA-256 manifest. The browser uses that frozen export without credentials or live TDX calls. A shared page-state layer feeds the human UI and WebMCP adapter.
+The app is a TypeScript/Vite web application. Credential-gated importers acquire official TDX data, but the browser imports only committed normalized candidates and proof. A shared application service reads versioned live page state, recomputes formal recommendation gates, allocates three distinct presentation journeys without altering winner sets, and produces a deterministic request fingerprint and result hash for both UI and WebMCP.
 
 ## Why WebMCP
 
-The webpage exposes `check_taiwan_goal_feasibility` and `replan_taiwan_journey` as read-only tools. Rather than asking a traveler to repeat the configured goal and journey, an agent reads the live page state and uses the same deterministic engine as the UI.
+The webpage exposes `plan_taiwan_goal_aware_journey`, `check_taiwan_goal_feasibility`, and `replan_taiwan_journey` as read-only tools. Rather than asking a traveler to repeat the configured journey, an agent reads state at execution time. The Journey-first tool returns compact recommendation, identity, step, blocker, proof-status, and evidence fields without returning the full proof artifact.
 
 ## Human + Agent experience
 
-Humans configure and plan the journey directly in the web interface. In a WebMCP-capable environment, an agent can discover the two Site Tools and operate on the same state. Production Site Tool discovery has been verified; actual ChatGPT tool invocation is not claimed because it remains unverified.
+Humans compare three cards, select one journey, and record progress directly in the interface. In a WebMCP-capable environment, an agent can discover three Site Tools and operate on the same state. Production invocation is claimed only if the final deployment verification reports it as passed.
 
 ## Challenges
 
@@ -31,9 +31,9 @@ The main challenge was keeping every recommendation executable and deterministic
 ## Accomplishments that we're proud of
 
 - A public, self-contained WebMCP demo backed by a frozen official scheduled timetable with no live transit dependency
-- Deterministic candidates, transfer checks, ranking, feasibility, and replanning
-- Shared human and agent page state with parity tests
-- Production discovery of exactly two read-only Journey Site Tools
+- Deterministic candidates, terminal evidence resolution, transfer checks, formal ranking, and exact tie disclosure
+- Shared human and agent application result with request/version/stale gates and parity tests
+- Exactly three read-only Journey Site Tools with compact Journey-first output
 
 ## What we learned
 
@@ -41,4 +41,4 @@ An AI journey experience needs inspectable domain facts, not just route text. Tr
 
 ## What's next
 
-Post-Challenge work may explore other licensed providers, real-time updates, Remote MCP, GPS-aware current state, and goal-related activities. None of those capabilities are included in this Challenge demo.
+The current Journey-first demo tracks progress, detects stale downstream steps, and refuses to fabricate a replacement when the frozen snapshot cannot prove one. Successful MaaS remainder regeneration is the next adapter step. Later work may explore other licensed providers, real-time updates, Remote MCP, GPS-aware current state, and goal-related activities. None of those capabilities are included in this Challenge demo.

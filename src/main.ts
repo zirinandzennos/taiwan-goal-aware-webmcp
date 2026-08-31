@@ -1,4 +1,4 @@
-import "./app";
+import "./productApp";
 
 /* Legacy UI retained as commented history; app.ts is the single active implementation.
 import { syntheticJourneyNodes } from "./journey/syntheticTimetable";

@@ -14,6 +14,15 @@ import {
   toJourneyRequest,
   type IncompletePageJourneyState,
 } from "./pageState";
+import {
+  compactJourneyProductPlan,
+  planJourneyFromPageState,
+  replanSelectedSnapshotJourney,
+} from "../application/journeyProduct.ts";
+import {
+  getJourneyPageState,
+  getJourneyPageStateVersion,
+} from "../ui/state.ts";
 
 interface ToolExecutionOptions {
   signal?: AbortSignal;
@@ -47,6 +56,13 @@ const EMPTY_INPUT_SCHEMA = {
   properties: {},
   additionalProperties: false,
 } as const;
+
+const registeredContexts = new WeakSet<object>();
+
+function requireEmptyInput(input: Record<string, never>): void {
+  if (Object.keys(input).length === 0) return;
+  throw new TypeError("Journey tools read live page state and do not accept input fields.");
+}
 
 function abortIfNeeded(signal?: AbortSignal): void {
   if (!signal?.aborted) return;
@@ -214,30 +230,33 @@ function serializeReplan(replan: JourneyReplanResult): Record<string, unknown> {
 /** Registers the goal-first and replan read-only WebMCP entry points once per page lifecycle. */
 export function registerJourneyTool(): boolean {
   if (!document.modelContext) return false;
+  if (registeredContexts.has(document.modelContext)) return true;
 
   document.modelContext.registerTool({
     name: "plan_taiwan_goal_aware_journey",
     title: "Plan goal-aware Taiwan journey",
-    description: "Use this read-only tool to compare complete Fastest, Balanced, and Cheapest journey recommendations for the origin, destination, goal, departure time, allowed modes, walking limit, and preferences currently selected on this page. It uses the deterministic Journey Engine; it never asks an LLM to invent a route or timetable. Cheapest is null unless complete fare coverage exists.",
+    description: "WHEN: compare the Fastest, Balanced, and Cheapest journeys for the live controls on this page. RETURNS: compact fixed-snapshot recommendations, formal winner sets, request identity, ordered steps, evidence IDs, and explicit blockers. STATE: captured at execution time. DOES NOT DO: network fetches, live operations, invented routes, ticketing, or general tourism advice.",
     inputSchema: EMPTY_INPUT_SCHEMA,
     annotations: { readOnlyHint: true, untrustedContentHint: false },
-    execute: async (_input, { signal } = {}) => {
+    execute: async (input, { signal } = {}) => {
       abortIfNeeded(signal);
-      const request = toJourneyRequest(getCurrentJourneyPageState());
-      if (isIncompleteState(request)) return incompleteStateResult("PAGE_JOURNEY_STATE_INCOMPLETE", request.missingFields);
+      requireEmptyInput(input);
+      const productState = getJourneyPageState();
+      const plan = planJourneyFromPageState(productState, getJourneyPageStateVersion());
       abortIfNeeded(signal);
-      return textResult(serializeGoalAwareJourneyPlan(planJourney(request, officialJourneyPlanningContext)));
+      return textResult(compactJourneyProductPlan(plan));
     },
   });
 
   document.modelContext.registerTool({
     name: "check_taiwan_goal_feasibility",
     title: "Check selected Taiwan goal",
-    description: "Use this read-only tool when the user wants to know whether the real-world goal currently selected on this page can still be accomplished. It reads the current origin, selected goal, date, departure time, preferences and constraints from live page state, then uses the deterministic Journey Engine. Do not use for general destination information, tourism facts, weather, or trips outside this goal-feasibility context.",
+    description: "WHEN: check whether the goal currently selected on this page remains feasible. RETURNS: deterministic goal timing and blocker evidence from live page state. STATE: captured at execution time. DOES NOT DO: weather, general destination information, live operations, or trips outside this page.",
     inputSchema: EMPTY_INPUT_SCHEMA,
     annotations: { readOnlyHint: true, untrustedContentHint: false },
-    execute: async (_input, { signal } = {}) => {
+    execute: async (input, { signal } = {}) => {
       abortIfNeeded(signal);
+      requireEmptyInput(input);
       const request = toJourneyRequest(getCurrentJourneyPageState());
       if (isIncompleteState(request)) {
         return incompleteStateResult("PAGE_JOURNEY_STATE_INCOMPLETE", request.missingFields);
@@ -250,11 +269,17 @@ export function registerJourneyTool(): boolean {
   document.modelContext.registerTool({
     name: "replan_taiwan_journey",
     title: "Replan Taiwan journey",
-    description: "Use this read-only tool when the traveler is continuing or recalculating the currently configured journey after their location or time has changed. It reads the original journey intent plus the current node and current journey time from the live page, then recalculates the remaining trip with the same deterministic Journey Engine. Use after the traveler is delayed, missed a service, is ready to continue, or wants the remainder recalculated. It is not for planning a new unrelated trip.",
+    description: "WHEN: the selected journey has actual progress or delay evidence, or its location or time has changed, and the remainder needs recalculation. RETURNS: either a snapshot-safe replan result or an explicit blocker preserving the previous plan and progress evidence. STATE: captured at execution time. DOES NOT DO: fabricate services outside the frozen snapshot or plan an unrelated trip.",
     inputSchema: EMPTY_INPUT_SCHEMA,
     annotations: { readOnlyHint: true, untrustedContentHint: false },
-    execute: async (_input, { signal } = {}) => {
+    execute: async (input, { signal } = {}) => {
       abortIfNeeded(signal);
+      requireEmptyInput(input);
+      const productState = getJourneyPageState();
+      if (productState.latestProductPlan || productState.selectedJourney || productState.progress) {
+        abortIfNeeded(signal);
+        return textResult(replanSelectedSnapshotJourney(productState));
+      }
       const pageState = getCurrentJourneyPageState();
       const originalRequest = toJourneyRequest(pageState);
       if (isIncompleteState(originalRequest)) {
@@ -268,6 +293,8 @@ export function registerJourneyTool(): boolean {
       return textResult(serializeReplan(replanJourney(replanRequest, officialJourneyPlanningContext)));
     },
   });
+
+  registeredContexts.add(document.modelContext);
 
   return true;
 }

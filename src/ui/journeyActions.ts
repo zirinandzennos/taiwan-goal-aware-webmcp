@@ -3,6 +3,18 @@ import { replanJourney } from "../journey/replanner";
 import { officialJourneyPlanningContext } from "../journey/officialTimetable";
 import type { JourneyPlanResult, JourneyReplanResult } from "../journey/types";
 import {
+  planJourneyFromPageState,
+  replanSelectedSnapshotJourney,
+  type JourneyProductPlan,
+  type JourneyProductReplanResult,
+} from "../application/journeyProduct.ts";
+import {
+  getJourneyPageState,
+  getJourneyPageStateVersion,
+  markSelectedReplanBlocked,
+  storeLatestProductPlan,
+} from "./state.ts";
+import {
   getCurrentJourneyPageState,
   toJourneyReplanRequest,
   toJourneyRequest,
@@ -22,6 +34,9 @@ export type HumanPlanExecution =
 export type HumanReplanExecution =
   | { kind: "REPLAN_RESULT"; replan: JourneyReplanResult }
   | { kind: "STATE_ERROR"; error: JourneyUiStateError };
+
+export type HumanProductPlanExecution = { kind: "PRODUCT_PLAN_RESULT"; plan: JourneyProductPlan };
+export type HumanProductReplanExecution = { kind: "PRODUCT_REPLAN_RESULT"; replan: JourneyProductReplanResult };
 
 function isIncompleteState(value: unknown): value is IncompletePageJourneyState {
   return typeof value === "object" && value !== null && "missingFields" in value;
@@ -52,4 +67,18 @@ export function replanCurrentJourney(): HumanReplanExecution {
     return { kind: "STATE_ERROR", error: stateError("CURRENT_JOURNEY_STATE_INCOMPLETE", replanRequest.missingFields) };
   }
   return { kind: "REPLAN_RESULT", replan: replanJourney(replanRequest, officialJourneyPlanningContext) };
+}
+
+/** Single application-service path used by the Journey-first Human UI. */
+export function planCurrentJourneyProduct(): HumanProductPlanExecution {
+  const plan = planJourneyFromPageState(getJourneyPageState(), getJourneyPageStateVersion());
+  storeLatestProductPlan(plan);
+  return { kind: "PRODUCT_PLAN_RESULT", plan };
+}
+
+/** Snapshot progress is retained as evidence; unsupported remainder states fail closed. */
+export function replanCurrentJourneyProduct(): HumanProductReplanExecution {
+  const replan = replanSelectedSnapshotJourney(getJourneyPageState());
+  markSelectedReplanBlocked();
+  return { kind: "PRODUCT_REPLAN_RESULT", replan };
 }

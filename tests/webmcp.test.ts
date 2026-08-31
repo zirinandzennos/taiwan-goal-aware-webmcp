@@ -9,10 +9,20 @@ import {
 } from "../src/webmcp/pageState";
 import { registerJourneyTool } from "../src/webmcp/registerJourneyTool";
 import {
+  completeSelectedStepEightMinutesLate,
+  getJourneyPageState,
+  getJourneyPageStateVersion,
+  initializeFixedJourneyProductState,
   resetJourneyPageState,
+  selectProductJourney,
   setJourneyPageState,
+  storeLatestProductPlan,
   type JourneyPageState,
 } from "../src/ui/state";
+import {
+  fixedJourneyProductScenario,
+  planJourneyFromPageState,
+} from "../src/application/journeyProduct.ts";
 
 type ToolResponse = { content: Array<{ type: "text"; text: string }> };
 type RegisteredTool = {
@@ -80,6 +90,50 @@ function selectedCandidateIds(output: Record<string, any>): string[] {
 }
 
 describe("Taiwan journey WebMCP tools", () => {
+  it("returns the compact formal snapshot plan with Human/WebMCP hash parity", async () => {
+    initializeFixedJourneyProductState(fixedJourneyProductScenario);
+    const tool = registerTools().get("plan_taiwan_goal_aware_journey")!;
+    const output = await json(tool);
+    const human = planJourneyFromPageState(getJourneyPageState(), getJourneyPageStateVersion());
+    expect(output).toMatchObject({
+      status: "AVAILABLE",
+      normalizedResultHash: human.normalizedResultHash,
+      requestIdentity: { requestFingerprint: human.identity.requestFingerprint, dataMode: "SNAPSHOT" },
+      effectiveCandidateCounts: { feasible: 4, impossible: 6, unknown: 0, total: 10 },
+      recommendations: {
+        fastest: { winnerCandidateIds: ["journey:tdx-maas:07fb4bb5", "journey:tdx-maas:ab19cfc6"], displayCandidateId: "journey:tdx-maas:07fb4bb5" },
+        balanced: { winnerCandidateIds: ["journey:tdx-maas:ab19cfc6"], displayCandidateId: "journey:tdx-maas:ab19cfc6" },
+        cheapest: { displayCandidateId: "journey:tdx-maas:1767bfb5", tiedWinnerCount: 3 },
+      },
+    });
+  });
+
+  it("captures state at execution and never reuses the old plan after an input change", async () => {
+    initializeFixedJourneyProductState(fixedJourneyProductScenario);
+    const tool = registerTools().get("plan_taiwan_goal_aware_journey")!;
+    const first = await json(tool);
+    updateState({ departAt: "2026-08-31T11:36:00+08:00" });
+    const changed = await json(tool);
+    expect(changed.status).toBe("UNAVAILABLE");
+    expect(changed.requestIdentity.requestFingerprint).not.toBe(first.requestIdentity.requestFingerprint);
+    expect(Object.values(changed.recommendations).every((item: any) => item.journey === null)).toBe(true);
+  });
+
+  it("rejects unexpected input and registers exactly once per model context", async () => {
+    const tools = registerTools();
+    expect(registerJourneyTool()).toBe(true);
+    expect(tools.size).toBe(3);
+    await expect(tools.get("plan_taiwan_goal_aware_journey")!.execute({ unexpected: true } as never)).rejects.toThrow(/do not accept input/);
+  });
+
+  it("returns an explicit product replan blocker with progress evidence", async () => {
+    initializeFixedJourneyProductState(fixedJourneyProductScenario);
+    const plan = planJourneyFromPageState(getJourneyPageState(), getJourneyPageStateVersion());
+    storeLatestProductPlan(plan); selectProductJourney("BALANCED"); completeSelectedStepEightMinutesLate();
+    const output = await json(registerTools().get("replan_taiwan_journey")!);
+    expect(output).toMatchObject({ status: "UNAVAILABLE", reasonCode: "REPLAN_UNAVAILABLE_FOR_SNAPSHOT_STATE", actualProgressEvidence: { delayMinutes: 8 } });
+  });
+
   it("registers the journey-first tool plus the stable goal and replan tools", () => {
     const tools = registerTools();
     expect([...tools.keys()]).toEqual(["plan_taiwan_goal_aware_journey", "check_taiwan_goal_feasibility", "replan_taiwan_journey"]);
@@ -92,30 +146,19 @@ describe("Taiwan journey WebMCP tools", () => {
     expect(tools.get("replan_taiwan_journey")?.description).toContain("location or time has changed");
   });
 
-  it("returns Journey-first output and withholds Cheapest for incomplete fares", async () => {
+  it("returns Journey-first output with all three formally available recommendations", async () => {
+    initializeFixedJourneyProductState(fixedJourneyProductScenario);
     const output = await json(registerTools().get("plan_taiwan_goal_aware_journey")!);
     expect(output).toMatchObject({
-      requestId: "req:ENTER_XPARK:1070:2026-08-31T11:30:00+08:00",
+      status: "AVAILABLE",
       dataMode: "SNAPSHOT",
-      selectionReasonCodes: ["NO_COMPLETE_FARE_CANDIDATE"],
-      journeys: { fastest: { costCoverage: "UNKNOWN" }, balanced: { costCoverage: "UNKNOWN" }, cheapest: null },
       recommendations: {
-        fastest: {
-          status: "AVAILABLE",
-          winnerCandidateIds: expect.any(Array),
-          selectedRepresentativeId: expect.any(String),
-          unique: expect.any(Boolean),
-          proofStatus: "DETERMINISTIC_ENGINE_RESULT",
-          evidenceIds: ["tdx-thsr-20260831-20260906-20260830"],
-          dataMode: "SNAPSHOT",
-          effectiveCandidateCount: expect.any(Number),
-          blocker: null,
-        },
+        fastest: { status: "AVAILABLE", winnerCandidateIds: expect.any(Array), blocker: null },
         balanced: { status: "AVAILABLE", winnerCandidateIds: expect.any(Array), blocker: null },
-        cheapest: { status: "UNAVAILABLE", winnerCandidateIds: [], blocker: { reasonCode: "NO_COMPLETE_FARE_CANDIDATE" } },
+        cheapest: { status: "AVAILABLE", winnerCandidateIds: expect.any(Array), blocker: null },
       },
     });
-    expect(output.recommendations.fastest.winnerCandidateIds).toContain(output.recommendations.fastest.selectedRepresentativeId);
+    expect(output.recommendations.fastest.winnerCandidateIds).toContain(output.recommendations.fastest.displayCandidateId);
   });
 
   it("keeps plan, replan, and negative intent fixtures distinct in metadata tests", () => {

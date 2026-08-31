@@ -24,6 +24,9 @@
 - Three read-only WebMCP Site Tools, led by Journey-first `plan_taiwan_goal_aware_journey`, with `check_taiwan_goal_feasibility` and `replan_taiwan_journey`
 - Shared live page state for the human UI and WebMCP adapter
 - Simplified goal-first UI, deterministic tests, and submission documentation
+- Journey-first three-card product flow using the fixed ten-candidate official-data snapshot
+- Shared product application service with request fingerprint, page-state version, stale-result gate, selection, progress evidence, and fail-closed snapshot replanning
+- Stable presentation allocation that shows three different journeys without changing formal Fastest, Balanced, or Cheapest winner sets
 
 This document intentionally does not attribute the pre-existing concept or research to the Challenge period.
 
@@ -33,4 +36,4 @@ Post-submission additive work includes the server-only token cache, bounded TDX 
 
 An earlier implementation attempt targeted recent historical dates: first 2026-08-24, then a 2026-08-27 canary. TDX supply metadata may still list recently past dates, but the actual dated timetable endpoint rejects historical queries. The Challenge therefore froze the official future scheduled window 2026-08-31 through 2026-09-06 while it was available. Missing historical dates were not fabricated or replaced with regular-timetable inference; corporate-site samples remain reference-only and are not the runtime redistribution source.
 
-The real-data golden date is 2026-08-31. The primary browser and WebMCP runtime use this frozen official scheduled timetable, not historical actual operations, archived delays, or train performance. Synthetic fixtures remain test-only or explicitly secondary. The Tainan current-time update is a simulated delay input. This repository does not claim live real-time transit, Remote MCP, GPS, bookings, payment, or operational transportation data.
+The real-data golden date is 2026-08-31. The current Journey-first browser and plan-tool flow use the frozen official-data MaaS candidate/evidence snapshot; the earlier THSR goal-feasibility flow remains as a compatibility tool and golden test. The +8-minute progress event is deterministic demonstration input. This repository does not claim live real-time transit, Remote MCP, GPS, bookings, payment, GIS, or operational transportation data.
