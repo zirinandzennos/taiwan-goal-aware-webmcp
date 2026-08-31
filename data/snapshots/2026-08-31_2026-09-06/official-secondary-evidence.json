@@ -1,0 +1,204 @@
+{
+  "schemaVersion": "1.0.0",
+  "serviceDate": "2026-08-31",
+  "retrievedAt": "2026-08-31T03:48:16.171Z",
+  "timezone": "Asia/Taipei",
+  "maasRawIdentityAudit": {
+    "rawProviderPayloadRetained": false,
+    "reason": "The snapshot data-minimization policy retained normalized candidates, not the complete MaaS response body.",
+    "preservedFields": {
+      "tripId": "68f538cb-a363-49c4-b171-6a178e545fb9",
+      "routeId": "左營-南港",
+      "operator": "台灣高速鐵路",
+      "mode": "THSR",
+      "originStationId": "1070",
+      "destinationStationId": "1010",
+      "departure": "2026-08-31T12:15:00+08:00",
+      "arrival": "2026-08-31T13:46:00+08:00",
+      "trainNo": null,
+      "intermediateStopPattern": null,
+      "providerSpecificExtensionFields": null
+    },
+    "limitation": "No unretained raw identity field can be reconstructed. The preserved MaaS UUID is not treated as a THSR train number."
+  },
+  "sources": [
+    {
+      "evidenceId": "TDX-RAIL-V2-THSR-1070-1010-20260831",
+      "officialSourceOwner": "Transportation Data eXchange, Ministry of Transportation and Communications",
+      "normalizedSourceUrl": "https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/OD/1070/to/1010/2026-08-31",
+      "title": "THSR DailyTimetable OD 1070 to 1010",
+      "effectivePeriod": { "from": "2026-08-31", "to": "2026-08-31" },
+      "retrievedAt": "2026-08-31T03:56:26.081Z",
+      "extractionMethod": "Read-only TDX Rail v2 OD query; all 69 normalized service IDs and the complete bounded time-compatible set are retained below, without the raw response or authorization data.",
+      "sourceHashSha256": null,
+      "candidateIdsCovered": [
+        "journey:tdx-maas:6196da5e",
+        "journey:tdx-maas:cbee5feb",
+        "journey:tdx-maas:72cc6fbc",
+        "journey:tdx-maas:741ae287"
+      ],
+      "extractedFields": {
+        "query": { "originStationId": "1070", "destinationStationId": "1010", "departure": "12:15", "arrival": "13:46" },
+        "primaryOdRecordCount": 69,
+        "allPrimaryServiceIds": [
+          "THSR-0802", "THSR-1602", "THSR-0204", "THSR-0606", "THSR-0206", "THSR-0806", "THSR-0610", "THSR-0108", "THSR-0612", "THSR-1210",
+          "THSR-0810", "THSR-0616", "THSR-0112", "THSR-0618", "THSR-0814", "THSR-0622", "THSR-0116", "THSR-0624", "THSR-1218", "THSR-0818",
+          "THSR-0628", "THSR-0120", "THSR-0630", "THSR-1222", "THSR-0822", "THSR-1634", "THSR-0124", "THSR-0636", "THSR-0826", "THSR-0640",
+          "THSR-0128", "THSR-0642", "THSR-0830", "THSR-0646", "THSR-0132", "THSR-0648", "THSR-0834", "THSR-0652", "THSR-0136", "THSR-0654",
+          "THSR-1238", "THSR-0838", "THSR-0658", "THSR-0140", "THSR-0660", "THSR-0242", "THSR-0842", "THSR-0664", "THSR-0144", "THSR-0666",
+          "THSR-1246", "THSR-0846", "THSR-0670", "THSR-0148", "THSR-0672", "THSR-0850", "THSR-0676", "THSR-0152", "THSR-0678", "THSR-0854",
+          "THSR-1682", "THSR-0156", "THSR-0684", "THSR-0858", "THSR-0160", "THSR-0690", "THSR-0862", "THSR-0696", "THSR-0294"
+        ],
+        "matchWindowPolicy": { "maximumDepartureDeltaSeconds": 600, "maximumArrivalDeltaSeconds": 600, "requiresBoth": true },
+        "primaryOdCandidatesNearNoon": [
+          { "serviceId": "THSR-0636", "trainNo": "0636", "departure": "12:00", "arrival": "13:50", "originBeforeDestination": true, "compatible": false, "reasonCode": "DEPARTURE_OUTSIDE_10_MINUTE_WINDOW" },
+          { "serviceId": "THSR-0826", "trainNo": "0826", "departure": "12:25", "arrival": "14:31", "originBeforeDestination": true, "compatible": false, "reasonCode": "ARRIVAL_OUTSIDE_10_MINUTE_WINDOW" }
+        ],
+        "compatiblePrimaryMatchSet": []
+      },
+      "limitations": ["The complete raw endpoint response was not added to the repository."]
+    },
+    {
+      "evidenceId": "THSRC-NORMAL-TIMETABLE-20260202",
+      "officialSourceOwner": "Taiwan High Speed Rail Corporation",
+      "normalizedSourceUrl": "https://www.thsrc.com.tw/Attachment/Download?id=b5e78f70-fa6d-4f75-8f31-a13387d7ea88&pageID=a3b630bb-1066-4352-a1ef-58c7b4e8ef7c",
+      "title": "THSR Schedules and Fare Tables Effective Feb. 2, 2026",
+      "effectivePeriod": { "from": "2026-02-02", "to": null },
+      "retrievedAt": "2026-08-31T03:48:16.171Z",
+      "extractionMethod": "Official PDF table extraction and visual row/day-column cross-check.",
+      "sourceHashSha256": "f175d660db7b5827ae87cdb330137a6fc01b56cefe7f5e1f2999b1ad51610d3e",
+      "candidateIdsCovered": [
+        "journey:tdx-maas:6196da5e",
+        "journey:tdx-maas:cbee5feb",
+        "journey:tdx-maas:72cc6fbc",
+        "journey:tdx-maas:741ae287"
+      ],
+      "extractedFields": {
+        "secondaryIdentityCandidate": { "serviceId": "THSR-1226", "trainNo": "1226", "origin": "左營", "departure": "12:15", "destination": "板橋", "arrival": "13:47", "operatingWeekday": "FRIDAY" },
+        "serviceDateWeekday": "MONDAY",
+        "applicableOnServiceDate": false
+      },
+      "limitations": ["A matching departure time alone is insufficient identity evidence."]
+    },
+    {
+      "evidenceId": "THSRC-SUMMER-2026-SPECIAL-TIMETABLE",
+      "officialSourceOwner": "Taiwan High Speed Rail Corporation",
+      "normalizedSourceUrl": "https://www.thsrc.com.tw/Attachment/Download?id=d822d997-22b0-4a59-9899-7b8c878622f9&pageID=a9232f72-70b5-4009-acd9-a4899c696efc",
+      "title": "2026 Summer Additional Train Timetable",
+      "effectivePeriod": { "from": "2026-07-01", "to": "2026-08-31" },
+      "retrievedAt": "2026-08-31T03:48:16.171Z",
+      "extractionMethod": "Official PDF weekday and specified-date table extraction.",
+      "sourceHashSha256": "541128f358d878dc699c715fbd80f0da57042de2b96067f23cf79c2d1edc40fd",
+      "candidateIdsCovered": [
+        "journey:tdx-maas:6196da5e",
+        "journey:tdx-maas:cbee5feb",
+        "journey:tdx-maas:72cc6fbc",
+        "journey:tdx-maas:741ae287"
+      ],
+      "extractedFields": {
+        "trainNo": "1226",
+        "operatesOn": ["FRIDAY"],
+        "specifiedDateExceptionsIncluding2026_08_31": [],
+        "serviceDateWeekday": "MONDAY",
+        "applicableOnServiceDate": false,
+        "compatibleSecondaryMatchSet": []
+      },
+      "limitations": ["This source excludes rather than verifies train 1226 on the Monday snapshot date."]
+    },
+    {
+      "evidenceId": "TAOYUAN-EBUS-208A-20260831",
+      "officialSourceOwner": "Taoyuan City Government Department of Transportation",
+      "normalizedSourceUrl": "https://ebus.tycg.gov.tw/ebus/graphql",
+      "title": "208A date-specific fixed timetable and route metadata",
+      "effectivePeriod": { "from": "2026-08-31", "to": "2026-08-31" },
+      "retrievedAt": "2026-08-31T03:48:16.171Z",
+      "extractionMethod": "Official GraphQL QUERY_ROUTES, route, and dailySchedule fields; normalized fields only.",
+      "sourceHashSha256": null,
+      "candidateIdsCovered": [
+        "journey:tdx-maas:72cc6fbc",
+        "journey:tdx-maas:741ae287",
+        "journey:tdx-maas:94e37614",
+        "journey:tdx-maas:a8aed985"
+      ],
+      "extractedFields": {
+        "routeInternalId": 2081,
+        "routeName": "208A",
+        "taoyuanGoBack": 1,
+        "tdxDirection": 0,
+        "operator": "統聯客運",
+        "originTerminal": { "internalStopId": 1848, "tdxStopUid": "TAO9677", "name": "高鐵桃園站" },
+        "alightingStop": { "internalStopId": 1108, "tdxStopUid": "TAO2938", "name": "福德宮" },
+        "terminalDepartures": ["08:15", "11:40", "14:05", "17:45"],
+        "candidateBoardingTime": "14:19",
+        "compatibleFixedScheduleMatchSet": [],
+        "nextFixedDeparture": "17:45"
+      },
+      "limitations": ["Terminal departures are authoritative only at the terminal; no intermediate time is inferred."]
+    },
+    {
+      "evidenceId": "TAOYUAN-EBUS-208A-FARE-1848-1108",
+      "officialSourceOwner": "Taoyuan City Government Department of Transportation",
+      "normalizedSourceUrl": "https://ebus.tycg.gov.tw/ebus/graphql",
+      "title": "208A route-specific fare lookup",
+      "effectivePeriod": { "from": null, "to": null },
+      "retrievedAt": "2026-08-31T03:48:16.171Z",
+      "extractionMethod": "Official QUERY_FARES for xno 2081, from 1848, to 1108.",
+      "sourceHashSha256": null,
+      "candidateIdsCovered": [
+        "journey:tdx-maas:72cc6fbc",
+        "journey:tdx-maas:741ae287",
+        "journey:tdx-maas:94e37614",
+        "journey:tdx-maas:a8aed985"
+      ],
+      "extractedFields": {
+        "routeInternalId": 2081,
+        "taoyuanGoBack": 1,
+        "tdxDirection": 0,
+        "fromStopId": 1848,
+        "toStopId": 1108,
+        "fullFareTwd": 18,
+        "electronicFullFareTwd": 18,
+        "reducedFareTwd": 9
+      },
+      "limitations": ["Optimization and journey totals use full adult published fare only; no discounts or rebates are applied."]
+    },
+    {
+      "evidenceId": "UBUS-208A-PAGE-1768",
+      "officialSourceOwner": "Ubus",
+      "normalizedSourceUrl": "https://www.ubus.com.tw/UrbanBus/UrbanBusNews/1768/",
+      "title": "208/208A timetable announcement",
+      "effectivePeriod": { "from": "2023-02-22", "to": null },
+      "retrievedAt": "2026-08-31T03:30:00.000Z",
+      "extractionMethod": "Official operator page text extraction.",
+      "sourceHashSha256": null,
+      "candidateIdsCovered": [],
+      "extractedFields": { "weekdayDepartureShown": "14:15" },
+      "limitations": ["Current applicability to 2026-08-31 is unproven and conflicts with the date-specific Taoyuan official timetable; it is not used for validation."]
+    }
+  ],
+  "conclusions": {
+    "railNoApplicableServiceCandidateIds": [
+      "journey:tdx-maas:6196da5e",
+      "journey:tdx-maas:cbee5feb",
+      "journey:tdx-maas:72cc6fbc",
+      "journey:tdx-maas:741ae287"
+    ],
+    "busNoCompatibleTimingCandidateIds": [
+      "journey:tdx-maas:72cc6fbc",
+      "journey:tdx-maas:741ae287",
+      "journey:tdx-maas:94e37614",
+      "journey:tdx-maas:a8aed985"
+    ],
+    "busFareCandidateIds": [
+      "journey:tdx-maas:72cc6fbc",
+      "journey:tdx-maas:741ae287",
+      "journey:tdx-maas:94e37614",
+      "journey:tdx-maas:a8aed985"
+    ],
+    "busFullAdultFareTwd": 18,
+    "originalUnknownTimedLegs": 8,
+    "boundedUnknownTimedLegs": 0,
+    "unboundedUnknownTimedLegs": 0,
+    "provenImpossibleUnknownTimedLegs": 8
+  }
+}

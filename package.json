@@ -14,7 +14,8 @@
     "timetable:golden": "vite-node scripts/import/run-golden-cli.ts",
     "journey:maas:canary": "node --env-file-if-exists=.env scripts/import/fetch-tdx-corridor.ts --canary",
     "journey:snapshot": "node --env-file-if-exists=.env scripts/import/fetch-tdx-corridor.ts",
-    "journey:validate": "node --env-file-if-exists=.env scripts/import/validate-tdx-corridor.ts"
+    "journey:validate": "node --env-file-if-exists=.env scripts/import/validate-tdx-corridor.ts",
+    "journey:optimization-proof": "node scripts/import/build-optimization-proof.ts"
   },
   "devDependencies": { "@types/node": "^22.13.10", "typescript": "^5.7.3", "vite": "^6.2.0", "vitest": "^3.0.8" }
 }

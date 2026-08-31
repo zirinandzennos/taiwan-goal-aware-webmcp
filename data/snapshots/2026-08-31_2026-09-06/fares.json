@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "retrievedAt": "2026-08-31T02:35:36.409Z",
+  "retrievedAt": "2026-08-31T03:48:16.171Z",
   "timezone": "Asia/Taipei",
   "policies": {
     "THSR": {
@@ -26,8 +26,11 @@
       ]
     },
     "BUS": {
-      "status": "UNKNOWN",
-      "reasonCode": "BUS_FARE_DATA_NOT_INCLUDED_IN_VALIDATED_ENDPOINTS"
+      "status": "COMPLETE",
+      "passengerType": "ADULT",
+      "ticketType": "FULL_FARE",
+      "discounts": "NONE",
+      "sourceEvidenceId": "TAOYUAN-EBUS-208A-FARE-1848-1108"
     }
   },
   "services": [
@@ -81,11 +84,12 @@
     },
     {
       "validationKey": "Taoyuan|208A|?|?|高鐵桃園站|福德宮|2026-08-31|2026-08-31T14:19:00+08:00",
-      "fareTwd": null,
-      "fareCoverage": "UNKNOWN",
-      "ticketType": null,
-      "fareClass": null,
-      "cabinClass": null
+      "fareTwd": 18,
+      "fareCoverage": "COMPLETE",
+      "ticketType": "FULL_FARE",
+      "fareClass": "ADULT",
+      "cabinClass": "STANDARD",
+      "sourceEvidenceId": "TAOYUAN-EBUS-208A-FARE-1848-1108"
     }
   ],
   "candidates": [
@@ -121,23 +125,23 @@
     },
     {
       "candidateId": "journey:tdx-maas:72cc6fbc",
-      "totalJourneyCostTwd": null,
-      "fareCoverage": "PARTIAL"
+      "totalJourneyCostTwd": 1619,
+      "fareCoverage": "COMPLETE"
     },
     {
       "candidateId": "journey:tdx-maas:741ae287",
-      "totalJourneyCostTwd": null,
-      "fareCoverage": "PARTIAL"
+      "totalJourneyCostTwd": 1619,
+      "fareCoverage": "COMPLETE"
     },
     {
       "candidateId": "journey:tdx-maas:94e37614",
-      "totalJourneyCostTwd": null,
-      "fareCoverage": "PARTIAL"
+      "totalJourneyCostTwd": 1359,
+      "fareCoverage": "COMPLETE"
     },
     {
       "candidateId": "journey:tdx-maas:a8aed985",
-      "totalJourneyCostTwd": null,
-      "fareCoverage": "PARTIAL"
+      "totalJourneyCostTwd": 1359,
+      "fareCoverage": "COMPLETE"
     }
   ]
 }

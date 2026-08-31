@@ -47,6 +47,10 @@ describe("TDX MaaS adapter", () => {
     expect(result.rejectedRoutes).toEqual([]);
     expect(result.candidates).toHaveLength(1);
     expect(result.candidates[0]).toMatchObject({ costCoverage: "UNKNOWN", transferCount: 1, minimumTransferSlackMinutes: 5 });
+    expect(result.candidates[0].steps?.filter((item) => item.type === "RIDE").map((item) => item.service)).toEqual([
+      expect.objectContaining({ tripId: "TRA-2026-08-31T11:58:00", routeId: "TRA" }),
+      expect.objectContaining({ tripId: "HSR-2026-08-31T12:15:00", routeId: "HSR" }),
+    ]);
     expect(result.candidates[0].steps?.map((item) => item.type)).toEqual([
       "WALK", "BOARD", "RIDE", "ALIGHT", "TRANSFER_WALK", "WAIT", "BOARD", "RIDE", "ALIGHT", "GOAL_ACCESS", "GOAL_COMPLETION",
     ]);

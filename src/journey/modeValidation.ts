@@ -483,6 +483,12 @@ export interface FormalRecommendationGate {
   available: boolean;
   candidateId: string | null;
   reasonCode: string;
+  unique?: boolean;
+  possibleTieCandidateIds?: string[];
+  exactWinnerTime?: string | null;
+  exactWinnerCostTwd?: number | null;
+  competitors?: OptimizationCompetitorProof[];
+  assumptions?: string[];
 }
 
 export interface FormalRecommendationGates {
@@ -492,10 +498,170 @@ export interface FormalRecommendationGates {
   formalRecommendationStatus: "FORMAL_AVAILABLE" | "PARTIAL" | "UNKNOWN_MODE_VALIDATION";
 }
 
+export type TimingProof = "EXACT" | "CONSERVATIVE_BOUND" | "UNBOUNDED";
+export type CostProof = "EXACT" | "NONNEGATIVE_LOWER_BOUND" | "UNBOUNDED";
+export type OptimizationEligibility = "ELIGIBLE" | "PROVEN_IMPOSSIBLE" | "UNRESOLVED";
+
+/** Proof-only evidence. Bounds never replace display times or unknown journey fares. */
+export interface CandidateOptimizationEvidence {
+  candidateId: string;
+  eligibility: OptimizationEligibility;
+  timingProof: TimingProof;
+  exactGoalCompletionAt: string | null;
+  earliestPossibleGoalCompletionAt: string | null;
+  latestPossibleGoalCompletionAt: string | null;
+  possibleServiceIds: string[];
+  costProof: CostProof;
+  exactTotalCostTwd: number | null;
+  minimumPossibleTotalCostTwd: number | null;
+  sourceEvidenceIds: string[];
+  assumptions: string[];
+  reasonCodes: string[];
+}
+
+export interface OptimizationCompetitorProof {
+  candidateId: string;
+  eligibility: OptimizationEligibility;
+  exactValue: string | number | null;
+  conservativeBound: string | number | null;
+  canStillBeatWinner: boolean;
+  possibleTie: boolean;
+  sourceEvidenceIds: string[];
+  reasonCodes: string[];
+}
+
+export interface TimingResolutionSummary {
+  timingResolutionCounts: { exact: number; unknown: number; total: number };
+  nonExclusiveDataQualityTags: { estimatedOnlyBus: number };
+}
+
+export function summarizeTimingResolution(rides: readonly JourneyStep[]): TimingResolutionSummary {
+  const exact = rides.filter((ride) => ride.type === "RIDE" && ride.validationEvidence?.validationStatus === "VERIFIED").length;
+  const total = rides.filter((ride) => ride.type === "RIDE").length;
+  return {
+    timingResolutionCounts: { exact, unknown: total - exact, total },
+    nonExclusiveDataQualityTags: {
+      estimatedOnlyBus: rides.filter((ride) => ride.type === "RIDE"
+        && ride.validationEvidence?.validationStatus !== "VERIFIED"
+        && ride.validationEvidence?.dataQuality === "STOP_LEVEL_TIMETABLE").length,
+    },
+  };
+}
+
+function exactEligibleCandidateIds(
+  candidates: readonly CandidateJourney[],
+  resolutions: readonly CandidateResolution[],
+  evidenceById: ReadonlyMap<string, CandidateOptimizationEvidence>,
+  dimension: "time" | "cost",
+): string[] {
+  const resolutionById = new Map(resolutions.map((resolution) => [resolution.candidateId, resolution]));
+  return candidates.flatMap((candidate) => {
+    const resolution = resolutionById.get(candidate.id)?.resolution;
+    const evidence = evidenceById.get(candidate.id);
+    const exact = dimension === "time"
+      ? evidence?.timingProof === "EXACT" && evidence.exactGoalCompletionAt !== null
+      : evidence?.costProof === "EXACT" && evidence.exactTotalCostTwd !== null;
+    return (resolution === "VALIDATED_FEASIBLE" || resolution === "VALIDATED_RISKY") && exact ? [candidate.id] : [];
+  });
+}
+
+export function evaluateFastestOptimalityProof(
+  candidates: readonly CandidateJourney[],
+  resolutions: readonly CandidateResolution[],
+  optimizationEvidence: readonly CandidateOptimizationEvidence[],
+): FormalRecommendationGate {
+  const evidenceById = new Map(optimizationEvidence.map((evidence) => [evidence.candidateId, evidence]));
+  const eligibleIds = exactEligibleCandidateIds(candidates, resolutions, evidenceById, "time");
+  const exactCandidates = candidates.filter((candidate) => eligibleIds.includes(candidate.id));
+  const winner = [...exactCandidates].sort((first, second) => (
+    Date.parse(evidenceById.get(first.id)!.exactGoalCompletionAt!) - Date.parse(evidenceById.get(second.id)!.exactGoalCompletionAt!)
+    || first.id.localeCompare(second.id)
+  ))[0];
+  if (!winner) return { available: false, candidateId: null, reasonCode: "WINNER_TIMING_NOT_EXACT", unique: false, possibleTieCandidateIds: [] };
+  const winnerTime = evidenceById.get(winner.id)!.exactGoalCompletionAt!;
+  const winnerValue = Date.parse(winnerTime);
+  const competitors: OptimizationCompetitorProof[] = candidates.filter((candidate) => candidate.id !== winner.id).map((candidate) => {
+    const evidence = evidenceById.get(candidate.id);
+    const excluded = evidence?.eligibility === "PROVEN_IMPOSSIBLE";
+    const exactValue = evidence?.timingProof === "EXACT" ? evidence.exactGoalCompletionAt : null;
+    const conservativeBound = evidence?.timingProof === "CONSERVATIVE_BOUND" ? evidence.earliestPossibleGoalCompletionAt : null;
+    const comparisonValue = exactValue ?? conservativeBound;
+    const comparable = comparisonValue !== null && Number.isFinite(Date.parse(comparisonValue));
+    return {
+      candidateId: candidate.id,
+      eligibility: evidence?.eligibility ?? "UNRESOLVED",
+      exactValue,
+      conservativeBound,
+      canStillBeatWinner: !excluded && (!comparable || Date.parse(comparisonValue!) < winnerValue),
+      possibleTie: !excluded && comparable && Date.parse(comparisonValue!) === winnerValue,
+      sourceEvidenceIds: evidence?.sourceEvidenceIds ?? [],
+      reasonCodes: evidence?.reasonCodes ?? ["OPTIMIZATION_EVIDENCE_MISSING"],
+    };
+  });
+  const blockers = competitors.filter((competitor) => competitor.canStillBeatWinner);
+  const ties = competitors.filter((competitor) => competitor.possibleTie).map((competitor) => competitor.candidateId).sort();
+  return blockers.length > 0
+    ? { available: false, candidateId: null, reasonCode: "UNRESOLVED_CANDIDATE_MAY_BE_FASTER", unique: false, possibleTieCandidateIds: ties, exactWinnerTime: winnerTime, competitors }
+    : { available: true, candidateId: winner.id, reasonCode: "ALL_COMPETITORS_EXACT_BOUNDED_OR_PROVEN_IMPOSSIBLE", unique: ties.length === 0, possibleTieCandidateIds: ties, exactWinnerTime: winnerTime, competitors };
+}
+
+export function evaluateCheapestOptimalityProof(
+  candidates: readonly CandidateJourney[],
+  resolutions: readonly CandidateResolution[],
+  optimizationEvidence: readonly CandidateOptimizationEvidence[],
+): FormalRecommendationGate {
+  const evidenceById = new Map(optimizationEvidence.map((evidence) => [evidence.candidateId, evidence]));
+  const eligibleIds = exactEligibleCandidateIds(candidates, resolutions, evidenceById, "cost");
+  const exactCandidates = candidates.filter((candidate) => eligibleIds.includes(candidate.id));
+  const winner = [...exactCandidates].sort((first, second) => (
+    evidenceById.get(first.id)!.exactTotalCostTwd! - evidenceById.get(second.id)!.exactTotalCostTwd!
+    || first.id.localeCompare(second.id)
+  ))[0];
+  if (!winner) return { available: false, candidateId: null, reasonCode: "WINNER_COST_NOT_EXACT", unique: false, possibleTieCandidateIds: [] };
+  const winnerCost = evidenceById.get(winner.id)!.exactTotalCostTwd!;
+  const competitors: OptimizationCompetitorProof[] = candidates.filter((candidate) => candidate.id !== winner.id).map((candidate) => {
+    const evidence = evidenceById.get(candidate.id);
+    const excluded = evidence?.eligibility === "PROVEN_IMPOSSIBLE";
+    const exactValue = evidence?.costProof === "EXACT" ? evidence.exactTotalCostTwd : null;
+    const conservativeBound = evidence?.costProof === "NONNEGATIVE_LOWER_BOUND" ? evidence.minimumPossibleTotalCostTwd : null;
+    const comparisonValue = exactValue ?? conservativeBound;
+    const comparable = typeof comparisonValue === "number" && Number.isFinite(comparisonValue);
+    return {
+      candidateId: candidate.id,
+      eligibility: evidence?.eligibility ?? "UNRESOLVED",
+      exactValue,
+      conservativeBound,
+      canStillBeatWinner: !excluded && (!comparable || comparisonValue! < winnerCost),
+      possibleTie: !excluded && comparable && comparisonValue === winnerCost,
+      sourceEvidenceIds: evidence?.sourceEvidenceIds ?? [],
+      reasonCodes: evidence?.reasonCodes ?? ["OPTIMIZATION_EVIDENCE_MISSING"],
+    };
+  });
+  const blockers = competitors.filter((competitor) => competitor.canStillBeatWinner);
+  const ties = competitors.filter((competitor) => competitor.possibleTie).map((competitor) => competitor.candidateId).sort();
+  const assumptions = [...new Set(optimizationEvidence.flatMap((evidence) => evidence.assumptions))];
+  return blockers.length > 0
+    ? { available: false, candidateId: null, reasonCode: "INCOMPLETE_FARE_COVERAGE", unique: false, possibleTieCandidateIds: ties, exactWinnerCostTwd: winnerCost, competitors, assumptions }
+    : { available: true, candidateId: winner.id, reasonCode: "ALL_COMPETITORS_EXACT_BOUNDED_OR_PROVEN_IMPOSSIBLE", unique: ties.length === 0, possibleTieCandidateIds: ties, exactWinnerCostTwd: winnerCost, competitors, assumptions };
+}
+
 export function evaluateFormalRecommendationGates(
   candidates: readonly CandidateJourney[],
   resolutions: readonly CandidateResolution[],
+  optimizationEvidence?: readonly CandidateOptimizationEvidence[],
 ): FormalRecommendationGates {
+  if (optimizationEvidence) {
+    const fastest = evaluateFastestOptimalityProof(candidates, resolutions, optimizationEvidence);
+    const cheapest = evaluateCheapestOptimalityProof(candidates, resolutions, optimizationEvidence);
+    const balanced: FormalRecommendationGate = { available: false, candidateId: null, reasonCode: "INCOMPLETE_BALANCED_METRICS" };
+    const availableCount = [fastest, balanced, cheapest].filter((gate) => gate.available).length;
+    return {
+      fastest,
+      balanced,
+      cheapest,
+      formalRecommendationStatus: availableCount === 3 ? "FORMAL_AVAILABLE" : availableCount > 0 ? "PARTIAL" : "UNKNOWN_MODE_VALIDATION",
+    };
+  }
   const byId = new Map(resolutions.map((resolution) => [resolution.candidateId, resolution]));
   const effective = candidates.filter((candidate) => {
     const resolution = byId.get(candidate.id)?.resolution;

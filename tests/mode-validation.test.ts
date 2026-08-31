@@ -7,10 +7,12 @@ import {
   recomputeCandidateWithEvidence,
   resolveCandidate,
   selectFareByPolicy,
+  summarizeTimingResolution,
   validateBusTimetable,
   validateRailTimetable,
   type BusServiceQuery,
   type CandidateResolution,
+  type CandidateOptimizationEvidence,
   type NormalizedBusRoute,
   type NormalizedBusStopTimetable,
   type NormalizedFareOption,
@@ -290,5 +292,120 @@ describe("authoritative recomputation and formal gates", () => {
 
   it("never converts an unknown journey fare to zero", () => {
     expect(candidate("unknown")).toMatchObject({ totalCost: null, estimatedCost: null, costCoverage: "UNKNOWN" });
+  });
+});
+
+function resolved(id: string): CandidateResolution {
+  return {
+    candidateId: id,
+    resolution: "VALIDATED_FEASIBLE",
+    reasonCodes: [],
+    timedLegsComplete: true,
+    fareComplete: true,
+    connection: { status: "FEASIBLE", minimumConnectionSlackSec: null, transferSlacksSec: [], diagnostics: [], reasonCodes: ["CONNECTIONS_VALID"] },
+  };
+}
+
+function optimizationEvidence(
+  candidateId: string,
+  overrides: Partial<CandidateOptimizationEvidence> = {},
+): CandidateOptimizationEvidence {
+  return {
+    candidateId,
+    eligibility: "ELIGIBLE",
+    timingProof: "EXACT",
+    exactGoalCompletionAt: "2026-08-31T14:20:00+08:00",
+    earliestPossibleGoalCompletionAt: "2026-08-31T14:20:00+08:00",
+    latestPossibleGoalCompletionAt: "2026-08-31T14:20:00+08:00",
+    possibleServiceIds: [candidateId],
+    costProof: "EXACT",
+    exactTotalCostTwd: 100,
+    minimumPossibleTotalCostTwd: 100,
+    sourceEvidenceIds: ["fixture"],
+    assumptions: ["NO_NEGATIVE_FARE"],
+    reasonCodes: ["fixture"],
+    ...overrides,
+  };
+}
+
+describe("summary taxonomy", () => {
+  it("keeps exact and unknown mutually exclusive while estimated Bus stays a tag", () => {
+    const exact = step("exact", "RIDE", "2026-08-31T12:00:00+08:00", "2026-08-31T12:10:00+08:00");
+    exact.validationEvidence = verifiedEvidence();
+    const estimated = step("estimated", "RIDE", "2026-08-31T12:20:00+08:00", "2026-08-31T12:30:00+08:00");
+    estimated.validationEvidence = verifiedEvidence({ validationStatus: "UNKNOWN", dataQuality: "STOP_LEVEL_TIMETABLE" });
+    const summary = summarizeTimingResolution([exact, estimated]);
+    expect(summary.timingResolutionCounts).toEqual({ exact: 1, unknown: 1, total: 2 });
+    expect(summary.timingResolutionCounts.exact + summary.timingResolutionCounts.unknown).toBe(summary.timingResolutionCounts.total);
+    expect(summary.nonExclusiveDataQualityTags.estimatedOnlyBus).toBe(1);
+  });
+});
+
+describe("conservative optimality proof gates", () => {
+  it("allows Fastest when an unresolved competitor lower bound is later", () => {
+    const winner = candidate("winner", "2026-08-31T14:20:00+08:00");
+    const competitor = candidate("competitor", "2026-08-31T14:10:00+08:00");
+    const evidence = [optimizationEvidence("winner"), optimizationEvidence("competitor", {
+      eligibility: "UNRESOLVED", timingProof: "CONSERVATIVE_BOUND", exactGoalCompletionAt: null,
+      earliestPossibleGoalCompletionAt: "2026-08-31T14:30:00+08:00", latestPossibleGoalCompletionAt: null,
+    })];
+    expect(evaluateFormalRecommendationGates([winner, competitor], [resolved("winner"), { ...resolved("competitor"), resolution: "UNKNOWN", timedLegsComplete: false }], evidence).fastest)
+      .toMatchObject({ available: true, candidateId: "winner" });
+  });
+
+  it("blocks Fastest when a lower bound is earlier or unbounded", () => {
+    const winner = candidate("winner");
+    const early = candidate("early");
+    const unbounded = candidate("unbounded");
+    const resolutions = [resolved("winner"), { ...resolved("early"), resolution: "UNKNOWN" as const }, { ...resolved("unbounded"), resolution: "UNKNOWN" as const }];
+    const evidence = [
+      optimizationEvidence("winner"),
+      optimizationEvidence("early", { eligibility: "UNRESOLVED", timingProof: "CONSERVATIVE_BOUND", exactGoalCompletionAt: null, earliestPossibleGoalCompletionAt: "2026-08-31T14:19:00+08:00" }),
+      optimizationEvidence("unbounded", { eligibility: "UNRESOLVED", timingProof: "UNBOUNDED", exactGoalCompletionAt: null, earliestPossibleGoalCompletionAt: null }),
+    ];
+    const gate = evaluateFormalRecommendationGates([winner, early, unbounded], resolutions, evidence).fastest;
+    expect(gate).toMatchObject({ available: false, reasonCode: "UNRESOLVED_CANDIDATE_MAY_BE_FASTER" });
+    expect(gate.competitors?.filter((item) => item.canStillBeatWinner).map((item) => item.candidateId).sort()).toEqual(["early", "unbounded"]);
+  });
+
+  it("marks an equal Fastest bound as a possible tie", () => {
+    const winner = candidate("winner");
+    const tied = candidate("tied");
+    const evidence = [optimizationEvidence("winner"), optimizationEvidence("tied", {
+      eligibility: "UNRESOLVED", timingProof: "CONSERVATIVE_BOUND", exactGoalCompletionAt: null,
+      earliestPossibleGoalCompletionAt: "2026-08-31T14:20:00+08:00",
+    })];
+    expect(evaluateFormalRecommendationGates([winner, tied], [resolved("winner"), { ...resolved("tied"), resolution: "UNKNOWN" }], evidence).fastest)
+      .toMatchObject({ available: true, unique: false, possibleTieCandidateIds: ["tied"] });
+  });
+
+  it("requires the Fastest winner itself to be exact", () => {
+    const bounded = candidate("bounded");
+    const evidence = [optimizationEvidence("bounded", { timingProof: "CONSERVATIVE_BOUND", exactGoalCompletionAt: null })];
+    expect(evaluateFormalRecommendationGates([bounded], [resolved("bounded")], evidence).fastest)
+      .toMatchObject({ available: false, reasonCode: "WINNER_TIMING_NOT_EXACT" });
+  });
+
+  it("allows Cheapest above-bound competitors, blocks below-bound competitors", () => {
+    const winner = candidate("winner");
+    const high = candidate("high");
+    const low = candidate("low");
+    const baseResolutions = [resolved("winner"), { ...resolved("high"), resolution: "UNKNOWN" as const }, { ...resolved("low"), resolution: "UNKNOWN" as const }];
+    const highEvidence = optimizationEvidence("high", { eligibility: "UNRESOLVED", costProof: "NONNEGATIVE_LOWER_BOUND", exactTotalCostTwd: null, minimumPossibleTotalCostTwd: 101 });
+    const lowEvidence = optimizationEvidence("low", { eligibility: "UNRESOLVED", costProof: "NONNEGATIVE_LOWER_BOUND", exactTotalCostTwd: null, minimumPossibleTotalCostTwd: 99 });
+    expect(evaluateFormalRecommendationGates([winner, high], baseResolutions.slice(0, 2), [optimizationEvidence("winner"), highEvidence]).cheapest.available).toBe(true);
+    expect(evaluateFormalRecommendationGates([winner, low], [baseResolutions[0], baseResolutions[2]], [optimizationEvidence("winner"), lowEvidence]).cheapest)
+      .toMatchObject({ available: false, reasonCode: "INCOMPLETE_FARE_COVERAGE" });
+  });
+
+  it("marks an equal Cheapest lower bound as a possible tie and keeps Balanced blocked", () => {
+    const winner = candidate("winner");
+    const tied = candidate("tied");
+    const evidence = [optimizationEvidence("winner"), optimizationEvidence("tied", {
+      eligibility: "UNRESOLVED", costProof: "NONNEGATIVE_LOWER_BOUND", exactTotalCostTwd: null, minimumPossibleTotalCostTwd: 100,
+    })];
+    const gates = evaluateFormalRecommendationGates([winner, tied], [resolved("winner"), { ...resolved("tied"), resolution: "UNKNOWN" }], evidence);
+    expect(gates.cheapest).toMatchObject({ available: true, unique: false, possibleTieCandidateIds: ["tied"] });
+    expect(gates.balanced).toMatchObject({ available: false, reasonCode: "INCOMPLETE_BALANCED_METRICS" });
   });
 });

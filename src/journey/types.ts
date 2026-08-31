@@ -255,6 +255,19 @@ export interface JourneyStep {
     alightingStopId?: string;
   };
   validationEvidence?: ModeValidationEvidence;
+  fareEvidence?: {
+    provider: string;
+    endpointName: string;
+    retrievedAt: string;
+    sourceUrl: string;
+    routeId: string;
+    direction: number;
+    boardingStopId: string;
+    alightingStopId: string;
+    passengerType: "ADULT";
+    ticketType: "FULL_FARE";
+    fareTwd: number;
+  };
   costTwd: number | null;
   timingQuality: JourneyTimingQuality;
   geometry?: JourneyLineString;

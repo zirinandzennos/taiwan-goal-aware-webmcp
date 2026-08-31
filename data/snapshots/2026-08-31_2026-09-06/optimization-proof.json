@@ -1,192 +1,305 @@
 {
-  "snapshotPeriod": {
-    "from": "2026-08-31",
-    "to": "2026-09-06",
-    "timezone": "Asia/Taipei"
+  "schemaVersion": "1.0.0",
+  "serviceDate": "2026-08-31",
+  "generatedAt": "2026-08-31T03:48:16.171Z",
+  "timezone": "Asia/Taipei",
+  "candidateCount": 10,
+  "transitLegCount": 28,
+  "originalTimingResolutionCounts": {
+    "exact": 20,
+    "unknown": 8,
+    "total": 28
   },
-  "retrievedAt": "2026-08-31T03:48:16.171Z",
-  "sources": [
-    {
-      "provider": "TDX MaaS",
-      "endpoint": "https://tdx.transportdata.tw/api/maas/routing"
-    },
-    {
-      "provider": "TDX",
-      "apiFamily": "Rail",
-      "apiVersion": "v2",
-      "endpointName": "TrainDates",
-      "normalizedQuery": {
-        "serviceDate": "2026-08-31",
-        "systems": [
-          "THSR",
-          "TRA"
-        ]
-      },
-      "sourceAttribution": "Transportation Data eXchange (TDX), Ministry of Transportation and Communications, Taiwan"
-    },
-    {
-      "provider": "TDX",
-      "apiFamily": "Rail",
-      "apiVersion": "v2",
-      "endpointName": "DailyTimetable OD",
-      "normalizedQuery": {
-        "serviceDate": "2026-08-31",
-        "uniqueOdQueries": 4
-      },
-      "sourceAttribution": "Transportation Data eXchange (TDX), Ministry of Transportation and Communications, Taiwan"
-    },
-    {
-      "provider": "TDX",
-      "apiFamily": "Rail",
-      "apiVersion": "v2",
-      "endpointName": "ODFare",
-      "normalizedQuery": {
-        "uniqueOdQueries": 4
-      },
-      "sourceAttribution": "Transportation Data eXchange (TDX), Ministry of Transportation and Communications, Taiwan"
-    },
-    {
-      "provider": "TDX",
-      "apiFamily": "Bus",
-      "apiVersion": "v2",
-      "endpointName": "StopOfRoute/DailyStopTimeTable/Schedule",
-      "normalizedQuery": {
-        "city": "Taoyuan",
-        "routeName": "208A",
-        "serviceDate": "2026-08-31"
-      },
-      "sourceAttribution": "Transportation Data eXchange (TDX), Ministry of Transportation and Communications, Taiwan"
-    }
-  ],
-  "queries": [
-    {
-      "origin": "kaohsiung-main-station",
-      "destination": "xpark-entrance",
-      "depart": "2026-08-31T11:30:00",
-      "gc": 1,
-      "top": 10,
-      "transit": [
-        3,
-        4,
-        5,
-        6,
-        7
-      ],
-      "transferTimeMinutes": [
-        5,
-        60
-      ],
-      "firstMileTimeMinutes": 30,
-      "lastMileTimeMinutes": 30
-    },
-    {
-      "origin": "kaohsiung-main-station",
-      "destination": "xpark-entrance",
-      "depart": "2026-08-31T11:30:00",
-      "gc": 0.5,
-      "top": 10,
-      "transit": [
-        3,
-        4,
-        5,
-        6,
-        7
-      ],
-      "transferTimeMinutes": [
-        5,
-        60
-      ],
-      "firstMileTimeMinutes": 30,
-      "lastMileTimeMinutes": 30
-    },
-    {
-      "origin": "kaohsiung-main-station",
-      "destination": "xpark-entrance",
-      "depart": "2026-08-31T11:30:00",
-      "gc": 0,
-      "top": 10,
-      "transit": [
-        3,
-        4,
-        5,
-        6,
-        7
-      ],
-      "transferTimeMinutes": [
-        5,
-        60
-      ],
-      "firstMileTimeMinutes": 30,
-      "lastMileTimeMinutes": 30
-    }
-  ],
-  "normalizerVersion": "1.1.0",
-  "notice": "Official TDX MaaS scheduled routing snapshot. Not live data; fares and mode-level verification may be incomplete.",
-  "queryResults": [
-    {
-      "gc": 1,
-      "returnedRoutes": 10,
-      "normalizedRoutes": 10,
-      "rejectedRoutes": 0
-    },
-    {
-      "gc": 0.5,
-      "returnedRoutes": 10,
-      "normalizedRoutes": 10,
-      "rejectedRoutes": 0
-    },
-    {
-      "gc": 0,
-      "returnedRoutes": 10,
-      "normalizedRoutes": 10,
-      "rejectedRoutes": 0
-    }
-  ],
-  "knownGaps": [
-    "The four 208A legs have no compatible fixed schedule at the MaaS boarding time; their exact adult OD fare is independently verified.",
-    "The 12:15 Zuoying-to-Banqiao leg has no applicable TDX/THSRC service on Monday 2026-08-31.",
-    "Formal Balanced remains unavailable because no safe optimistic bound exists for the unchanged score formula."
-  ],
-  "formalRecommendationStatus": "PARTIAL",
-  "provisionalSelections": {
-    "fastestCandidateId": "journey:tdx-maas:07fb4bb5",
-    "balancedCandidateId": "journey:tdx-maas:ab19cfc6",
-    "cheapestCandidateId": null,
-    "label": "PROVISIONAL_AMONG_VALIDATED_CANDIDATES"
+  "originalNonExclusiveDataQualityTags": {
+    "estimatedOnlyBus": 4
   },
-  "maasRetrievedAt": "2026-08-31T01:43:31.927Z",
-  "provider": "TDX",
-  "apiFamilies": [
-    "MaaS",
-    "Rail v2",
-    "Bus v2"
+  "unknownTimedLegDisposition": {
+    "conservativeBound": 0,
+    "unbounded": 0,
+    "provenImpossibleByCompleteOfficialMatchSet": 8
+  },
+  "fareProofCounts": {
+    "exact": 10,
+    "lowerBoundOnly": 0,
+    "unknown": 0
+  },
+  "candidates": [
+    {
+      "candidateId": "journey:tdx-maas:6196da5e",
+      "eligibility": "PROVEN_IMPOSSIBLE",
+      "timingProof": "UNBOUNDED",
+      "exactGoalCompletionAt": null,
+      "earliestPossibleGoalCompletionAt": null,
+      "latestPossibleGoalCompletionAt": null,
+      "possibleServiceIds": [],
+      "costProof": "EXACT",
+      "exactTotalCostTwd": 1601,
+      "minimumPossibleTotalCostTwd": 1601,
+      "sourceEvidenceIds": [
+        "TDX-MODE-VALIDATION-20260831",
+        "TDX-RAIL-V2-THSR-1070-1010-20260831",
+        "THSRC-NORMAL-TIMETABLE-20260202",
+        "THSRC-SUMMER-2026-SPECIAL-TIMETABLE"
+      ],
+      "assumptions": [
+        "STANDARD_ADULT_FARE",
+        "NO_REBATE",
+        "NO_CREDIT",
+        "NO_NEGATIVE_FARE"
+      ],
+      "reasonCodes": [
+        "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE"
+      ]
+    },
+    {
+      "candidateId": "journey:tdx-maas:cbee5feb",
+      "eligibility": "PROVEN_IMPOSSIBLE",
+      "timingProof": "UNBOUNDED",
+      "exactGoalCompletionAt": null,
+      "earliestPossibleGoalCompletionAt": null,
+      "latestPossibleGoalCompletionAt": null,
+      "possibleServiceIds": [],
+      "costProof": "EXACT",
+      "exactTotalCostTwd": 1601,
+      "minimumPossibleTotalCostTwd": 1601,
+      "sourceEvidenceIds": [
+        "TDX-MODE-VALIDATION-20260831",
+        "TDX-RAIL-V2-THSR-1070-1010-20260831",
+        "THSRC-NORMAL-TIMETABLE-20260202",
+        "THSRC-SUMMER-2026-SPECIAL-TIMETABLE"
+      ],
+      "assumptions": [
+        "STANDARD_ADULT_FARE",
+        "NO_REBATE",
+        "NO_CREDIT",
+        "NO_NEGATIVE_FARE"
+      ],
+      "reasonCodes": [
+        "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE"
+      ]
+    },
+    {
+      "candidateId": "journey:tdx-maas:07fb4bb5",
+      "eligibility": "ELIGIBLE",
+      "timingProof": "EXACT",
+      "exactGoalCompletionAt": "2026-08-31T14:18:06.000+08:00",
+      "earliestPossibleGoalCompletionAt": "2026-08-31T14:18:06.000+08:00",
+      "latestPossibleGoalCompletionAt": "2026-08-31T14:18:06.000+08:00",
+      "possibleServiceIds": [
+        "3188",
+        "0640"
+      ],
+      "costProof": "EXACT",
+      "exactTotalCostTwd": 1341,
+      "minimumPossibleTotalCostTwd": 1341,
+      "sourceEvidenceIds": [
+        "TDX-MODE-VALIDATION-20260831"
+      ],
+      "assumptions": [
+        "STANDARD_ADULT_FARE",
+        "NO_REBATE",
+        "NO_CREDIT",
+        "NO_NEGATIVE_FARE"
+      ],
+      "reasonCodes": [
+        "EXACT_VALIDATED_JOURNEY"
+      ]
+    },
+    {
+      "candidateId": "journey:tdx-maas:ab19cfc6",
+      "eligibility": "ELIGIBLE",
+      "timingProof": "EXACT",
+      "exactGoalCompletionAt": "2026-08-31T14:18:06.000+08:00",
+      "earliestPossibleGoalCompletionAt": "2026-08-31T14:18:06.000+08:00",
+      "latestPossibleGoalCompletionAt": "2026-08-31T14:18:06.000+08:00",
+      "possibleServiceIds": [
+        "3010",
+        "0640"
+      ],
+      "costProof": "EXACT",
+      "exactTotalCostTwd": 1341,
+      "minimumPossibleTotalCostTwd": 1341,
+      "sourceEvidenceIds": [
+        "TDX-MODE-VALIDATION-20260831"
+      ],
+      "assumptions": [
+        "STANDARD_ADULT_FARE",
+        "NO_REBATE",
+        "NO_CREDIT",
+        "NO_NEGATIVE_FARE"
+      ],
+      "reasonCodes": [
+        "EXACT_VALIDATED_JOURNEY"
+      ]
+    },
+    {
+      "candidateId": "journey:tdx-maas:1767bfb5",
+      "eligibility": "ELIGIBLE",
+      "timingProof": "EXACT",
+      "exactGoalCompletionAt": "2026-08-31T14:27:06.000+08:00",
+      "earliestPossibleGoalCompletionAt": "2026-08-31T14:27:06.000+08:00",
+      "latestPossibleGoalCompletionAt": "2026-08-31T14:27:06.000+08:00",
+      "possibleServiceIds": [
+        "3010",
+        "0826"
+      ],
+      "costProof": "EXACT",
+      "exactTotalCostTwd": 1341,
+      "minimumPossibleTotalCostTwd": 1341,
+      "sourceEvidenceIds": [
+        "TDX-MODE-VALIDATION-20260831"
+      ],
+      "assumptions": [
+        "STANDARD_ADULT_FARE",
+        "NO_REBATE",
+        "NO_CREDIT",
+        "NO_NEGATIVE_FARE"
+      ],
+      "reasonCodes": [
+        "EXACT_VALIDATED_JOURNEY"
+      ]
+    },
+    {
+      "candidateId": "journey:tdx-maas:9bad5bc6",
+      "eligibility": "ELIGIBLE",
+      "timingProof": "EXACT",
+      "exactGoalCompletionAt": "2026-08-31T14:27:06.000+08:00",
+      "earliestPossibleGoalCompletionAt": "2026-08-31T14:27:06.000+08:00",
+      "latestPossibleGoalCompletionAt": "2026-08-31T14:27:06.000+08:00",
+      "possibleServiceIds": [
+        "3188",
+        "0826"
+      ],
+      "costProof": "EXACT",
+      "exactTotalCostTwd": 1341,
+      "minimumPossibleTotalCostTwd": 1341,
+      "sourceEvidenceIds": [
+        "TDX-MODE-VALIDATION-20260831"
+      ],
+      "assumptions": [
+        "STANDARD_ADULT_FARE",
+        "NO_REBATE",
+        "NO_CREDIT",
+        "NO_NEGATIVE_FARE"
+      ],
+      "reasonCodes": [
+        "EXACT_VALIDATED_JOURNEY"
+      ]
+    },
+    {
+      "candidateId": "journey:tdx-maas:72cc6fbc",
+      "eligibility": "PROVEN_IMPOSSIBLE",
+      "timingProof": "UNBOUNDED",
+      "exactGoalCompletionAt": null,
+      "earliestPossibleGoalCompletionAt": null,
+      "latestPossibleGoalCompletionAt": null,
+      "possibleServiceIds": [],
+      "costProof": "EXACT",
+      "exactTotalCostTwd": 1619,
+      "minimumPossibleTotalCostTwd": 1619,
+      "sourceEvidenceIds": [
+        "TDX-MODE-VALIDATION-20260831",
+        "TDX-RAIL-V2-THSR-1070-1010-20260831",
+        "THSRC-NORMAL-TIMETABLE-20260202",
+        "THSRC-SUMMER-2026-SPECIAL-TIMETABLE",
+        "TAOYUAN-EBUS-208A-20260831",
+        "TAOYUAN-EBUS-208A-FARE-1848-1108"
+      ],
+      "assumptions": [
+        "STANDARD_ADULT_FARE",
+        "NO_REBATE",
+        "NO_CREDIT",
+        "NO_NEGATIVE_FARE"
+      ],
+      "reasonCodes": [
+        "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE",
+        "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+      ]
+    },
+    {
+      "candidateId": "journey:tdx-maas:741ae287",
+      "eligibility": "PROVEN_IMPOSSIBLE",
+      "timingProof": "UNBOUNDED",
+      "exactGoalCompletionAt": null,
+      "earliestPossibleGoalCompletionAt": null,
+      "latestPossibleGoalCompletionAt": null,
+      "possibleServiceIds": [],
+      "costProof": "EXACT",
+      "exactTotalCostTwd": 1619,
+      "minimumPossibleTotalCostTwd": 1619,
+      "sourceEvidenceIds": [
+        "TDX-MODE-VALIDATION-20260831",
+        "TDX-RAIL-V2-THSR-1070-1010-20260831",
+        "THSRC-NORMAL-TIMETABLE-20260202",
+        "THSRC-SUMMER-2026-SPECIAL-TIMETABLE",
+        "TAOYUAN-EBUS-208A-20260831",
+        "TAOYUAN-EBUS-208A-FARE-1848-1108"
+      ],
+      "assumptions": [
+        "STANDARD_ADULT_FARE",
+        "NO_REBATE",
+        "NO_CREDIT",
+        "NO_NEGATIVE_FARE"
+      ],
+      "reasonCodes": [
+        "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE",
+        "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+      ]
+    },
+    {
+      "candidateId": "journey:tdx-maas:94e37614",
+      "eligibility": "PROVEN_IMPOSSIBLE",
+      "timingProof": "UNBOUNDED",
+      "exactGoalCompletionAt": null,
+      "earliestPossibleGoalCompletionAt": null,
+      "latestPossibleGoalCompletionAt": null,
+      "possibleServiceIds": [],
+      "costProof": "EXACT",
+      "exactTotalCostTwd": 1359,
+      "minimumPossibleTotalCostTwd": 1359,
+      "sourceEvidenceIds": [
+        "TDX-MODE-VALIDATION-20260831",
+        "TAOYUAN-EBUS-208A-20260831",
+        "TAOYUAN-EBUS-208A-FARE-1848-1108"
+      ],
+      "assumptions": [
+        "STANDARD_ADULT_FARE",
+        "NO_REBATE",
+        "NO_CREDIT",
+        "NO_NEGATIVE_FARE"
+      ],
+      "reasonCodes": [
+        "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+      ]
+    },
+    {
+      "candidateId": "journey:tdx-maas:a8aed985",
+      "eligibility": "PROVEN_IMPOSSIBLE",
+      "timingProof": "UNBOUNDED",
+      "exactGoalCompletionAt": null,
+      "earliestPossibleGoalCompletionAt": null,
+      "latestPossibleGoalCompletionAt": null,
+      "possibleServiceIds": [],
+      "costProof": "EXACT",
+      "exactTotalCostTwd": 1359,
+      "minimumPossibleTotalCostTwd": 1359,
+      "sourceEvidenceIds": [
+        "TDX-MODE-VALIDATION-20260831",
+        "TAOYUAN-EBUS-208A-20260831",
+        "TAOYUAN-EBUS-208A-FARE-1848-1108"
+      ],
+      "assumptions": [
+        "STANDARD_ADULT_FARE",
+        "NO_REBATE",
+        "NO_CREDIT",
+        "NO_NEGATIVE_FARE"
+      ],
+      "reasonCodes": [
+        "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+      ]
+    }
   ],
-  "candidateIdsCovered": [
-    "journey:tdx-maas:6196da5e",
-    "journey:tdx-maas:cbee5feb",
-    "journey:tdx-maas:07fb4bb5",
-    "journey:tdx-maas:ab19cfc6",
-    "journey:tdx-maas:1767bfb5",
-    "journey:tdx-maas:9bad5bc6",
-    "journey:tdx-maas:72cc6fbc",
-    "journey:tdx-maas:741ae287",
-    "journey:tdx-maas:94e37614",
-    "journey:tdx-maas:a8aed985"
-  ],
-  "validatorVersion": "1.0.0",
-  "artifacts": [
-    "places.json",
-    "goal-access.json",
-    "maas-candidates.json",
-    "candidate-service-inventory.json",
-    "mode-validation.json",
-    "fares.json",
-    "validation-summary.json",
-    "official-secondary-evidence.json",
-    "optimization-proof.json"
-  ],
-  "dataDisclaimer": "Frozen official-data snapshot, not live operations. Bus stop times with TimeType=0 are estimated scheduled times and are not real-time ETA. UNKNOWN is not IMPOSSIBLE. Fare null means not proven, never zero.",
-  "formalRecommendations": {
+  "formalProofs": {
     "fastest": {
       "available": true,
       "candidateId": "journey:tdx-maas:07fb4bb5",
@@ -522,6 +635,5 @@
     },
     "formalRecommendationStatus": "PARTIAL"
   },
-  "optimizationProofArtifact": "optimization-proof.json",
-  "officialSecondaryEvidenceArtifact": "official-secondary-evidence.json"
+  "balancedPolicyChanged": false
 }

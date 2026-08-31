@@ -9,6 +9,7 @@ import {
   recomputeCandidateWithEvidence,
   resolveCandidate,
   selectFareByPolicy,
+  summarizeTimingResolution,
   validateBusTimetable,
   validateRailTimetable,
   type BusServiceQuery,
@@ -436,6 +437,7 @@ export async function validateExistingCorridorSnapshot(
     candidates: updatedCandidates.map((candidate) => ({ candidateId: candidate.id, totalJourneyCostTwd: candidate.totalCost, fareCoverage: candidate.costCoverage })),
   };
   const allRides = updatedCandidates.flatMap((candidate) => candidate.steps?.filter((step) => step.type === "RIDE") ?? []);
+  const timingSummary = summarizeTimingResolution(allRides);
   const resolutionCount = (value: string) => resolutions.filter((resolution) => resolution.resolution === value).length;
   const validationSummary = {
     schemaVersion: "1.0.0",
@@ -444,9 +446,6 @@ export async function validateExistingCorridorSnapshot(
       candidateCount: updatedCandidates.length,
       transitLegCount: allRides.length,
       deduplicatedValidationKeys: evidenceByKey.size,
-      exactScheduleVerifiedLegs: allRides.filter((ride) => ride.validationEvidence?.validationStatus === "VERIFIED" && ride.validationEvidence.dataQuality === "EXACT_SCHEDULE").length,
-      estimatedOnlyLegs: allRides.filter((ride) => ride.validationEvidence?.dataQuality === "STOP_LEVEL_TIMETABLE" && ride.validationEvidence.validationStatus !== "VERIFIED").length,
-      unknownLegs: allRides.filter((ride) => ride.validationEvidence?.validationStatus === "UNKNOWN").length,
       fareCompleteCandidates: updatedCandidates.filter((candidate) => candidate.costCoverage === "COMPLETE").length,
       fareIncompleteCandidates: updatedCandidates.filter((candidate) => candidate.costCoverage !== "COMPLETE").length,
       validatedFeasibleCandidates: resolutionCount("VALIDATED_FEASIBLE"),
@@ -454,6 +453,7 @@ export async function validateExistingCorridorSnapshot(
       validatedImpossibleCandidates: resolutionCount("VALIDATED_IMPOSSIBLE"),
       unknownCandidates: resolutionCount("UNKNOWN"),
     },
+    ...timingSummary,
     candidateResolutions: resolutions,
     formalRecommendations: gates,
   };

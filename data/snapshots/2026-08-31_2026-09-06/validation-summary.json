@@ -5,11 +5,8 @@
     "candidateCount": 10,
     "transitLegCount": 28,
     "deduplicatedValidationKeys": 7,
-    "exactScheduleVerifiedLegs": 20,
-    "estimatedOnlyLegs": 4,
-    "unknownLegs": 8,
-    "fareCompleteCandidates": 6,
-    "fareIncompleteCandidates": 4,
+    "fareCompleteCandidates": 10,
+    "fareIncompleteCandidates": 0,
     "validatedFeasibleCandidates": 4,
     "validatedRiskyCandidates": 0,
     "validatedImpossibleCandidates": 0,
@@ -230,7 +227,7 @@
         "CONNECTIONS_VALID"
       ],
       "timedLegsComplete": false,
-      "fareComplete": false,
+      "fareComplete": true,
       "connection": {
         "status": "FEASIBLE",
         "minimumConnectionSlackSec": 360,
@@ -283,7 +280,7 @@
         "CONNECTIONS_VALID"
       ],
       "timedLegsComplete": false,
-      "fareComplete": false,
+      "fareComplete": true,
       "connection": {
         "status": "FEASIBLE",
         "minimumConnectionSlackSec": 360,
@@ -335,7 +332,7 @@
         "CONNECTIONS_VALID"
       ],
       "timedLegsComplete": false,
-      "fareComplete": false,
+      "fareComplete": true,
       "connection": {
         "status": "FEASIBLE",
         "minimumConnectionSlackSec": 300,
@@ -377,7 +374,7 @@
         "CONNECTIONS_VALID"
       ],
       "timedLegsComplete": false,
-      "fareComplete": false,
+      "fareComplete": true,
       "connection": {
         "status": "FEASIBLE",
         "minimumConnectionSlackSec": 300,
@@ -413,9 +410,164 @@
   ],
   "formalRecommendations": {
     "fastest": {
-      "available": false,
-      "candidateId": null,
-      "reasonCode": "UNRESOLVED_CANDIDATE_MAY_BE_FASTER"
+      "available": true,
+      "candidateId": "journey:tdx-maas:07fb4bb5",
+      "reasonCode": "ALL_COMPETITORS_EXACT_BOUNDED_OR_PROVEN_IMPOSSIBLE",
+      "unique": false,
+      "possibleTieCandidateIds": [
+        "journey:tdx-maas:ab19cfc6"
+      ],
+      "exactWinnerTime": "2026-08-31T14:18:06.000+08:00",
+      "competitors": [
+        {
+          "candidateId": "journey:tdx-maas:6196da5e",
+          "eligibility": "PROVEN_IMPOSSIBLE",
+          "exactValue": null,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831",
+            "TDX-RAIL-V2-THSR-1070-1010-20260831",
+            "THSRC-NORMAL-TIMETABLE-20260202",
+            "THSRC-SUMMER-2026-SPECIAL-TIMETABLE"
+          ],
+          "reasonCodes": [
+            "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:cbee5feb",
+          "eligibility": "PROVEN_IMPOSSIBLE",
+          "exactValue": null,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831",
+            "TDX-RAIL-V2-THSR-1070-1010-20260831",
+            "THSRC-NORMAL-TIMETABLE-20260202",
+            "THSRC-SUMMER-2026-SPECIAL-TIMETABLE"
+          ],
+          "reasonCodes": [
+            "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:ab19cfc6",
+          "eligibility": "ELIGIBLE",
+          "exactValue": "2026-08-31T14:18:06.000+08:00",
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": true,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831"
+          ],
+          "reasonCodes": [
+            "EXACT_VALIDATED_JOURNEY"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:1767bfb5",
+          "eligibility": "ELIGIBLE",
+          "exactValue": "2026-08-31T14:27:06.000+08:00",
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831"
+          ],
+          "reasonCodes": [
+            "EXACT_VALIDATED_JOURNEY"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:9bad5bc6",
+          "eligibility": "ELIGIBLE",
+          "exactValue": "2026-08-31T14:27:06.000+08:00",
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831"
+          ],
+          "reasonCodes": [
+            "EXACT_VALIDATED_JOURNEY"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:72cc6fbc",
+          "eligibility": "PROVEN_IMPOSSIBLE",
+          "exactValue": null,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831",
+            "TDX-RAIL-V2-THSR-1070-1010-20260831",
+            "THSRC-NORMAL-TIMETABLE-20260202",
+            "THSRC-SUMMER-2026-SPECIAL-TIMETABLE",
+            "TAOYUAN-EBUS-208A-20260831",
+            "TAOYUAN-EBUS-208A-FARE-1848-1108"
+          ],
+          "reasonCodes": [
+            "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE",
+            "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:741ae287",
+          "eligibility": "PROVEN_IMPOSSIBLE",
+          "exactValue": null,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831",
+            "TDX-RAIL-V2-THSR-1070-1010-20260831",
+            "THSRC-NORMAL-TIMETABLE-20260202",
+            "THSRC-SUMMER-2026-SPECIAL-TIMETABLE",
+            "TAOYUAN-EBUS-208A-20260831",
+            "TAOYUAN-EBUS-208A-FARE-1848-1108"
+          ],
+          "reasonCodes": [
+            "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE",
+            "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:94e37614",
+          "eligibility": "PROVEN_IMPOSSIBLE",
+          "exactValue": null,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831",
+            "TAOYUAN-EBUS-208A-20260831",
+            "TAOYUAN-EBUS-208A-FARE-1848-1108"
+          ],
+          "reasonCodes": [
+            "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:a8aed985",
+          "eligibility": "PROVEN_IMPOSSIBLE",
+          "exactValue": null,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831",
+            "TAOYUAN-EBUS-208A-20260831",
+            "TAOYUAN-EBUS-208A-FARE-1848-1108"
+          ],
+          "reasonCodes": [
+            "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+          ]
+        }
+      ]
     },
     "balanced": {
       "available": false,
@@ -423,10 +575,181 @@
       "reasonCode": "INCOMPLETE_BALANCED_METRICS"
     },
     "cheapest": {
-      "available": false,
-      "candidateId": null,
-      "reasonCode": "INCOMPLETE_FARE_COVERAGE"
+      "available": true,
+      "candidateId": "journey:tdx-maas:07fb4bb5",
+      "reasonCode": "ALL_COMPETITORS_EXACT_BOUNDED_OR_PROVEN_IMPOSSIBLE",
+      "unique": false,
+      "possibleTieCandidateIds": [
+        "journey:tdx-maas:1767bfb5",
+        "journey:tdx-maas:9bad5bc6",
+        "journey:tdx-maas:ab19cfc6"
+      ],
+      "exactWinnerCostTwd": 1341,
+      "competitors": [
+        {
+          "candidateId": "journey:tdx-maas:6196da5e",
+          "eligibility": "PROVEN_IMPOSSIBLE",
+          "exactValue": 1601,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831",
+            "TDX-RAIL-V2-THSR-1070-1010-20260831",
+            "THSRC-NORMAL-TIMETABLE-20260202",
+            "THSRC-SUMMER-2026-SPECIAL-TIMETABLE"
+          ],
+          "reasonCodes": [
+            "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:cbee5feb",
+          "eligibility": "PROVEN_IMPOSSIBLE",
+          "exactValue": 1601,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831",
+            "TDX-RAIL-V2-THSR-1070-1010-20260831",
+            "THSRC-NORMAL-TIMETABLE-20260202",
+            "THSRC-SUMMER-2026-SPECIAL-TIMETABLE"
+          ],
+          "reasonCodes": [
+            "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:ab19cfc6",
+          "eligibility": "ELIGIBLE",
+          "exactValue": 1341,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": true,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831"
+          ],
+          "reasonCodes": [
+            "EXACT_VALIDATED_JOURNEY"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:1767bfb5",
+          "eligibility": "ELIGIBLE",
+          "exactValue": 1341,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": true,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831"
+          ],
+          "reasonCodes": [
+            "EXACT_VALIDATED_JOURNEY"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:9bad5bc6",
+          "eligibility": "ELIGIBLE",
+          "exactValue": 1341,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": true,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831"
+          ],
+          "reasonCodes": [
+            "EXACT_VALIDATED_JOURNEY"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:72cc6fbc",
+          "eligibility": "PROVEN_IMPOSSIBLE",
+          "exactValue": 1619,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831",
+            "TDX-RAIL-V2-THSR-1070-1010-20260831",
+            "THSRC-NORMAL-TIMETABLE-20260202",
+            "THSRC-SUMMER-2026-SPECIAL-TIMETABLE",
+            "TAOYUAN-EBUS-208A-20260831",
+            "TAOYUAN-EBUS-208A-FARE-1848-1108"
+          ],
+          "reasonCodes": [
+            "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE",
+            "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:741ae287",
+          "eligibility": "PROVEN_IMPOSSIBLE",
+          "exactValue": 1619,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831",
+            "TDX-RAIL-V2-THSR-1070-1010-20260831",
+            "THSRC-NORMAL-TIMETABLE-20260202",
+            "THSRC-SUMMER-2026-SPECIAL-TIMETABLE",
+            "TAOYUAN-EBUS-208A-20260831",
+            "TAOYUAN-EBUS-208A-FARE-1848-1108"
+          ],
+          "reasonCodes": [
+            "RAIL_NO_APPLICABLE_SERVICE_ON_SNAPSHOT_DATE",
+            "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:94e37614",
+          "eligibility": "PROVEN_IMPOSSIBLE",
+          "exactValue": 1359,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831",
+            "TAOYUAN-EBUS-208A-20260831",
+            "TAOYUAN-EBUS-208A-FARE-1848-1108"
+          ],
+          "reasonCodes": [
+            "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+          ]
+        },
+        {
+          "candidateId": "journey:tdx-maas:a8aed985",
+          "eligibility": "PROVEN_IMPOSSIBLE",
+          "exactValue": 1359,
+          "conservativeBound": null,
+          "canStillBeatWinner": false,
+          "possibleTie": false,
+          "sourceEvidenceIds": [
+            "TDX-MODE-VALIDATION-20260831",
+            "TAOYUAN-EBUS-208A-20260831",
+            "TAOYUAN-EBUS-208A-FARE-1848-1108"
+          ],
+          "reasonCodes": [
+            "BUS_NO_COMPATIBLE_FIXED_SCHEDULE"
+          ]
+        }
+      ],
+      "assumptions": [
+        "STANDARD_ADULT_FARE",
+        "NO_REBATE",
+        "NO_CREDIT",
+        "NO_NEGATIVE_FARE"
+      ]
     },
-    "formalRecommendationStatus": "UNKNOWN_MODE_VALIDATION"
+    "formalRecommendationStatus": "PARTIAL"
+  },
+  "timingResolutionCounts": {
+    "exact": 20,
+    "unknown": 8,
+    "total": 28
+  },
+  "nonExclusiveDataQualityTags": {
+    "estimatedOnlyBus": 4
   }
 }
