@@ -152,6 +152,44 @@ live-state behavior, UI behavior, and deterministic results.
 
 It does **not** count as ChatGPT agent tool-selection E2E.
 
+### Public HTTPS Draft regression
+
+Status: **PASS**
+
+- Draft URL:
+  `https://journey-e2e-afa8fb6--taiwan-goal-aware-webmcp.netlify.app`
+- Immutable deploy URL:
+  `https://6a96c2f354ea3ceb0d441556--taiwan-goal-aware-webmcp.netlify.app`
+- Tested feature commit:
+  `afa8fb6bb7b84acb922c2da6dc60cf9f008ef310`
+- HTTPS: PASS
+- Login required: NO
+- WebMCP tools discovered: 3
+- Plan tool execution: PASS
+- Fixed-state result:
+  `AVAILABLE / ALL_PRIMARY_RECOMMENDATIONS_AVAILABLE`
+- Fixed-state request fingerprint:
+  `fnv1a32:076821af`
+- Fixed-state normalized result hash:
+  `fnv1a32:f2ad561c`
+
+Live-state mutation without re-registration returned:
+
+- `UNAVAILABLE`
+- `UNSUPPORTED_SNAPSHOT_REQUEST`
+- empty winner arrays
+- null journey payloads
+
+After `Reset fixed demo`, the same tool returned the original deterministic
+result again:
+
+- request fingerprint: `fnv1a32:076821af`
+- normalized result hash: `fnv1a32:f2ad561c`
+
+This verifies that the public HTTPS deployment preserves WebMCP discovery,
+execution-time page-state capture, fail-closed unsupported-state behavior,
+and deterministic restoration.
+
 ## ChatGPT Site Tools agent-selection E2E
 
 Status: **PENDING / ACCOUNT-ENVIRONMENT DEPENDENT**
