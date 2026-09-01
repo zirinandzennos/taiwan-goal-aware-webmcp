@@ -192,14 +192,34 @@ and deterministic restoration.
 
 ## ChatGPT Site Tools agent-selection E2E
 
-Status: **PENDING / ACCOUNT-ENVIRONMENT DEPENDENT**
+Status: **BLOCKED — BROWSER BRIDGE / ENVIRONMENT**
 
-- ChatGPT app/model/account context: PENDING
-- Tested production or preview URL: PENDING
-- Prompt: `Plan the journey I selected on this page.`
-- Tool selected: PENDING
-- Output result: PENDING
-- Page-state change and follow-up result: PENDING
+Test URL:
+`https://journey-e2e-afa8fb6--taiwan-goal-aware-webmcp.netlify.app`
+
+Prompt:
+`Plan the journey I selected on this page.`
+
+Observed behavior:
+
+ChatGPT did not execute the page WebMCP tool. It explicitly reported:
+
+`The browser bridge prevented me from executing the page’s WebMCP action directly.`
+
+Therefore:
+
+- Agent tool selection: BLOCKED
+- Site Tool invocation: NOT EXECUTED
+- Current-page-state use through WebMCP: NOT PROVEN
+- Product failure: NO
+- Chrome WebMCP fallback: PASS
+
+ChatGPT produced a page-equivalent answer through regular browsing/page
+context, but this result is not counted as WebMCP agent-selection evidence.
+
+Per the official Challenge testing path, the public project remains testable
+through WebMCP-enabled Chrome, which passed discovery, execution, live-state
+mutation, fail-closed behavior, and deterministic restoration.
 
 Manual Chrome Run Tool evidence must not be reported as agent-selection PASS.
 
