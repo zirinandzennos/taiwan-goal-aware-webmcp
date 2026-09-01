@@ -1,34 +1,156 @@
 # Journey-first E2E evidence
 
-Status: **PENDING OWNER-PERFORMED CHROME E2E**
+Status: **LOCAL CHROME PROTOCOL E2E PASSED; CHATGPT AGENT-SELECTION E2E PENDING**
 
 This record separates Chrome WebMCP protocol testing from ChatGPT agent tool-selection testing. Do not mark either section PASS without the listed evidence. Do not commit browser profiles, cookies, tokens, private account details, or full console dumps.
 
 ## Chrome WebMCP protocol E2E
 
-- Chrome exact version: PENDING
-- Tested URL: PENDING
-- Test date/time and timezone: PENDING
-- Tested Git commit SHA: PENDING
-- Human verifier name or GitHub identity: PENDING
-- Available Tools screenshot: PENDING
-- Plan tool output screenshot: PENDING
-- Three-card screenshot: PENDING
-- State-change before/after evidence: PENDING
-- Console fatal error count: PENDING
+Status: **PASS — LOCAL CHROME PROTOCOL E2E**
 
-Required checks:
+- Chrome exact version: `152.0.7977.65 (Official Build) (64-bit)`
+- Operating system: `Windows 11 25H2 (Build 26200.9278)`
+- Tested URL: `http://127.0.0.1:4173/`
+- Test date/time: `2026-09-01 Asia/Taipei`
+- Tested Git commit SHA: `cdb75d707838eec024c3549150168df48825e9e6`
+- Human verifier: `zirinandzennos`
+- Console fatal errors: `0`
 
-- [ ] Exactly three tools are discovered: `plan_taiwan_goal_aware_journey`, `check_taiwan_goal_feasibility`, and `replan_taiwan_journey`.
-- [ ] `plan_taiwan_goal_aware_journey` accepts `{}` and returns `ALL_PRIMARY_RECOMMENDATIONS_AVAILABLE`.
-- [ ] Output contains the formal winner arrays, three distinct display candidate IDs, request fingerprint, snapshot ID, effective counts, and ordered steps.
-- [ ] Human result hash equals WebMCP result hash: `fnv1a32:f2ad561c`.
-- [ ] Changing origin or departure returns `UNAVAILABLE / UNSUPPORTED_SNAPSHOT_REQUEST` without an old journey payload.
-- [ ] Restoring fixed state restores the deterministic result.
-- [ ] Refresh registers each tool once.
-- [ ] Three cards render, Balanced is marked Recommended, every card has 11 steps, tie labels are visible, and every final step is `GOAL_COMPLETION`.
-- [ ] Use journey saves the actual display candidate ID.
-- [ ] Console has no fatal errors.
+### Tool discovery
+
+PASS.
+
+Exactly three WebMCP tools were discovered:
+
+- `check_taiwan_goal_feasibility`
+- `plan_taiwan_goal_aware_journey`
+- `replan_taiwan_journey`
+
+No duplicate tool registrations were observed after page refresh.
+
+### Plan tool — fixed snapshot
+
+PASS.
+
+`plan_taiwan_goal_aware_journey` was manually executed through the
+Chrome DevTools WebMCP panel with `{}`.
+
+Result:
+
+- status: `AVAILABLE`
+- reasonCode: `ALL_PRIMARY_RECOMMENDATIONS_AVAILABLE`
+- requestFingerprint: `fnv1a32:076821af`
+- normalizedResultHash: `fnv1a32:f2ad561c`
+- snapshotId: `tdx-maas-20260831-journey-proof-v1`
+- feasible / risky / impossible / unknown: `4 / 0 / 6 / 0`
+
+Formal recommendations:
+
+- Fastest: available, 2-way tie
+- Balanced: available, unique
+- Cheapest: available, 4-way tie
+
+Display journeys were distinct:
+
+- Fastest: `journey:tdx-maas:07fb4bb5`
+- Balanced: `journey:tdx-maas:ab19cfc6`
+- Cheapest: `journey:tdx-maas:1767bfb5`
+
+Each displayed journey contains 11 executable steps and ends in
+`GOAL_COMPLETION`.
+
+### Live page-state freshness
+
+PASS.
+
+Without re-registering the tool, the departure time was changed from the
+fixed snapshot request.
+
+The next WebMCP execution returned:
+
+- status: `UNAVAILABLE`
+- reasonCode: `UNSUPPORTED_SNAPSHOT_REQUEST`
+- requestFingerprint: `fnv1a32:58f6f502`
+- normalizedResultHash: `fnv1a32:024e5624`
+- pageStateVersion: `2`
+
+All recommendation winner arrays were empty, all display candidate IDs were
+null, and no stale journey payload was returned.
+
+After `Reset fixed demo`, executing the same already-registered tool restored:
+
+- status: `AVAILABLE`
+- reasonCode: `ALL_PRIMARY_RECOMMENDATIONS_AVAILABLE`
+- requestFingerprint: `fnv1a32:076821af`
+- normalizedResultHash: `fnv1a32:f2ad561c`
+
+This verifies execution-time live page-state capture rather than
+registration-time state capture.
+
+### Human UI
+
+PASS.
+
+Three recommendation cards rendered simultaneously:
+
+- Fastest — `Tied fastest with 1 other journey`
+- Balanced — `RECOMMENDED` / `Unique Balanced recommendation`
+- Cheapest — `All four valid journeys share the same NT$1,341 fare.`
+
+The Balanced journey was selected and the UI preserved the actual candidate:
+
+`journey:tdx-maas:ab19cfc6`
+
+### Progress and stale-plan handling
+
+PASS.
+
+The first step was completed 8 minutes later than planned.
+
+Observed behavior:
+
+- Step 1 became `COMPLETED`
+- Steps 2–11 became `STALE`
+- actual progress evidence was preserved
+- current step advanced to `BOARD`
+- downstream schedule was explicitly marked stale
+
+`Replan remaining journey` returned:
+
+`REPLAN_UNAVAILABLE_FOR_SNAPSHOT_STATE`
+
+The existing progress was preserved and no unsupported replacement route
+was fabricated.
+
+Successful Journey-first remainder regeneration is **not claimed**.
+
+### Refresh
+
+PASS.
+
+After refreshing the page:
+
+- exactly three WebMCP tools were discovered
+- each tool appeared once
+- no duplicate-registration error occurred
+- the fixed deterministic journey state remained usable
+
+### Console
+
+PASS.
+
+Chrome Console filtered to Errors showed:
+
+- fatal application errors: `0`
+- unhandled application errors: `0`
+- WebMCP execution errors: `0`
+
+### Evidence boundary
+
+Manual Chrome WebMCP execution verifies protocol discovery, execution,
+live-state behavior, UI behavior, and deterministic results.
+
+It does **not** count as ChatGPT agent tool-selection E2E.
 
 ## ChatGPT Site Tools agent-selection E2E
 
