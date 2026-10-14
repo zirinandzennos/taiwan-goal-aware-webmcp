@@ -60,7 +60,7 @@ The webpage exposes three structured, read-only Journey capabilities:
 - `check_taiwan_goal_feasibility`
 - `replan_taiwan_journey`
 
-Both tools read the current live page state. Human UI actions use that same state and the same Journey Engine entry points.
+All three tools read the current live page state. Human UI actions use that same state and the same Journey Engine entry points.
 
 ## Journey Engine
 
@@ -129,7 +129,7 @@ The repository now includes a credential-gated TDX pipeline under `scripts/impor
 3. validate them in an indexed SQLite snapshot database; and
 4. export a static runtime JSON file plus SHA-256 manifest.
 
-It also includes a bounded Kaohsiung Main Station → Xpark corridor acquisition path. `npm run journey:snapshot` performs three MaaS queries (`gc=1`, `0.5`, `0`; `top=10`), normalizes provider sections into canonical steps, validates every connection, deduplicates candidates, and writes only normalized public artifacts under `data/snapshots/2026-08-31_2026-09-06/`. This MaaS snapshot is not yet the primary browser runtime and does not claim complete fares, mode-specific timetable verification, or route geometry.
+It also includes a bounded Kaohsiung Main Station → Xpark corridor acquisition path. `npm run journey:snapshot` performs three MaaS queries (`gc=1`, `0.5`, `0`; `top=10`), normalizes provider sections into canonical steps, validates every connection, deduplicates candidates, and writes only normalized public artifacts under `data/snapshots/2026-08-31_2026-09-06/`. This corridor evidence snapshot, including its later mode-validation and optimization-proof artifacts, is not the primary browser runtime and contains no GIS route geometry. Its fixed-date evidence does not establish timetable or fare correctness for other travel dates or live service.
 
 `npm run journey:validate` closes mode-level evidence for those same frozen ten candidates without calling MaaS. It uses official TDX Rail v2 and Bus v2 scheduled data, writes normalized evidence and fare-policy artifacts, recomputes downstream connections with the transfer buffer applied once, and conservatively records unresolved service identity, ambiguous stop timing, and unavailable fares as UNKNOWN/null at the primary-provider evidence layer. The later `npm run journey:optimization-proof` proof layer closes the fixed candidate set using corroborating official evidence: 4 feasible and 6 proven impossible, with 0 unresolved candidate outcomes. The final static proof establishes Fastest, Balanced, and Cheapest as formally available for this fixed corridor only; it does not change the deployed THSR-only browser runtime.
 
