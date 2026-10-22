@@ -4,7 +4,7 @@
 >
 > **唯一正式管理文件：本 `README.md`。** 程式、測試、快照及歷史技術文件保留原路徑；最新目標、決策、已驗證成果、問題及下一步只以本文件為準。Git Commit History 用來追溯歷史，不另建管理紀錄。
 >
-> **最近資料整理：2026-10-14（Asia/Taipei）。** 這是文件與來源核對，不代表當日重新執行程式、產品驗收或重新部署。
+> **最近資料整理：2026-10-22（Asia/Taipei）。** 已查核 Rebirth 正式索引、GitHub `main` 與另外兩條工程分支、離線證據、現有測試／E2E 紀錄及歷史研究檔案。這是文件盤點，**未重新執行測試、修改程式、合併分支或重新部署**。
 
 **English summary:** A goal-aware Taiwan journey-planning prototype with a deterministic Journey Engine, frozen official TDX timetables, shared webpage/WebMCP state, and simulated replanning. It is **not** a real-time navigation service. The WebMCP competition has ended; development is currently paused until the owner has spare time.
 
@@ -44,10 +44,10 @@
 | WebMCP | 最新程式碼有 **3 個唯讀工具**，共用網頁狀態；程式測試不等於已在正式公開網站完成 ChatGPT／代理端到端呼叫。 |
 | 高雄車站多運具研究 | **高雄車站 → Xpark** 另有已保存的 MaaS/TDX 離線候選及最終證據，與左營站的主要網頁情境是**兩條不同工作線**。此資料**尚未進入主要網頁執行流程**。 |
 | 公開展示 | 曾使用 [Netlify 展示網址](https://taiwan-goal-aware-webmcp.netlify.app/)。舊盤點在 **2026-10-12** 遇到 DNS／連線失敗；未獨立證實目前手機能正常開啟或部署的是哪個版本。不能逕稱網站全面故障。 |
-| 測試 | GitHub 舊 README 記載 **156 項通過**；較新本機摘要記載 **185 項通過**，但未取得本機工作樹與 GitHub 的差異及可重現測試輸出。本次未重跑。 |
-| 程式版本證據 | 2026-10-14 文件整理前，最後已核對的程式／資料提交是 [`ec716d93`（2026-08-31）](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/commit/ec716d93b5c67680e63c0dd64dab280654c07ae4)；10-14 之後的管理文件提交不代表程式功能升級。 |
+| 測試 | 舊版 `main` README 記錄 **156** 項通過；現在已在 [`feat/journey-first-live-state` 分支 README](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/blob/feat/journey-first-live-state/README.md) 找到 **185** 項通過的來源。**不同版本的歷史紀錄**不能混用；2026-10-22 未重跑測試、未取得原始完整日誌；原先本機 185 是否與該分支完全一致仍待核對。 |
+| 程式版本證據 | `main` 最近已核對的程式／資料提交是 [`ec716d93`（2026-08-31）](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/commit/ec716d93b5c67680e63c0dd64dab280654c07ae4)，10 月為文件更新。**另外兩條未合併分支**保留後續／較早的獨立工程內容，見 §3.4、§3.5。 |
 
-**目前階段：展示原型及固定範圍研究成果已存在；公開部署、手機體驗和真實 WebMCP 呼叫尚待人類驗收。** 不是已可營運的即時交通服務。
+**目前階段：** `main` 的左營高鐵展示，以及另一條已實作「高雄車站三卡／進度」的分支皆存在；兩版尚未合併。分支曾通過 Chrome 手動 WebMCP 協定與 HTTPS Draft 驗證，但**ChatGPT 代理直接呼叫工具仍受環境阻擋**。正式站目前實際發布版本、手機體驗及當前可達性仍未核實。不是已可營運的即時交通服務。
 
 ## 3. 已完成成果與重現證據
 
@@ -82,9 +82,27 @@
 - 具備固定快照的下載、轉換、SQLite 索引驗證、匯出與 Manifest 檢查流程。
 - 本機運作／CI 的舊測試有通過紀錄，但**當前版本的測試數量、端到端操作和上線品質都需另行驗證**。
 
+### 3.4 尚未合併的 Journey-first 三卡產品分支（已查到實際成果）
+
+**GitHub：** [`feat/journey-first-live-state`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/tree/feat/journey-first-live-state)，HEAD [`db260c91`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/commit/db260c91dcfdd5ee676b5d6195620b0b175f452b)。它與 `main` **diverged，未合併、沒有 PR**。這不是只有構想或本機口述：已找到分支內的 UI、應用服務、測試和人工 E2E 原始文件。
+
+- **實作入口：** 該分支 [`src/main.ts`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/blob/feat/journey-first-live-state/src/main.ts) 改為載入 [`src/productApp.ts`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/blob/feat/journey-first-live-state/src/productApp.ts)，不是 `main` 的 `src/app.ts`。新的 [`src/application/journeyProduct.ts`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/blob/feat/journey-first-live-state/src/application/journeyProduct.ts) 將保存的 MaaS 候選與 `optimization-proof.json` 接入**人類三卡畫面及 WebMCP 共用服務**；[`src/ui/state.ts`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/blob/feat/journey-first-live-state/src/ui/state.ts) 保存版本、選定旅程及進度。
+- **已實作結果：** 同時出現 Fastest／Balanced／Cheapest **三張卡片**。正式得獎集合不變：Fastest 兩條並列、Balanced 唯一、Cheapest 四條並列；展示代表依序為 `journey:tdx-maas:07fb4bb5`、`journey:tdx-maas:ab19cfc6`、`journey:tdx-maas:1767bfb5`，三條刻意不同，但沒有捏造唯一 Cheapest。當時固定資料的四條可行候選均為 **NT$1,341**；每個展示行程有 **11 個執行步驟**，最後為 `GOAL_COMPLETION`。
+- **進度與重規劃界線：** 使用者選定 Balanced 後，示範「第 1 步晚 8 分鐘完成」，實作保留 `COMPLETED` 證據並將後續步驟標成 `STALE`；重規劃回傳 `REPLAN_UNAVAILABLE_FOR_SNAPSHOT_STATE`，**不聲稱固定 MaaS 快照能算出尚未證明的替代路線**。這與 `main` 原本可從台南站重新查高鐵班表的相容情境不同。
+- **防過期結果：** 變更起點／時間為快照未支援的查詢，既有已註冊 WebMCP 工具會依**執行時的網頁狀態**回覆 `UNAVAILABLE / UNSUPPORTED_SNAPSHOT_REQUEST`，清空舊推薦；重設固定情境則恢復原始 request fingerprint 與標準化結果 hash。
+- **測試版本：** 分支 README 記錄 **185 項 deterministic tests pass**；[`tests/journey-product.test.ts`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/blob/feat/journey-first-live-state/tests/journey-product.test.ts) 與分支的 [`tests/webmcp.test.ts`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/blob/feat/journey-first-live-state/tests/webmcp.test.ts) 確實存在，含正式推薦、三卡代表、步驟狀態、hash parity 和安全阻擋測試。但本次未重新執行、未取得完整原始命令日誌。
+- **Chrome 手動 E2E：** 分支 [`docs/E2E_EVIDENCE.md`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/blob/feat/journey-first-live-state/docs/E2E_EVIDENCE.md) 記載 **2026-09-01**、Windows 11 25H2、Chrome `152.0.7977.65`、`http://127.0.0.1:4173/`、測試程式 `cdb75d707838eec024c3549150168df48825e9e6`：發現**正好三個**工具，在 Chrome DevTools WebMCP 面板直接呼叫 plan 成功、三卡 UI／live state／重設成功、致命 Console error 0。**此為歷史人工紀錄，非本次重測。**
+- **公開 HTTPS Draft E2E：** 同紀錄列有[當時 Draft 網址](https://journey-e2e-afa8fb6--taiwan-goal-aware-webmcp.netlify.app/)及[不可變部署網址](https://6a96c2f354ea3ceb0d441556--taiwan-goal-aware-webmcp.netlify.app/)，測試程式 `afa8fb6bb7b84acb922c2da6dc60cf9f008ef310`。紀錄顯示 HTTPS、免登入、三工具發現、手動工具執行、修改頁面狀態後安全拒絕及重設**當時 PASS**；**不能外推為正式站現在就部署了該版本，亦未核實上述網址目前仍可達。**
+- **ChatGPT Agent E2E：尚未通過。** 同一文件記錄 ChatGPT 因 **browser bridge／環境限制未真正執行頁面工具**；從普通網頁內容產生相近答案不能算 Site Tool 被呼叫。三卡分支 HEAD `db260c91` 後續僅更新這份 E2E 文件，沒有新增程式功能。
+
+### 3.5 Rescue 分支的早期實驗（非主線）
+
+[`rescue/goal-first-challenge-flow`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/tree/rescue/goal-first-challenge-flow)，HEAD [`0378a8c1`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/commit/0378a8c1f2f87cd2a888393cf802b822f6616a9e)；與 `main` 分歧，尚未合併。該分支保留 [`src/journey/executionSteps.ts`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/blob/rescue/goal-first-challenge-flow/src/journey/executionSteps.ts) 的 `WAIT / TRAVEL / TRANSFER_WALK / TRANSFER_BUFFER / ACTIVITY / GOAL_ACTION` 步驟組合，以及 [`src/journey/fallback.ts`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/blob/rescue/goal-first-challenge-flow/src/journey/fallback.ts) 對 `RISKY`／`IMPOSSIBLE` 依序提前 30、60、120、180、240 分鐘尋找 `DEPART_EARLIER` 安全備案的程式。**尚無本輪完整測試與跨分支整合證據**，不可記成 `main` 已交付功能。
+
+
 ## 4. 技術設計與已定規則
 
-### 4.1 WebMCP 的三個介面（以現行程式為準）
+### 4.1 WebMCP 的三個介面（須區分 `main` 與產品分支）
 
 | 工具名稱 | 用途 |
 | --- | --- |
@@ -92,7 +110,7 @@
 | `check_taiwan_goal_feasibility` | 檢查所選真實目標在班表、期限及緩衝限制下是否可達成。 |
 | `replan_taiwan_journey` | 從目前節點和目前時間重新計算**剩餘路線**，不假裝錯過的班次還能搭。 |
 
-三者均在 [`src/webmcp/registerJourneyTool.ts`](src/webmcp/registerJourneyTool.ts) 透過 `document.modelContext.registerTool` 註冊，屬**唯讀**、**無重複旅程輸入參數**的 Site Tools；瀏覽器不支援時會顯示 WebMCP 不可用。舊競賽文件中「兩個工具」是先前版本敘述，**已被三工具程式碼取代**。
+三者均在 [`main/src/webmcp/registerJourneyTool.ts`](src/webmcp/registerJourneyTool.ts) 與[功能分支同名檔](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/blob/feat/journey-first-live-state/src/webmcp/registerJourneyTool.ts) 透過 `document.modelContext.registerTool` 註冊，屬**唯讀**、**無重複旅程輸入參數**的 Site Tools。**實際回應需分版本：** `main` 的 plan／replan 依左營高鐵引擎；三卡分支的 plan 使用共用 `journeyProduct` MaaS 固定資料與 request fingerprint，+8 分鐘後產品重規劃會安全回傳不可用，仍保留早期高鐵相容工具。舊文稿「只有兩個工具」為過時內容；Chrome 手動執行的歷史 PASS 不能替代 ChatGPT Agent E2E 驗收。
 
 ### 4.2 Journey Engine 的約束
 
@@ -161,21 +179,30 @@ npm run journey:optimization-proof
 - [`netlify.toml`](netlify.toml)：使用 `npm run build`，發布 Vite 的 `dist`；**曾配置不等於已驗證目前部署正常**。
 - [`tests/`](tests/)：候選、排定時刻、費率與推薦證明、可行性、模擬延誤、人類 UI／WebMCP 共用狀態及資料匯入測試。
 
+### 跨分支成果與其他研究位置
+
+- **正式 `main`：** 本 README 及本節上方 `src/`、`tests/`、`data/snapshots/` 是已核實路徑；三卡程式**不在 `main`**，只能從[`feat/journey-first-live-state`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/tree/feat/journey-first-live-state) 分支開啟。
+- **分支直接驗證資料：** [`feat/journey-first-live-state/docs/E2E_EVIDENCE.md`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/blob/feat/journey-first-live-state/docs/E2E_EVIDENCE.md)，對應測試程式 `cdb75d7`、HTTPS 驗證版本 `afa8fb6`；**不要把此文件誤稱 `main/docs/E2E_EVIDENCE.md`（該路徑在 `main` 不存在）**。
+- **早期實作分支：** [`rescue/goal-first-challenge-flow`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/tree/rescue/goal-first-challenge-flow)，執行步驟與 fallback 檔案實際位於該分支 `src/journey/`。
+- **其他已找到的歷史研究：** ChatGPT 個人 Library 有 2026-08-29《WebMCP Challenge 五日衝刺研究報告：Taiwan Goal-aware Journey Engine》及《Taiwan Goal-aware Journey × WebMCP Challenge：立即開工實作手冊》。屬早期方案與競賽規劃，**沒有核實的公開 GitHub 檔案路徑，不是另一份正式管理文件**；其中未交付的規劃項目不能當成現有功能。
+
+
 ### 歷史技術參考（非第二份管理文件）
 
 - [架構圖](docs/ARCHITECTURE.md)、[Journey 契約](docs/journey-engine-contract.md)、[資料出處](docs/DATA_PROVENANCE.md)、[測試計畫](docs/test-plan.md)：技術背景；部分描述仍停在較早驗證階段，**最新專案狀態以本 README 及上述最新證據 JSON 為準**。
 - [Challenge 工作邊界](docs/CHALLENGE_SCOPE.md)、[舊 Devpost 文字](docs/DEVPOST_SUBMISSION.md)、[舊評審操作](docs/JUDGING_INSTRUCTIONS.md)、[舊英文影片稿](docs/DEMO_SCRIPT_EN.md)、[舊投稿勾選清單](docs/SUBMISSION_CHECKLIST.md)：**已結束競賽的歷史資料**。不再把其中未勾選的錄影、YouTube、投稿或評審事項算成現行待辦。
-- [Rebirth／zirin 舊專案卡](https://github.com/zirinandzennos/zirin/blob/main/projects/WebMCP.md)：2026-10-12 的舊狀態摘要已併入此處；該卡片只作遷移來源，不是繼續並行維護的另一份正式專案文件。
+- [Rebirth／zirin 舊專案卡](https://github.com/zirinandzennos/zirin/blob/main/projects/WebMCP.md)：**2026-10-22 已由總控台改為 `REBIRTH_NAV_ONLY` 純導覽**，只連往本 README；不再是一份平行的狀態報告。本子專案不得修改該檔或總控索引。
 - [原展示 URL](https://taiwan-goal-aware-webmcp.netlify.app/)：僅保留入口與歷史用途，實際可用性未重新確認。
 
 ## 6. 限制及尚未解決的問題
 
-1. **版本未對齊：** 舊本機摘要報 185 測試、舊 GitHub README 報 156；是否存在尚未上傳的新版程式和正確測試報告未知。
-2. **公開網站未驗證：** Netlify DNS／站台／部署 Commit／手機操作尚未獲得新證據。競賽期間曾有發布紀錄，不等於現在一定能開。
-3. **真正的 WebMCP E2E 未證實：** 工具註冊程式、模擬與單元測試存在，但未取得目前正式網站在相容環境下的成功代理呼叫紀錄。
-4. **畫面驗收尚未完成：** 目前 `src/app.ts` 顯示**去重後的條件式選項分頁**，不同於「最快／平衡／最便宜三張卡同時可見」的想像。若未來仍需要真正三卡介面，屬後續 UI 需求，不可當作已完成。
-5. **資料僅為歷史日期快照：** 不是今日即時導航；沒有即時延誤整合、GPS、自動重新定位、遠端 MCP、訂票／支付、正式 GIS 路線幾何。高雄車站多運具資料也尚未接回主要頁面。
-6. **部分舊 `docs/` 文件仍記錄中間層結果或舊工具數量：** 保留作歷史技術材料，不能取代 `optimization-proof.json`、現行程式與本管理文件的最終狀態。
+1. **程式分支尚未整合：** 已確認 `main`、`feat/journey-first-live-state`、`rescue/goal-first-challenge-flow` 三分支；**三卡新程式是功能分支，不是主線**。156 與 185 項測試紀錄來源分別已定位為不同版本的 README；完整命令輸出、本機版本與可重現測試仍未核實。
+2. **正式網站現在的部署未驗證：** 曾有 Netlify 發布歷史及**2026-09-01 功能分支 HTTPS Draft 手動測試 PASS**，但正式站、Draft 網址目前可達性、手機操作及實際部署 Commit 均未確認。外部連線工具無法存取不代表全站故障。
+3. **ChatGPT Agent WebMCP E2E 未通過：** 功能分支曾在 Chrome DevTools WebMCP 面板實際發現並手動呼叫三工具，且有 HTTPS Draft PASS；但 ChatGPT 代理受 browser bridge 阻擋**沒有執行 Site Tool**。保留協定層 PASS，不冒充代理層 PASS。
+4. **畫面差異需按版本理解：** `main/src/app.ts` 仍是**條件式選項分頁**；功能分支 `src/productApp.ts` **已實作三卡同時顯示，且有 2026-09-01 Chrome 手動測試紀錄**。尚未正式合併／發布主站；不能再寫成「三卡尚未實作」，也不能當成 `main` 已有。
+5. **重規劃能力有不同證據界線：** `main` 在高鐵左營 → 桃園測例可從台南更新位置後重新規劃；功能分支 MaaS 三卡對「延後 8 分鐘」只保留實際進度並標記過期，回傳 `REPLAN_UNAVAILABLE_FOR_SNAPSHOT_STATE`，**未證明可再計算有效替代路線**。
+6. **資料僅為歷史日期快照：** 不是今日即時導航；沒有即時延誤整合、GPS、自動重新定位、遠端 MCP、訂票／支付、正式 GIS 路線幾何。`main` 高雄車站多運具資料仍未接回主要頁面，僅在未合併功能分支被用於三卡產品服務。
+7. **部分舊 `docs/` 文件仍記錄中間層結果或舊工具數量：** 保留作歷史技術材料，不能取代 `optimization-proof.json`、各分支實際程式、E2E 證據與本管理文件的最終狀態。功能分支 `src/main.ts` 的舊註解仍稱 `app.ts` 是唯一入口，實際 import 已轉為 `productApp`，本次只整理文件，未改該註解。
 
 以上都是**未來若重啟時的待查事項**，而非目前需要立刻執行的阻礙或已啟動工作。
 
@@ -183,11 +210,11 @@ npm run journey:optimization-proof
 
 **目前不排工期、不派 Codex、不進行競賽補件。** 等使用者主動再次安排這個專案，再依順序進行：
 
-1. **先恢復可靠的版本基線。** 在能操作原本機器時，核對本機專案路徑／Git 分支／Commit、185 測試證據，與此儲存庫最新版的差異。不要不經比對就以較舊版覆蓋本機變更。
+1. **先恢復可靠的版本基線。** 在能操作原本機器時，核對本機工作樹、分支、Commit 與未提交變更；對比 `main`、`feat/journey-first-live-state`（185 測試紀錄來源）及 rescue 分支，保留所有已有成果。不可擅自以某分支覆蓋另一分支。
 2. **重跑基本驗證。** 在選定的實際版本執行 `npm ci`、`npm test`、`npm run build`、`npm run timetable:golden`、`npm run journey:optimization-proof`，記錄成功／失敗及實際測試數量；未跑前保留目前的歷史測試標籤。
-3. **若要再次展示，才檢查部署。** 核實 Netlify 網站、發布路徑與部署 Commit，確認手機能開；依照既有 Xpark 黃金流程操作，檢查切換分頁及模擬延誤重規劃。
-4. **驗證真實 WebMCP 呼叫。** 分別查工具發現、三工具註冊、代理實際呼叫、與人類 UI 相同輸入是否回傳一致結果；有失敗就記錄具體環境、重現步驟及輸出。
-5. **最後才決定新功能。** 評估三卡 UI、高雄車站多運具結果接入、擴增資料日期與路線、即時交通或 GPS；一次只做經過確認的一個功能，不擅自展開大型改寫。
+3. **如要採用三卡新版，才評估整合。** 檢查未合併 `feat/journey-first-live-state` 的共用應用服務、UI、測試及與 `main` 的差異，先選定要保留的需求與可驗證行為，再決定是否合併；**目前未授權合併或部署**。若要再次展示，才核實 Netlify 主站／Draft、發布 Commit 與手機操作，按對應版本測試三卡或左營分頁。
+4. **驗證 ChatGPT Agent 直接呼叫 WebMCP。** 2026-09-01 已有 Chrome 手動執行與 Draft PASS 的歷史證據，重啟時優先針對先前 browser bridge 阻擋狀態做相容性與真正的代理工具選擇／執行測試；無成功呼叫就維持待驗證。
+5. **最後才決定新功能。** 三卡 UI 和高雄車站 MaaS 固定資料整合**已存在於未合併分支**，先判定是否採用；之後才考慮真正可行的剩餘旅程重規劃、擴增日期與路線、即時交通或 GPS，避免重複開發已完成的原型。
 
 每次取得可核實的新成果，**直接在本 README 對應章節替換舊狀態**；有效實驗證據與成果路徑保留。更新後 Commit 並讀回驗證，不另建 CHANGELOG／進度表。
 
@@ -200,7 +227,7 @@ npm run journey:optimization-proof
 - 要維持「達成特定目的的交通可行性」工具，還是拓展成跨台灣的多運具旅程服務。
 - 是否要在路線排序納入更多旅客條件：行李、趕時間／休閒、成本敏感度、步行能力、交通工具可用性等。既有 `TravelerState` 已留部分欄位，但網頁展示未提供完整可操作流程。
 - 是否擴充至即時 TDX、GPS 現況、遠端 MCP、旅程中的活動、餐飲、住宿，及如何確保來源與授權可核實。
-- 若重新展示，是否採用**同時看三卡**的手機結果 UI，或保留目前**條件式選項分頁**。
+- 若重新展示，是否**採用已實作在 `feat/journey-first-live-state` 分支的三卡版**並經審查合併到 `main`，或繼續使用主線條件式分頁；**三卡原型已實作，不是零起點需求**。
 
 這些是可討論的後續方向，**不能寫成已決策要實作，更不能寫成已完成**。
 
@@ -211,10 +238,13 @@ npm run journey:optimization-proof
 1. **原程式／資料：** [此儲存庫](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp) 的 `main`、實際 `src/`、`tests/`、`scripts/import/` 及固定 `data/snapshots/`。
 2. **目前離線候選最終結果：** [`validation-summary.json`](data/snapshots/2026-08-31_2026-09-06/validation-summary.json) + [`optimization-proof.json`](data/snapshots/2026-08-31_2026-09-06/optimization-proof.json)。其固定日期與候選界線不可外推。
 3. **曾核對的程式／資料提交：** [`ec716d93`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/commit/ec716d93b5c67680e63c0dd64dab280654c07ae4)（2026-08-31）。
-4. **待驗證的本機資訊：** [舊 Rebirth 專案卡](https://github.com/zirinandzennos/zirin/blob/main/projects/WebMCP.md)（資料確認時間 2026-10-12）記載「185 項測試」、本機高雄車站版本和 Netlify 連線疑慮；本次**未取得**該本機程式和原始測試結果。
+4. **功能分支與 E2E：** [`feat/journey-first-live-state`](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/tree/feat/journey-first-live-state) README 具 **185** 項測試歷史紀錄；[E2E 文件](https://github.com/zirinandzennos/taiwan-goal-aware-webmcp/blob/feat/journey-first-live-state/docs/E2E_EVIDENCE.md) 有本機 Chrome、HTTPS Draft 及 ChatGPT 阻擋的不同狀態，均為分支歷史證據，**不是本日重測**。舊 Rebirth 專案卡已於 2026-10-22 改為純導覽，先前 2026-10-12 本機／DNS 疑慮已納入本文。
 5. **競賽歷史檔案：** `docs/` 中的競賽說明、英文稿、舊提交清單與測試指引。比賽已結束，保留作源流，不再據此排工作。
 
-### 最近更新（2026-10-14）
+### 最近更新（2026-10-22）
+
+- **2026-10-22 全面盤點新發現：** Rebirth 正式索引已定位本庫 `main/README.md`，舊 `projects/WebMCP.md` 已為純導覽；實際清點 **3 條分支、90 個 main 檔案**。新增 `feat/journey-first-live-state` 的**三卡已實作、185 項測試歷史報告、2026-09-01 Chrome／HTTPS Draft 手動 E2E PASS、ChatGPT Agent 呼叫阻擋**及獨立 `rescue` 分支的路徑。修正「三卡未實作」「185 項沒有 GitHub 來源」「所有 WebMCP E2E 尚未測過」的過時概括，保留正式主線未整合與現在公開部署未驗證的邊界。
+- **本次範圍：** 僅更新此唯一主文件；未改程式／快照／其他專案、未合併分支、未新跑測試或部署。
 
 - 接受最新決定：**競賽結束 → 低優先級、空閒時再繼續**；將競賽投稿與評審交付從目前待辦移走。
 - 將 Rebirth 舊 `projects/WebMCP.md` 的狀態、185 項本機測試線索、部署／手機驗收疑慮，連同本庫完整功能、實驗結論、來源及實體路徑，**合併為本 README 唯一正式專案狀態**。
